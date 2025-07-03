@@ -1,0 +1,249 @@
+?start: program
+
+program: statement*
+
+?statement: variable_declaration
+          | variable_assignment
+          | this_assignment
+          | function_declaration
+          | function_declaration_qualified
+          | type_declaration
+          | class_declaration
+          | interface_declaration
+          | if_statement
+          | for_statement
+          | while_statement
+          | try_statement
+          | match_statement
+          | return_statement
+          | throw_statement
+          | expression_statement
+          | spawn_statement
+
+// Variable Declaration
+variable_declaration: "DEF" IDENTIFIER type "=" expression
+variable_assignment: IDENTIFIER ":=" expression
+this_assignment: "THIS" ":" IDENTIFIER ":=" expression
+
+// Function Declaration
+function_declaration: "FUNC" IDENTIFIER "(" parameter_list? ")" type function_body "END" "FUNC"
+function_declaration_qualified: "FUNC" qualified_identifier "(" parameter_list? ")" type function_body "END" "FUNC"
+qualified_identifier: IDENTIFIER (":" IDENTIFIER)*
+parameter_list: parameter ("," parameter)*
+parameter: IDENTIFIER type
+function_body: statement*
+
+// Type Declaration
+type_declaration: "TYPE" IDENTIFIER type_body "END" "TYPE"
+              | "TYPE" IDENTIFIER "EXTENDS" IDENTIFIER type_body "END" "TYPE"
+type_body: type_field*
+type_field: IDENTIFIER type
+
+// Class Declaration  
+class_declaration: "CLASS" IDENTIFIER class_body "END" "CLASS"
+                | "CLASS" IDENTIFIER "EXTENDS" IDENTIFIER class_body "END" "CLASS"
+                | "CLASS" IDENTIFIER "IMPLEMENTS" IDENTIFIER class_body "END" "CLASS"
+class_body: class_member*
+class_member: access_modifier? property_declaration
+           | access_modifier? method_declaration
+           | constructor_declaration
+           | STATIC property_declaration
+           | STATIC method_declaration
+           | OVERRIDE method_declaration
+
+access_modifier: PUBLIC | PRIVATE | PROTECTED
+
+property_declaration: IDENTIFIER type ("=" expression)?
+
+method_declaration: "FUNC" IDENTIFIER "(" parameter_list? ")" type function_body "END" "FUNC"
+
+constructor_declaration: "CONSTRUCTOR" "(" parameter_list? ")" function_body "END" "CONSTRUCTOR"
+
+// Interface Declaration
+interface_declaration: "INTERFACE" IDENTIFIER interface_body "END" "INTERFACE"
+interface_body: interface_member*
+interface_member: "FUNC" IDENTIFIER "(" parameter_list? ")" type
+
+// Control Flow
+if_statement: "if" "$" expression "$" "DO" statement* elif_clause* else_clause? "END" "if"
+elif_clause: "else" "if" "$" expression "$" "DO" statement*
+else_clause: "else" "DO" statement*
+
+for_statement: "for" "DEF" IDENTIFIER type "in" expression "DO" statement* "END" "for"
+
+while_statement: "while" expression "DO" statement* "END" "while"
+while_statement2: "while" "$" expression "$" "DO" statement* "END" "while"
+
+// Error Handling
+try_statement: "TRY" statement* catch_clause* finally_clause? "END" "TRY"
+catch_clause: "CATCH" IDENTIFIER type "DO" statement*
+finally_clause: "FINALLY" statement*
+
+// Pattern Matching
+match_statement: "MATCH" expression case_clause* default_clause? "END" "MATCH"
+case_clause: "CASE" pattern guard? "DO" statement*
+default_clause: "DEFAULT" "DO" statement*
+pattern: literal
+       | IDENTIFIER
+       | type IDENTIFIER
+       | "[" pattern_list? "]"
+       | dict_literal_pattern
+guard: "IF" "$" expression "$"
+pattern_list: pattern ("," pattern)*
+dict_literal_pattern: "{" pattern_dict? "}"
+pattern_dict: pattern ":" pattern ("," pattern ":" pattern)*
+
+// Statements
+return_statement: "RETURN" expression?
+throw_statement: "THROW" expression
+expression_statement: expression
+spawn_statement: "SPAWN" expression
+
+// Expressions
+?expression: or_expression
+
+?or_expression: and_expression
+              | or_expression "||" and_expression
+
+?and_expression: equality_expression  
+               | and_expression "&&" equality_expression
+
+?equality_expression: relational_expression
+                    | equality_expression equality_op relational_expression
+
+equality_op: EQUAL_TO | NOT_EQUAL_TO
+
+?relational_expression: additive_expression
+                     | relational_expression relational_op additive_expression
+
+relational_op: LESS_THAN | GREATER_THAN | LESS_THAN_OR_EQUAL_TO | GREATER_THAN_OR_EQUAL_TO
+
+?additive_expression: multiplicative_expression
+                   | additive_expression "+" multiplicative_expression
+                   | additive_expression "-" multiplicative_expression
+
+?multiplicative_expression: unary_expression
+                         | multiplicative_expression "*" unary_expression
+                         | multiplicative_expression "/" unary_expression
+                         | multiplicative_expression "%" unary_expression
+
+?unary_expression: postfix_expression
+                | "!" unary_expression
+                | "-" unary_expression
+                | "+" unary_expression
+
+?postfix_expression: primary_expression
+                  | postfix_expression method_call
+                  | postfix_expression property_access
+                  | postfix_expression array_access
+
+method_call: ":" method_name ":" "(" argument_list? ")"
+          | ":" method_name ":"
+
+method_name: "ADD" | "REMOVE" | "GET" | "REVERSE" | "LENGTH" | "INSERT"
+          | "UPPER" | "LOWER" | "ALNUM" | "SPLIT"
+          | "MAP" | "FILTER" | "REDUCE" | "FIND" | "ANY" | "ALL"
+          | "JOIN" | IDENTIFIER
+
+property_access: "." IDENTIFIER
+
+array_access: "[" expression "]"
+
+?primary_expression: literal
+                  | IDENTIFIER
+                  | IDENTIFIER "(" argument_list? ")"
+                  | "(" expression ")"
+                  | array_literal
+                  | dict_literal
+                  | tuple_literal
+                  | lambda_expression
+                  | "THIS"
+                  | "SUPER" "(" argument_list? ")"
+
+// Literals
+literal: INTEGER | FLOAT | STRING | CHAR | BOOLEAN
+
+array_literal: "[" argument_list? "]"
+
+// Combined dictionary literal that handles both maps and objects
+dict_literal: "{" "}"                                    // empty dict
+           | "{" dict_entries "}"                        // non-empty dict
+
+dict_entries: dict_entry ("," dict_entry)*
+dict_entry: expression "->" expression                   // map entry (key -> value)
+          | IDENTIFIER ":" expression                    // object entry (property: value)
+
+tuple_literal: "(" expression "," expression ("," expression)* ")"
+
+lambda_expression: "FUNC" "(" parameter_list? ")" "->" expression
+                 | "FUNC" "(" parameter_list? ")" function_body "END" "FUNC"
+
+argument_list: expression ("," expression)*
+
+// Types
+type: primitive_type
+    | array_type  
+    | map_type
+    | tuple_type
+    | custom_type
+
+primitive_type: INT_TYPE | FLOAT_TYPE | BOOL_TYPE | CHAR_TYPE | STR_TYPE | VOID_TYPE | ANY_TYPE
+
+array_type: "#[" type "]"
+
+map_type: "#{" type "," type "}"
+
+tuple_type: "#(" type ("," type)+ ")"
+
+custom_type: "#" IDENTIFIER
+
+// Tokens
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+INTEGER: /[0-9]+/
+
+FLOAT: /[0-9]+\.[0-9]+/
+
+STRING: /"([^"\\]|\\.)*"/
+
+CHAR: /'([^'\\]|\\.)'/
+
+BOOLEAN: "true" | "false"
+
+// Comments and Whitespace
+COMMENT: "//" /[^\n]*/
+
+// TYPE DEFINITIONS
+
+INT_TYPE: "#int"
+FLOAT_TYPE: "#float"
+BOOL_TYPE: "#bool"
+CHAR_TYPE: "#char"
+STR_TYPE: "#str"
+VOID_TYPE: "#void"
+ANY_TYPE: "#any"
+
+// RELATIONAL OPERATORS
+GREATER_THAN: ":GT:"
+LESS_THAN: ":LT:"
+GREATER_THAN_OR_EQUAL_TO: ":GE:"
+LESS_THAN_OR_EQUAL_TO: ":LE:"
+
+// EQUALITY OPERATORS
+EQUAL_TO: ":EQ:"
+NOT_EQUAL_TO: ":NE:"
+
+// ACCESS MODIFIERS
+PUBLIC: "PUBLIC"
+PRIVATE: "PRIVATE"
+PROTECTED: "PROTECTED"
+
+// STATIC
+STATIC: "STATIC"
+
+// OVERRIDE
+OVERRIDE: "OVERRIDE"
+
+%import common.WS
+%ignore WS
+%ignore COMMENT
