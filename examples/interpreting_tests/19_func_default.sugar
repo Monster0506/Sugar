@@ -1,0 +1,4 @@
+FUNC foo() #int
+    DEF x #int = 10
+    RETURN x
+END FUNC 

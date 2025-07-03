@@ -1,0 +1,2 @@
+DEF arr #[#int] = [1, 2, 3]
+DEF first #int = arr :GET: (0) 

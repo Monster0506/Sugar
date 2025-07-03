@@ -1,0 +1,6 @@
+DEF x #int = 5
+if $x :GT: 0$ DO
+    if $x :LT: 10$ DO
+        DEF y #int = 1
+    END if
+END if 

@@ -1,0 +1,4 @@
+DEF arr #[#int] = [1]
+arr :ADD: (2)
+DEF len #int = arr :LENGTH:
+DEF val #int = arr :GET: (1) 

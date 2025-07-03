@@ -1,0 +1,2 @@
+DEF arr #[#int] = [1, 2, 3]
+DEF doubled #[#int] = arr :MAP: (FUNC (x #int) -> x * 2) 

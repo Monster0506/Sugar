@@ -1,0 +1,3 @@
+FUNC print_hello() #void
+    IO:PRINT:("Hello")
+END FUNC 

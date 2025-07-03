@@ -1,0 +1,4 @@
+FUNC get_a() #char
+    RETURN 'A'
+END FUNC
+DEF c #char = get_a() 

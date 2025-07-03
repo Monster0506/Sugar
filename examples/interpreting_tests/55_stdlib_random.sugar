@@ -1,0 +1,2 @@
+DEF r #int = Random:INT:(1, 10)
+DEF f #float = Random:FLOAT:() 

@@ -1,0 +1,2 @@
+DEF pi #float = Math:PI
+DEF s #float = Math:SQRT:(16.0) 

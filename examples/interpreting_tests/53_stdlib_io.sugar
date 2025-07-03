@@ -1,0 +1,2 @@
+IO:PRINT:("Hello")
+DEF name #str = IO:INPUT:("Name: ") 

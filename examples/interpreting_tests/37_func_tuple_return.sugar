@@ -1,0 +1,4 @@
+FUNC make_tuple() #(#int, #str)
+    RETURN (1, "a")
+END FUNC
+DEF t #(#int, #str) = make_tuple() 

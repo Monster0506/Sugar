@@ -1,0 +1,6 @@
+DEF x #int = 2
+if $x :GT: 3$ DO
+    DEF y #int = 1
+else DO
+    DEF y #int = 0
+END if 

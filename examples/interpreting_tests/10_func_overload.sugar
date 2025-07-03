@@ -1,0 +1,8 @@
+FUNC foo(a #int) #int
+    RETURN a
+END FUNC
+FUNC foo(a #str) #int
+    RETURN 0
+END FUNC
+DEF x #int = foo(5)
+DEF y #int = foo("hi") 

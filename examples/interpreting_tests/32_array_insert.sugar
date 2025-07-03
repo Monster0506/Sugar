@@ -1,0 +1,2 @@
+DEF arr #[#int] = [1, 2, 3]
+arr :INSERT: (1, 99) 

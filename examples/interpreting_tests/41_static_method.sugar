@@ -1,0 +1,6 @@
+CLASS MathUtil
+    STATIC FUNC square(x #int) #int
+        RETURN x * x
+    END FUNC
+END CLASS
+DEF s #int = MathUtil:square:(4) 

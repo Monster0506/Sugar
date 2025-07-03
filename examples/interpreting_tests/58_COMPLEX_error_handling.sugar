@@ -1,0 +1,27 @@
+TYPE MyError EXTENDS Error
+    message #str
+END TYPE
+FUNC risky(x #int) #int
+    if $x :LT: 0$ DO
+        THROW MyError("negative")
+    END if
+    RETURN x
+END FUNC
+FUNC test() #str
+    TRY
+        TRY
+            risky(-1)
+        CATCH e #MyError DO
+            IO:PRINT:("Caught: " + e.message)
+            THROW e
+        FINALLY
+            IO:PRINT:("Inner finally")
+        END TRY
+    CATCH e #MyError DO
+        RETURN "Outer: " + e.message
+    FINALLY
+        IO:PRINT:("Outer finally")
+        // Simulate error in finally
+        THROW MyError("fail in finally")
+    END TRY
+END FUNC 

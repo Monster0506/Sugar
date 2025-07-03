@@ -1,0 +1,1 @@
+DEF t #(#int, #str) = (1, "hi") 

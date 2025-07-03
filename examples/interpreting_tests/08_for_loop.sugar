@@ -1,0 +1,4 @@
+DEF arr #[#int] = [1, 2, 3]
+for DEF n #int in arr DO
+    DEF double #int = n * 2
+END for 

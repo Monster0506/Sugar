@@ -1,0 +1,7 @@
+FUNC test(x #int) #int
+    if $x :GT: 0$ DO
+        DEF y #int = x + 1
+        RETURN y
+    END if
+    RETURN 0
+END FUNC 

@@ -1,0 +1,10 @@
+CLASS Example
+    PUBLIC a #int
+    PRIVATE b #int
+    CONSTRUCTOR()
+        THIS:a := 1
+        THIS:b := 2
+    END CONSTRUCTOR
+END CLASS
+DEF e #Example = Example()
+DEF x #int = e.a 

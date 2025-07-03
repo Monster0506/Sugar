@@ -1,0 +1,7 @@
+CLASS Counter
+    value #int
+    CONSTRUCTOR()
+        THIS:value := 0
+    END CONSTRUCTOR
+END CLASS
+DEF c #Counter = Counter() 

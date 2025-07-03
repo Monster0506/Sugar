@@ -1,0 +1,4 @@
+FUNC make_map() #{#str, #int}
+    RETURN {"a" -> 1, "b" -> 2}
+END FUNC
+DEF m #{#str, #int} = make_map() 

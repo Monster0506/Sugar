@@ -1,0 +1,4 @@
+FUNC greet(name #str) #str
+    RETURN "Hello, " + name
+END FUNC
+DEF msg #str = greet("World") 

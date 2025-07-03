@@ -1,0 +1,4 @@
+DEF s #str = "Hello"
+DEF up #str = s :UPPER:
+DEF lo #str = s :LOWER:
+DEF l #int = s :LENGTH: 

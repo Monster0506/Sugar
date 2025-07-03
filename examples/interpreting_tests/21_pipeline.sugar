@@ -1,0 +1,5 @@
+DEF arr #[#int] = [1, 2, 3, 4, 5]
+DEF result #int = arr
+    :FILTER:(FUNC (x #int) -> x :GT: 2)
+    :MAP:(FUNC (x #int) -> x * 2)
+    :REDUCE:(FUNC (acc #int, x #int) -> acc + x, 0) 

@@ -1,0 +1,2 @@
+DEF m #{#str, #int} = {"a" -> 1}
+m :SET: ("b", 2) 

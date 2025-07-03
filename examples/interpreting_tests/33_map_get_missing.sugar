@@ -1,0 +1,2 @@
+DEF m #{#str, #int} = {"a" -> 1}
+DEF v #int = m :GET: ("b") 

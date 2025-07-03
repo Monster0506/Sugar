@@ -1,0 +1,4 @@
+FUNC work() #void
+    IO:PRINT:("working")
+END FUNC
+SPAWN FUNC() work() END FUNC 

@@ -1,0 +1,19 @@
+CLASS Parent
+    value #int
+    CONSTRUCTOR(x #int)
+        THIS:value := x
+    END CONSTRUCTOR
+    FUNC get() #int
+        RETURN THIS:value
+    END FUNC
+END CLASS
+CLASS Child EXTENDS Parent
+    CONSTRUCTOR(x #int)
+        SUPER(x)
+    END CONSTRUCTOR
+    OVERRIDE FUNC get() #int
+        RETURN SUPER:get:() + 1
+    END FUNC
+END CLASS
+DEF c #Child = Child(5)
+DEF v #int = c:get:() 

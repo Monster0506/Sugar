@@ -1,0 +1,3 @@
+DEF a #bool = 3 :LT: 5
+DEF b #bool = 3 :GE: 3
+DEF c #bool = a && b 

@@ -1,0 +1,7 @@
+DEF x #int = 0
+MATCH x
+    CASE 0 DO
+        DEF y #int = 1
+    DEFAULT DO
+        DEF y #int = 2
+END MATCH 

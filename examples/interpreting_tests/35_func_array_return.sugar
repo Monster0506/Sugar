@@ -1,0 +1,4 @@
+FUNC make_arr() #[#int]
+    RETURN [1, 2, 3]
+END FUNC
+DEF arr #[#int] = make_arr() 

@@ -1,0 +1,2 @@
+DEF now #any = Time:NOW:()
+DEF formatted #str = Time:FORMAT:(now, "YYYY-MM-DD") 
