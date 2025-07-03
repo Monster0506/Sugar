@@ -18,6 +18,7 @@ class VariableDeclarationHandler:
         expr = node.children[2]
         name = self._extract_identifier_name(name_token)
         type_name, is_array, is_map = TypeAnalyzer.extract_type_info(type_tree)
+        
         if is_map:
             self._handle_map_declaration(name, expr, env)
         elif is_array:
