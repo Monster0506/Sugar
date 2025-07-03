@@ -472,6 +472,7 @@ class SymbolTableGenerator:
                 'macro_declaration': self.visit_macro_declaration,
                 'annotation_declaration': self.visit_annotation_declaration,
                 'if_statement': self.visit_if_statement,
+                'elif_clause': self.visit_elif_clause,
                 'else_clause': self.visit_else_clause,
                 'for_statement': self.visit_for_statement,
                 'while_statement': self.visit_while_statement,
@@ -858,9 +859,30 @@ class SymbolTableGenerator:
             self.visit(node.children[1])
             self.symbol_table.exit_scope()
         
-        # Process else clause (third child) in its own scope if present
-        if len(node.children) > 2:
-            self.visit(node.children[2])
+        # Process elif clauses (third child onwards, except the last one if it's an else_clause)
+        elif_start = 2
+        elif_end = len(node.children) - 1 if node.children and hasattr(node.children[-1], 'data') and node.children[-1].data == 'else_clause' else len(node.children)
+        
+        for i in range(elif_start, elif_end):
+            self.visit(node.children[i])
+        
+        # Process else clause (last child) in its own scope if present
+        if node.children and hasattr(node.children[-1], 'data') and node.children[-1].data == 'else_clause':
+            self.visit(node.children[-1])
+    
+    def visit_elif_clause(self, node) -> None:
+        """Visit elif clause node."""
+        self.logger.debug("Processing elif clause")
+        
+        # Process condition (first child)
+        if node.children:
+            self.visit(node.children[0])
+        
+        # Process elif body (second child) in its own scope
+        if len(node.children) > 1:
+            self.symbol_table.enter_scope(f"elif_block_{self.current_line}_{self.current_column}")
+            self.visit(node.children[1])
+            self.symbol_table.exit_scope()
     
     def visit_else_clause(self, node) -> None:
         """Visit else clause node."""
