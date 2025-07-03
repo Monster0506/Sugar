@@ -12,33 +12,39 @@ from typing import Any, Dict, List, Optional, Union
 from lark import Lark, Transformer, v_args, Tree, Token
 from lark.exceptions import LarkError
 
+from utils import debug_class_wrapper
+
 # Configure logging
 logging.basicConfig(
     level=logging.DEBUG,
-    format='[%(levelname)s] %(message)s'
+    format="[%(levelname)s] %(message)s",
 )
+
 logger = logging.getLogger("SugarParser")
 
 
+@debug_class_wrapper
 class SugarASTTransformer(Transformer):
     """Transforms Lark parse tree into a clean, semantic AST (dicts/lists/primitives only)."""
-    
+
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger("SugarASTTransformer")
         self.logger.setLevel(logging.DEBUG)
-    
+
     def _log_transform(self, method_name, items):
         """Log transformation details for debugging."""
         self.logger.debug(f"TRANSFORM {method_name}: {len(items)} items")
         for i, item in enumerate(items):
-            if hasattr(item, 'data'):
-                self.logger.debug(f"  {i}: Tree({item.data}) with {len(item.children)} children")
+            if hasattr(item, "data"):
+                self.logger.debug(
+                    f"  {i}: Tree({item.data}) with {len(item.children)} children"
+                )
             elif isinstance(item, Token):
                 self.logger.debug(f"  {i}: Token({item.type}) = '{item.value}'")
             else:
                 self.logger.debug(f"  {i}: {type(item)} = {item}")
-    
+
     def program(self, items):
         return Tree("program", items)
 
@@ -209,7 +215,7 @@ class SugarASTTransformer(Transformer):
 
     def equality_op(self, items):
         return Tree("equality_op", items)
-    
+
     def relational_expression(self, items):
         return Tree("relational_expression", items)
 
@@ -303,6 +309,12 @@ class SugarASTTransformer(Transformer):
     def BOOLEAN(self, token):
         return token
 
+    def TRUE(self, token):
+        return token
+
+    def FALSE(self, token):
+        return token
+
     def INT_TYPE(self, token):
         return token
 
@@ -344,7 +356,7 @@ class SugarASTTransformer(Transformer):
 
     def qualified_identifier(self, items):
         # Join identifiers with colons for qualified names
-        name = ':'.join(str(item) for item in items)
+        name = ":".join(str(item) for item in items)
         return name
 
     def PUBLIC(self, token):
@@ -366,18 +378,24 @@ class SugarASTTransformer(Transformer):
         return Tree(data, children)
 
 
+@debug_class_wrapper
 class SugarParser:
     """Main parser for the Sugar programming language."""
-    
+
     def __init__(self, grammar_file: Optional[str] = None):
         """Initialize the parser with the grammar file."""
         if grammar_file is None:
             grammar_file = str(Path(__file__).parent / "sugar_grammar.lark")
-        with open(grammar_file, 'r') as f:
+        with open(grammar_file, "r") as f:
             grammar = f.read()
         logger.info(f"Loaded grammar from {grammar_file}")
-        self.parser = Lark(grammar, parser='lalr', transformer=SugarASTTransformer(), propagate_positions=True)
-    
+        self.parser = Lark(
+            grammar,
+            parser="lalr",
+            transformer=SugarASTTransformer(),
+            propagate_positions=True,
+        )
+
     def parse(self, code: str) -> Any:
         """Parse Sugar code and return an AST."""
         logger.info("Starting parse of code...")
@@ -388,11 +406,11 @@ class SugarParser:
         except LarkError as e:
             logger.error(f"Parse error: {e}")
             raise SyntaxError(f"Parse error: {e}")
-    
+
     def parse_file(self, file_path: str) -> Any:
         """Parse a Sugar file and return an AST."""
         logger.info(f"Parsing file: {file_path}")
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             code = f.read()
         return self.parse(code)
 
@@ -402,10 +420,10 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: uv run sugar_parser.py <sugar_file>")
         sys.exit(1)
-    
+
     file_path = sys.argv[1]
     parser = SugarParser()
-    
+
     try:
         ast = parser.parse_file(file_path)
         print("Parse successful!")
@@ -413,7 +431,7 @@ def main():
         print(f"DEBUG: type(ast) = {type(ast)}")
         # The transformer now produces clean dictionaries directly
         print(f"DEBUG: ast = {ast}")
-        
+
         print(ast.pretty())
     except Exception as e:
         print(f"Error: {e}")
@@ -421,4 +439,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()
+

@@ -161,7 +161,7 @@ array_access: "[" expression "]"
                   | "SUPER" "(" argument_list? ")"
 
 // Literals
-literal: INTEGER | FLOAT | STRING | CHAR | BOOLEAN
+literal: BOOLEAN | INTEGER | FLOAT | STRING | CHAR 
 
 array_literal: "[" argument_list? "]"
 
@@ -208,7 +208,7 @@ STRING: /"([^"\\]|\\.)*"/
 
 CHAR: /'([^'\\]|\\.)'/
 
-BOOLEAN: "true" | "false"
+BOOLEAN: TRUE | FALSE
 
 // Comments and Whitespace
 COMMENT: "//" /[^\n]*/
@@ -222,6 +222,10 @@ CHAR_TYPE: "#char"
 STR_TYPE: "#str"
 VOID_TYPE: "#void"
 ANY_TYPE: "#any"
+
+// BOOL_TYPE
+TRUE: ":T:"
+FALSE: ":F:"
 
 // RELATIONAL OPERATORS
 GREATER_THAN: ":GT:"
