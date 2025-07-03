@@ -228,7 +228,7 @@ class SugarInterpreter:
             else:
                 self.logger.warning(f"Non-literal expr in DEF {name} #str = ... not handled yet.")
         else:
-            self.logger.warning(f"Non-int/float type in DEF {name} #... not handled yet.")
+            self.logger.warning(f"UNSUPPORTED TYPE in DEF {name} #... not handled yet.")
 
     def evaluate_array_literal(self, node, env: SugarEnvironment) -> List[SugarValue]:
         """Evaluate an array literal node and return a list of SugarValues."""
