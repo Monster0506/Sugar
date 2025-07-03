@@ -1,4 +1,6 @@
 DEF arr #[#int] = [1, 2, 3]
+DEF sum #int = 0
 for DEF n #int in arr DO
     DEF double #int = n * 2
+    sum := sum + double
 END for 

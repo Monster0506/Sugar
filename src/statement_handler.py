@@ -1,6 +1,7 @@
 from .var_decl import VariableDeclarationHandler
 from .var_assign import VariableAssignmentHandler
 from .expression_eval import ExpressionEvaluator
+from .values import SugarArray
 
 class StatementHandler:
     """Handles different types of statements."""
@@ -15,7 +16,8 @@ class StatementHandler:
             'variable_declaration': self.declaration_handler.handle_declaration,
             'variable_assignment': self.assignment_handler.handle_assignment,
             'expression_statement': self._handle_expression_statement,
-            'if_statement': self._handle_if_statement
+            'if_statement': self._handle_if_statement,
+            'for_statement': self._handle_for_statement
         }
         handler = statement_handlers.get(node.data)
         if handler:
@@ -80,6 +82,49 @@ class StatementHandler:
         
         # Execute else body (first child)
         self._execute_block(node.children[0], env)
+    def _handle_for_statement(self, node, env):
+        """Handle for statement execution."""
+        if not node.children or len(node.children) < 4:
+            return
+        
+        # Extract for loop components:
+        # children[0] = iterator variable name (Token)
+        # children[1] = iterator variable type (Tree)
+        # children[2] = collection to iterate over (Token or Tree)
+        # children[3:] = loop body statements (Tree)
+        
+        iterator_name = node.children[0]
+        if hasattr(iterator_name, 'value'):
+            iterator_name = iterator_name.value
+        
+        collection_expr = node.children[2]
+        loop_body_statements = node.children[3:]
+        
+        # Evaluate the collection
+        if hasattr(collection_expr, 'type') and collection_expr.type == 'IDENTIFIER':
+            # Direct identifier - get from environment
+            collection_name = str(collection_expr.value)
+            try:
+                collection_result = env.get(collection_name)
+            except NameError:
+                self.logger.warning(f"Collection variable '{collection_name}' not found")
+                return
+        else:
+            # Expression node - evaluate it
+            collection_result = ExpressionEvaluator.evaluate_expression(collection_expr, env)
+        
+        # Check if it's an array
+        if isinstance(collection_result, SugarArray):
+            # Iterate over array elements
+            for element in collection_result.elements:
+                # Set the iterator variable
+                env.set(iterator_name, element)
+                
+                # Execute all statements in the loop body
+                for statement in loop_body_statements:
+                    self.handle_statement(statement, env)
+        else:
+            self.logger.warning(f"For loop collection is not an array: {collection_result}")
     def _execute_block(self, block_node, env):
         """Execute a block of statements."""
         if not hasattr(block_node, 'children'):

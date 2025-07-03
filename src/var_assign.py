@@ -22,7 +22,9 @@ class VariableAssignmentHandler:
             self._handle_array_assignment(name, expr, old_val, env)
         elif hasattr(expr, 'data') and expr.data == 'dict_literal':
             self._handle_dict_assignment(name, expr, old_val, env)
-        elif hasattr(expr, 'data') and expr.data == 'postfix_expression':
+        elif hasattr(expr, 'data') and expr.data in ['postfix_expression', 'additive_expression', 'multiplicative_expression', 
+                                                    'relational_expression', 'equality_expression', 'and_expression', 
+                                                    'or_expression', 'unary_expression', 'primary_expression']:
             self._handle_expression_assignment(name, expr, old_val, env)
         else:
             self.logger.warning(f"Non-literal expr in assignment to {name} not handled yet.")
