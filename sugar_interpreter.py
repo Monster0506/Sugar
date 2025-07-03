@@ -100,6 +100,10 @@ class SugarInterpreter:
             self.execute_variable_declaration(node, env)
         elif hasattr(node, 'data') and node.data == 'variable_assignment':
             self.execute_variable_assignment(node, env)
+        elif hasattr(node, 'data') and node.data == 'expression_statement':
+            # Handle expression statements like m :SET: ("a", 5)
+            if node.children and hasattr(node.children[0], 'data') and node.children[0].data == 'postfix_expression':
+                self.evaluate_expression(node.children[0], env)
         # Ignore all other statements for now
 
     def execute_variable_declaration(self, node, env: SugarEnvironment):
@@ -114,8 +118,10 @@ class SugarInterpreter:
             name = str(name_token)
         # Handle type: type -> primitive_type -> INT_TYPE, FLOAT_TYPE, BOOL_TYPE, CHAR_TYPE, STR_TYPE
         # OR type -> array_type -> type -> primitive_type -> INT_TYPE, etc.
+        # OR type -> map_type -> [type, type] (key type and value type)
         type_name = None
         is_array = False
+        is_map = False
         if hasattr(type_tree, 'data') and type_tree.data == 'type':
             if type_tree.children and hasattr(type_tree.children[0], 'data') and type_tree.children[0].data == 'primitive_type':
                 prim_type_node = type_tree.children[0]
@@ -151,8 +157,26 @@ class SugarInterpreter:
                                 type_name = 'char'
                             elif ttype == 'STR_TYPE':
                                 type_name = 'str'
+            elif type_tree.children and hasattr(type_tree.children[0], 'data') and type_tree.children[0].data == 'map_type':
+                is_map = True
+                # Extract key and value types from map_type -> [type, type]
+                map_type_node = type_tree.children[0]
+                if len(map_type_node.children) >= 2:
+                    key_type_node = map_type_node.children[0]
+                    value_type_node = map_type_node.children[1]
+                    # For now, assume string keys and int values
+                    type_name = 'map'
         
-        if is_array:
+        if is_map:
+            # Handle map declaration
+            if hasattr(expr, 'data') and expr.data == 'dict_literal':
+                mapping = self.evaluate_dict_literal(expr, env)
+                env.set(name, SugarMap(mapping))
+                self.logger.info(f"Declared map variable {name} = {mapping}")
+                return
+            else:
+                self.logger.warning(f"Non-dict literal in DEF {name} #{{#...}} = ... not handled yet.")
+        elif is_array:
             # Handle array declaration
             if hasattr(expr, 'data') and expr.data == 'array_literal':
                 elements = self.evaluate_array_literal(expr, env)
@@ -243,6 +267,27 @@ class SugarInterpreter:
                 return elements
         return []
 
+    def evaluate_dict_literal(self, node, env: SugarEnvironment) -> Dict[Any, SugarValue]:
+        """Evaluate a dict literal node and return a dictionary of SugarValues."""
+        if hasattr(node, 'data') and node.data == 'dict_literal':
+            if node.children and hasattr(node.children[0], 'data') and node.children[0].data == 'dict_entries':
+                dict_entries = node.children[0]
+                mapping = {}
+                for child in dict_entries.children:
+                    if hasattr(child, 'data') and child.data == 'dict_entry':
+                        if len(child.children) >= 2:
+                            key_literal = child.children[0]
+                            value_literal = child.children[1]
+                            key = self.evaluate_literal(key_literal)
+                            value = self.evaluate_literal(value_literal)
+                            # Use the string value as the key for SugarMap
+                            if isinstance(key, SugarStr):
+                                mapping[key.value] = value
+                            else:
+                                mapping[str(key)] = value
+                return mapping
+        return {}
+
     def evaluate_literal(self, node) -> SugarValue:
         """Evaluate a literal node and return a SugarValue."""
         if hasattr(node, 'data') and node.data == 'literal':
@@ -264,10 +309,10 @@ class SugarInterpreter:
     def evaluate_expression(self, node, env: SugarEnvironment) -> SugarValue:
         """Evaluate an expression node and return a SugarValue."""
         if hasattr(node, 'data') and node.data == 'postfix_expression':
-            # Handle postfix expressions like arr :GET: (0)
+            # Handle postfix expressions like arr :GET: (0) or m :GET: ("a")
             if len(node.children) >= 2:
-                # First child is the identifier (arr)
-                # Second child is the method call (:GET: (0))
+                # First child is the identifier (arr or m)
+                # Second child is the method call (:GET: (0) or :SET: ("a", 5))
                 identifier = node.children[0]
                 method_call = node.children[1]
                 
@@ -277,6 +322,9 @@ class SugarInterpreter:
                     
                     if isinstance(var_value, SugarArray) and hasattr(method_call, 'data') and method_call.data == 'method_call':
                         # Handle array access method call
+                        return self.evaluate_method_call(method_call, var_value, env)
+                    elif isinstance(var_value, SugarMap) and hasattr(method_call, 'data') and method_call.data == 'method_call':
+                        # Handle map method call
                         return self.evaluate_method_call(method_call, var_value, env)
         
         return SugarInt(0)  # Default fallback
@@ -288,7 +336,7 @@ class SugarInterpreter:
                 method_name_node = node.children[0]
                 argument_list_node = node.children[1]
                 
-                # For now, assume it's a GET method call
+                # Handle array GET method call
                 if isinstance(target, SugarArray):
                     # Extract the index from argument_list
                     if hasattr(argument_list_node, 'data') and argument_list_node.data == 'argument_list':
@@ -302,6 +350,33 @@ class SugarInterpreter:
                                 else:
                                     self.logger.error(f"Array index {index} out of bounds")
                                     return SugarInt(0)
+                
+                # Handle map GET and SET method calls
+                elif isinstance(target, SugarMap):
+                    if hasattr(argument_list_node, 'data') and argument_list_node.data == 'argument_list':
+                        # Check if it's a GET method (one argument)
+                        if len(argument_list_node.children) == 1:
+                            key_literal = argument_list_node.children[0]
+                            key = self.evaluate_literal(key_literal)
+                            if isinstance(key, SugarStr):
+                                if key.value in target.mapping:
+                                    return target.mapping[key.value]
+                                else:
+                                    self.logger.error(f"Map key '{key.value}' not found")
+                                    return SugarInt(0)
+                        # Check if it's a SET method (two arguments)
+                        elif len(argument_list_node.children) == 2:
+                            key_literal = argument_list_node.children[0]
+                            value_literal = argument_list_node.children[1]
+                            key = self.evaluate_literal(key_literal)
+                            value = self.evaluate_literal(value_literal)
+                            if isinstance(key, SugarStr):
+                                target.mapping[key.value] = value
+                                self.logger.info(f"Set map key '{key.value}' = {value}")
+                                return value
+                            else:
+                                self.logger.error(f"Invalid map key type")
+                                return SugarInt(0)
         
         return SugarInt(0)  # Default fallback
 
@@ -351,6 +426,14 @@ class SugarInterpreter:
                 self.logger.info(f"Assigned array variable {name} := {elements}")
             else:
                 self.logger.warning(f"Assignment type mismatch: {name} is not an array.")
+        elif hasattr(expr, 'data') and expr.data == 'dict_literal':
+            # Dict assignment
+            if isinstance(old_val, SugarMap):
+                mapping = self.evaluate_dict_literal(expr, env)
+                env.set(name, SugarMap(mapping))
+                self.logger.info(f"Assigned map variable {name} := {mapping}")
+            else:
+                self.logger.warning(f"Assignment type mismatch: {name} is not a map.")
         elif hasattr(expr, 'data') and expr.data == 'postfix_expression':
             # Handle expressions like arr :GET: (2)
             value = self.evaluate_expression(expr, env)
