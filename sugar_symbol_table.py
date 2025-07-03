@@ -399,6 +399,7 @@ class SymbolTableGenerator:
         self.logger = logging.getLogger("SymbolTableGenerator")
         self.current_line = 0
         self.current_column = 0
+        self.match_type_stack = []  # For tracking match expression types
     
     def generate(self, ast) -> SymbolTable:
         """Generate symbol table from AST."""
@@ -913,12 +914,41 @@ class SymbolTableGenerator:
         self.logger.debug("Processing match statement")
         # Enter match block scope
         self.symbol_table.enter_scope(f"match_block_{self.current_line}_{self.current_column}")
-        
+        # The first child is the expression being matched
+        if node.children:
+            match_expr = node.children[0]
+            # Try to extract type from the match expression
+            match_type = self._infer_type_of_expression(match_expr)
+            self.logger.info(f"Pushing match type '{match_type}' onto stack for match statement at line {self.current_line}")
+            self.match_type_stack.append(match_type)
         # Process all children (expression, case clauses, default clause)
         for child in node.children:
             self.visit(child)
-        
+        if node.children:
+            self.match_type_stack.pop()
+            self.logger.info(f"Popped match type for match statement at line {self.current_line}")
         self.symbol_table.exit_scope()
+    
+    def _infer_type_of_expression(self, expr_node) -> str:
+        # Try to infer the type of an expression node (very basic for now)
+        # If it's a variable, look it up in the symbol table
+        if hasattr(expr_node, 'type') and expr_node.type == 'IDENTIFIER':
+            name = str(expr_node.value)
+            symbol = self.symbol_table.lookup(name)
+            if symbol:
+                return symbol.type
+        # If it's a literal, return its type
+        if hasattr(expr_node, 'type') and expr_node.type in ('NUMBER', 'STRING', 'BOOL'):
+            if expr_node.type == 'NUMBER':
+                return '#int'  # or '#float' if you distinguish
+            if expr_node.type == 'STRING':
+                return '#str'
+            if expr_node.type == 'BOOL':
+                return '#bool'
+        # If it's a tree node with a type annotation
+        if hasattr(expr_node, 'data') and expr_node.data == 'type':
+            return self.extract_type_from_tree(expr_node)
+        return 'unknown'
     
     def visit_function_body(self, node) -> None:
         """Visit function body node."""
@@ -976,15 +1006,41 @@ class SymbolTableGenerator:
         # Handle pattern variable
         if len(node.children) > idx and hasattr(node.children[idx], 'data') and node.children[idx].data == 'pattern':
             pattern_node = node.children[idx]
+            # TODO: Destructuring patterns (arrays, tuples, type-annotated, etc.)
+            # Implementation Plan:
+            # 1. If pattern_node is a simple identifier, handle as now.
+            # 2. If pattern_node represents an array/tuple destructure, recursively process its children:
+            #    - For arrays: assign element type from match_type (e.g., #[#int] => #int for each element)
+            #    - For tuples: assign each element the corresponding tuple type
+            # 3. If pattern_node is type-annotated, use the annotated type for the variable
+            # 4. For nested patterns, recursively call this logic
+            # 5. For each identifier found, declare it in the symbol table with the inferred type
+            # 6. Add logging for each variable declared via destructuring
+            # Example pseudocode:
+            #   def handle_pattern(pattern_node, match_type):
+            #       if is_identifier(pattern_node):
+            #           declare variable with match_type
+            #       elif is_array_pattern(pattern_node):
+            #           for child in pattern_node.children:
+            #               handle_pattern(child, element_type_of(match_type))
+            #       elif is_tuple_pattern(pattern_node):
+            #           for i, child in enumerate(pattern_node.children):
+            #               handle_pattern(child, tuple_type_at(match_type, i))
+            #       elif is_type_annotated_pattern(pattern_node):
+            #           use annotated type
+            #       # ...etc.
+            #   handle_pattern(pattern_node, match_type)
             if (pattern_node.children and
                 hasattr(pattern_node.children[0], 'type') and pattern_node.children[0].type == 'IDENTIFIER'):
                 name_token = pattern_node.children[0]
                 name = str(name_token.value)
-                # TODO: Infer the type from the parent match expression instead of 'unknown'
+                # Infer the type from the parent match expression
+                match_type = self.match_type_stack[-1] if self.match_type_stack else 'unknown'
+                self.logger.info(f"Assigning match case variable '{name}' type '{match_type}' at line {self.current_line}")
                 self.symbol_table.declare(
                     name=name,
                     kind=SymbolKind.VARIABLE,
-                    type_info="unknown",  # TODO: Infer type from match expression
+                    type_info=match_type,
                     line=self.current_line,
                     column=self.current_column
                 )
