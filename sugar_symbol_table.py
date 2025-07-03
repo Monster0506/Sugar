@@ -472,6 +472,7 @@ class SymbolTableGenerator:
                 'macro_declaration': self.visit_macro_declaration,
                 'annotation_declaration': self.visit_annotation_declaration,
                 'if_statement': self.visit_if_statement,
+                'else_clause': self.visit_else_clause,
                 'for_statement': self.visit_for_statement,
                 'while_statement': self.visit_while_statement,
                 'try_statement': self.visit_try_statement,
@@ -846,10 +847,28 @@ class SymbolTableGenerator:
     def visit_if_statement(self, node) -> None:
         """Visit if statement node."""
         self.logger.debug("Processing if statement")
-        # Enter if block scope
-        self.symbol_table.enter_scope(f"if_block_{self.current_line}_{self.current_column}")
         
-        # Process all children (condition and body)
+        # Process condition (first child)
+        if node.children:
+            self.visit(node.children[0])
+        
+        # Process if body (second child) in its own scope
+        if len(node.children) > 1:
+            self.symbol_table.enter_scope(f"if_block_{self.current_line}_{self.current_column}")
+            self.visit(node.children[1])
+            self.symbol_table.exit_scope()
+        
+        # Process else clause (third child) in its own scope if present
+        if len(node.children) > 2:
+            self.visit(node.children[2])
+    
+    def visit_else_clause(self, node) -> None:
+        """Visit else clause node."""
+        self.logger.debug("Processing else clause")
+        # Enter else block scope
+        self.symbol_table.enter_scope(f"else_block_{self.current_line}_{self.current_column}")
+        
+        # Process else body
         for child in node.children:
             self.visit(child)
         
