@@ -1,0 +1,147 @@
+// Complex Example - Combining Multiple Features
+
+TYPE Student
+    name #str
+    grades #[#float]
+    age #int
+END TYPE
+
+TYPE Course
+    name #str
+    students #[#Student]
+    max_capacity #int
+END TYPE
+
+INTERFACE Gradable
+    FUNC calculate_average() #float
+    FUNC is_passing() #bool
+END INTERFACE
+
+CLASS GradeBook IMPLEMENTS Gradable
+    PRIVATE students #[#Student]
+    PRIVATE course_name #str
+    
+    CONSTRUCTOR(course_name #str)
+        THIS:course_name := course_name
+        THIS:students := []
+    END CONSTRUCTOR
+    
+    FUNC add_student(student #Student) #bool
+        if $THIS.students :LENGTH: :GE: 30$ DO
+            RETURN false
+        END if
+        
+        THIS.students :ADD: (student)
+        RETURN true
+    END FUNC
+    
+    FUNC calculate_average() #float
+        if $THIS.students :LENGTH: :EQ: 0$ DO
+            RETURN 0.0
+        END if
+        
+        DEF total #float = THIS.students :REDUCE: (FUNC (acc #float, student #Student) -> acc + student:calculate_average:(), 0.0)
+        RETURN total / THIS.students :LENGTH:
+    END FUNC
+    
+    FUNC is_passing() #bool
+        RETURN THIS:calculate_average:() :GE: 70.0
+    END FUNC
+    
+    FUNC get_top_students(limit #int) #[#Student]
+        RETURN THIS.students :FILTER: (FUNC (student #Student) -> student:is_passing:()):MAP: (FUNC (student #Student) -> student)
+    END FUNC
+    
+    FUNC generate_report() #str
+        TRY
+            DEF report #str = "Course: " + THIS.course_name + "\n"
+            report := report + "Total students: " + THIS.students :LENGTH: + "\n"
+            report := report + "Average grade: " + THIS:calculate_average:() + "\n"
+            report := report + "Passing: " + THIS:is_passing:() + "\n"
+            
+            // Add top students
+            DEF top_students #[#Student] = THIS:get_top_students:(5)
+            report := report + "Top students:\n"
+            for DEF student #Student in top_students DO
+                report := report + "- " + student.name + ": " + student:calculate_average:() + "\n"
+            END for
+            
+            RETURN report
+        CATCH error #any DO
+            RETURN "Error generating report: " + error
+        END TRY
+    END FUNC
+END CLASS
+
+// Extension methods for Student
+FUNC Student:calculate_average() #float
+    if $THIS.grades :LENGTH: :EQ: 0$ DO
+        RETURN 0.0
+    END if
+    
+    DEF sum #float = THIS.grades :REDUCE: (FUNC (acc #float, grade #float) -> acc + grade, 0.0)
+    RETURN sum / THIS.grades :LENGTH:
+END FUNC
+
+FUNC Student:is_passing() #bool
+    RETURN THIS:calculate_average:() :GE: 60.0
+END FUNC
+
+// Main program
+FUNC main() #void
+    // Create students
+    DEF alice #Student = {
+        name: "Alice Johnson",
+        grades: [85.5, 92.0, 78.5, 95.0],
+        age: 20
+    }
+    
+    DEF bob #Student = {
+        name: "Bob Smith",
+        grades: [72.0, 68.5, 75.0, 80.0],
+        age: 19
+    }
+    
+    DEF charlie #Student = {
+        name: "Charlie Brown",
+        grades: [95.0, 98.0, 92.5, 96.0],
+        age: 21
+    }
+    
+    // Create grade book
+    DEF math_course #GradeBook = GradeBook("Advanced Mathematics")
+    
+    // Add students
+    math_course:add_student:(alice)
+    math_course:add_student:(bob)
+    math_course:add_student:(charlie)
+    
+    // Generate and display report
+    DEF report #str = math_course:generate_report:()
+    IO:PRINT:(report)
+    
+    // Demonstrate pattern matching
+    DEF student_count #int = math_course.students :LENGTH:
+    MATCH student_count
+        CASE 0 DO
+            IO:PRINT:("No students enrolled")
+        CASE 1 DO
+            IO:PRINT:("Only one student")
+        CASE n IF $n :LT: 5$ DO
+            IO:PRINT:("Small class: " + n + " students")
+        CASE n IF $n :LT: 20$ DO
+            IO:PRINT:("Medium class: " + n + " students")
+        DEFAULT DO
+            IO:PRINT:("Large class: " + student_count + " students")
+    END MATCH
+    
+    // Demonstrate concurrency for processing
+    SPAWN FUNC() 
+        IO:PRINT:("Background: Calculating detailed statistics...")
+        DEF avg #float = math_course:calculate_average:()
+        IO:PRINT:("Background: Average calculated: " + avg)
+    END FUNC
+END FUNC
+
+// Run the program
+main() 

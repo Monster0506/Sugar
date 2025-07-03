@@ -1,0 +1,60 @@
+// Error Handling Example
+
+TYPE ValueError EXTENDS Error
+    value #any
+    message #str
+END TYPE
+
+TYPE DivisionByZeroError EXTENDS Error
+    dividend #float
+    message #str
+END TYPE
+
+FUNC safe_divide(a #float, b #float) #float
+    if $b :EQ: 0$ DO
+        THROW DivisionByZeroError(a, "Division by zero")
+    END if
+    RETURN a / b
+END FUNC
+
+FUNC validate_age(age #int) #bool
+    if $age :LT: 0$ DO
+        THROW ValueError(age, "Age cannot be negative")
+    else if $age :GT: 150$ DO
+        THROW ValueError(age, "Age seems unrealistic")
+    END if
+    RETURN true
+END FUNC
+
+FUNC process_data(data #any) #str
+    TRY
+        if $data :EQ: null$ DO
+            THROW ValueError(null, "Data cannot be null")
+        END if
+        
+        DEF result #str = "Processed: " + data
+        RETURN result
+    CATCH error #ValueError DO
+        IO:PRINT:("Value error: " + error.message)
+        RETURN "Error occurred"
+    CATCH error #DivisionByZeroError DO
+        IO:PRINT:("Division error: " + error.message)
+        RETURN "Division error"
+    FINALLY
+        IO:PRINT:("Cleanup completed")
+    END TRY
+END FUNC
+
+FUNC risky_operation() #void
+    TRY
+        DEF result #float = safe_divide(10.0, 0.0)
+        IO:PRINT:("Result: " + result)
+    CATCH error #DivisionByZeroError DO
+        IO:PRINT:("Caught division error: " + error.message)
+    END TRY
+END FUNC
+
+// Usage
+DEF result1 #str = process_data("valid data")
+DEF result2 #str = process_data(null)
+DEF is_valid #bool = validate_age(25) 

@@ -1,0 +1,81 @@
+// Object-Oriented Programming Example
+
+TYPE Person
+    name #str
+    age #int
+    email #str
+END TYPE
+
+INTERFACE Drawable
+    FUNC draw() #void
+    FUNC resize(width #int, height #int) #bool
+END INTERFACE
+
+CLASS Shape IMPLEMENTS Drawable
+    PUBLIC x #int
+    PUBLIC y #int
+    PRIVATE color #str
+    
+    CONSTRUCTOR(x #int, y #int, color #str)
+        THIS:x := x
+        THIS:y := y
+        THIS:color := color
+    END CONSTRUCTOR
+    
+    FUNC draw() #void
+        IO:PRINT:("Drawing shape at (" + THIS:x: + ", " + THIS:y: + ")")
+    END FUNC
+    
+    FUNC resize(width #int, height #int) #bool
+        THIS:x := THIS:x: + width
+        THIS:y := THIS:y: + height
+        RETURN true
+    END FUNC
+    
+    PRIVATE FUNC get_color() #str
+        RETURN THIS:color:
+    END FUNC
+END CLASS
+
+CLASS Circle EXTENDS Shape
+    PRIVATE radius #float
+    
+    CONSTRUCTOR(x #int, y #int, radius #float, color #str)
+        SUPER(x, y, color)
+        THIS:radius := radius
+    END CONSTRUCTOR
+    
+    OVERRIDE FUNC draw() #void
+        IO:PRINT:("Drawing circle with radius " + THIS:radius:)
+    END FUNC
+    
+    STATIC FUNC create_unit_circle() #Circle
+        RETURN Circle(0, 0, 1.0, "black")
+    END FUNC
+END CLASS
+
+CLASS MathUtility
+    STATIC PI #float = 3.14159
+    STATIC E #float = 2.71828
+    
+    STATIC FUNC square(x #float) #float
+        RETURN x * x
+    END FUNC
+    
+    STATIC FUNC cube(x #float) #float
+        RETURN x * x * x
+    END FUNC
+END CLASS
+
+// Usage
+DEF person #Person = {
+    name: "John Doe",
+    age: 30,
+    email: "john@example.com"
+}
+
+DEF shape #Shape = Shape(10, 20, "red")
+DEF circle #Circle = Circle(0, 0, 5.0, "blue")
+DEF unit_circle #Circle = Circle:create_unit_circle:()
+
+DEF area #float = MathUtility:PI: * MathUtility:square:(5.0) 

@@ -1,0 +1,22 @@
+// Basic Types Example
+
+DEF integer_value #int = 42
+DEF float_value #float = 3.14159
+DEF boolean_value #bool = true
+DEF character_value #char = 'A'
+DEF string_value #str = "Hello, Sugar!"
+DEF null_value #any = null
+
+// Array types
+DEF int_array #[#int] = [1, 2, 3, 4, 5]
+DEF string_array #[#str] = ["apple", "banana", "cherry"]
+
+// Map types
+DEF string_int_map #{#str, #int} = {
+    "one" -> 1,
+    "two" -> 2,
+    "three" -> 3
+}
+
+// Tuple types
+DEF person_tuple #(#str, #int, #bool) = ("Alice", 30, true) 

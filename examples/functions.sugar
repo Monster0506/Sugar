@@ -1,0 +1,34 @@
+// Functions Example
+
+FUNC add(a #int, b #int) #int
+    RETURN a + b
+END FUNC
+
+FUNC greet(name #str) #str
+    DEF greeting #str = "Hello, " + name + "!"
+    RETURN greeting
+END FUNC
+
+FUNC factorial(n #int) #int
+    if $n :LE: 1$ DO
+        RETURN 1
+    else DO
+        RETURN n * factorial(n - 1)
+    END if
+END FUNC
+
+FUNC max_of_three(a #int, b #int, c #int) #int
+    if $a :GT: b && a :GT: c$ DO
+        RETURN a
+    else if $b :GT: c$ DO
+        RETURN b
+    else DO
+        RETURN c
+    END if
+END FUNC
+
+// Function calls
+DEF result1 #int = add(5, 3)
+DEF result2 #str = greet("World")
+DEF result3 #int = factorial(5)
+DEF result4 #int = max_of_three(10, 20, 15) 

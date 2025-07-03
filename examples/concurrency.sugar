@@ -1,0 +1,64 @@
+// Concurrency Example
+
+FUNC worker_task(id #int) #void
+    for DEF i #int in 5 DO
+        IO:PRINT:("Worker " + id + " processing task " + i)
+        // Simulate work
+        DEF delay #int = Random:INT:(100, 500)
+    END for
+    IO:PRINT:("Worker " + id + " completed")
+END FUNC
+
+FUNC parallel_processing() #void
+    // Spawn multiple concurrent tasks
+    SPAWN FUNC() 
+        worker_task(1)
+    END FUNC
+    
+    SPAWN FUNC() 
+        worker_task(2)
+    END FUNC
+    
+    SPAWN FUNC() 
+        worker_task(3)
+    END FUNC
+    
+    IO:PRINT:("All workers spawned")
+END FUNC
+
+FUNC task_with_result() #int
+    // Simulate some computation
+    DEF result #int = 0
+    for DEF i #int in 1000000 DO
+        result := result + i
+    END for
+    RETURN result
+END FUNC
+
+FUNC concurrent_computation() #void
+    // Create tasks and store their handles
+    DEF task1 #Task = SPAWN FUNC() 
+        RETURN task_with_result()
+    END FUNC
+    
+    DEF task2 #Task = SPAWN FUNC() 
+        RETURN task_with_result()
+    END FUNC
+    
+    // Wait for completion and get results
+    DEF result1 #int = task1:JOIN:()
+    DEF result2 #int = task2:JOIN:()
+    
+    IO:PRINT:("Task 1 result: " + result1)
+    IO:PRINT:("Task 2 result: " + result2)
+END FUNC
+
+FUNC background_monitor() #void
+    SPAWN FUNC() 
+        while true DO
+            IO:PRINT:("Background monitor running...")
+            // Simulate monitoring work
+            DEF sleep_time #int = Random:INT:(1000, 3000)
+        END while
+    END FUNC
+END FUNC 

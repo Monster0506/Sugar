@@ -1,0 +1,43 @@
+// Collections and Syntactic Sugar Example
+
+FUNC demonstrate_collections() #void
+    // Array operations
+    DEF numbers #[#int] = [1, 2, 3, 4, 5]
+    
+    numbers :ADD: (6)
+    numbers :INSERT: (0, 0)
+    DEF first #int = numbers :GET: (0)
+    DEF length #int = numbers :LENGTH:
+    
+    // String operations
+    DEF text #str = "Hello World"
+    DEF upper_text #str = text :UPPER:
+    DEF lower_text #str = text :LOWER:
+    DEF words #[#str] = text :SPLIT: (' ')
+    
+    // Collection functional operations
+    DEF doubled #[#int] = numbers :MAP: (FUNC (x #int) -> x * 2)
+    DEF evens #[#int] = numbers :FILTER: (FUNC (x #int) -> x % 2 :EQ: 0)
+    DEF sum #int = numbers :REDUCE: (FUNC (acc #int, x #int) -> acc + x, 0)
+    DEF has_three #bool = numbers :ANY: (FUNC (x #int) -> x :EQ: 3)
+    DEF all_positive #bool = numbers :ALL: (FUNC (x #int) -> x :GT: 0)
+    
+    // Pipeline operations
+    DEF result #[#int] = numbers
+        :FILTER:(FUNC (x #int) -> x :GT: 2)
+        :MAP:(FUNC (x #int) -> x * 2)
+        :REDUCE:(FUNC (acc #int, x #int) -> acc + x, 0)
+END FUNC
+
+FUNC string_operations() #void
+    DEF sentence #str = "The quick brown fox"
+    
+    // Character operations
+    for DEF c #char in sentence DO
+        DEF is_alpha #bool = c :ALNUM:
+        if $is_alpha$ DO
+            DEF upper_char #char = c :UPPER:
+            IO:PRINT:(upper_char)
+        END if
+    END for
+END FUNC 

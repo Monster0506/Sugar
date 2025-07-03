@@ -1,0 +1,40 @@
+// Pattern Matching Example
+
+FUNC describe_value(value #any) #str
+    MATCH value
+        CASE 0 DO
+            RETURN "zero"
+        CASE n IF $n :LT: 0$ DO
+            RETURN "negative number"
+        CASE #str s DO
+            RETURN "string: " + s
+        CASE #[#int] arr IF $arr :LENGTH: :GT: 3$ DO
+            RETURN "long array"
+        CASE #[#int] arr DO
+            RETURN "short array"
+        DEFAULT DO
+            RETURN "unknown type"
+    END MATCH
+END FUNC
+
+FUNC process_command(command #any) #str
+    MATCH command
+        CASE "start" DO
+            RETURN "Starting application..."
+        CASE "stop" DO
+            RETURN "Stopping application..."
+        CASE "restart" DO
+            RETURN "Restarting application..."
+        CASE #str cmd IF $cmd :LENGTH: :GT: 10$ DO
+            RETURN "Long command: " + cmd
+        DEFAULT DO
+            RETURN "Unknown command"
+    END MATCH
+END FUNC
+
+// Usage
+DEF result1 #str = describe_value(0)
+DEF result2 #str = describe_value(-5)
+DEF result3 #str = describe_value("hello")
+DEF result4 #str = describe_value([1, 2, 3, 4, 5])
+DEF result5 #str = process_command("start") 

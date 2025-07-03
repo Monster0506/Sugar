@@ -1,0 +1,42 @@
+// Control Flow Example
+
+FUNC classify_number(n #int) #str
+    if $n :LT: 0$ DO
+        RETURN "negative"
+    else if $n :EQ: 0$ DO
+        RETURN "zero"
+    else DO
+        RETURN "positive"
+    END if
+END FUNC
+
+FUNC sum_array(arr #[#int]) #int
+    DEF total #int = 0
+    for DEF num #int in arr DO
+        total := total + num
+    END for
+    RETURN total
+END FUNC
+
+FUNC countdown(n #int) #void
+    while n :GT: 0 DO
+        IO:PRINT:(n)
+        n := n - 1
+    END while
+    IO:PRINT:("Blast off!")
+END FUNC
+
+FUNC find_element(arr #[#int], target #int) #int
+    for DEF i #int in arr :LENGTH: DO
+        if $arr :GET: (i) :EQ: target$ DO
+            RETURN i
+        END if
+    END for
+    RETURN -1
+END FUNC
+
+// Usage
+DEF numbers #[#int] = [1, 2, 3, 4, 5]
+DEF classification #str = classify_number(-5)
+DEF sum #int = sum_array(numbers)
+DEF index #int = find_element(numbers, 3) 

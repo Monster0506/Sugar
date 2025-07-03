@@ -1,0 +1,10 @@
+// Simple Hello World program in Sugar
+
+DEF message #str = "Hello, Sugar World!"
+
+FUNC greet(name #str) #str
+    DEF greeting #str = "Hello, " + name + "!"
+    RETURN greeting
+END FUNC
+
+DEF result #str = greet("Alice") 

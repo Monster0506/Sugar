@@ -1,0 +1,58 @@
+// Standard Library Example
+
+FUNC demonstrate_math() #void
+    // Math operations
+    DEF pi #float = Math:PI:
+    DEF e #float = Math:E:
+    DEF sqrt_result #float = Math:SQRT:(16.0)
+    DEF pow_result #float = Math:POW:(2.0, 8.0)
+    DEF floor_result #float = Math:FLOOR:(3.7)
+    DEF ceil_result #float = Math:CEIL:(3.2)
+    DEF round_result #float = Math:ROUND:(3.5)
+    DEF abs_result #float = Math:ABS:(-42.0)
+    
+    IO:PRINT:("PI: " + pi)
+    IO:PRINT:("Square root of 16: " + sqrt_result)
+    IO:PRINT:("2^8: " + pow_result)
+END FUNC
+
+FUNC demonstrate_io() #void
+    // Input/Output operations
+    IO:PRINT:("Hello from Sugar!")
+    IO:PRINT:("Enter your name:")
+    DEF name #str = IO:INPUT:("Name: ")
+    IO:PRINT:("Hello, " + name + "!")
+    
+    // File operations
+    IO:WRITE_FILE:("test.txt", "Hello, Sugar!")
+    DEF content #str = IO:READ_FILE:("test.txt")
+    IO:PRINT:("File content: " + content)
+    IO:APPEND_FILE:("test.txt", "\nAppended line")
+END FUNC
+
+FUNC demonstrate_time() #void
+    // Time operations
+    DEF now #any = Time:NOW:()
+    DEF formatted #str = Time:FORMAT:(now, "YYYY-MM-DD")
+    IO:PRINT:("Current date: " + formatted)
+    
+    DEF future_date #any = now :ADD_DAYS: (7)
+    DEF diff #any = future_date :DIFF: (now)
+    IO:PRINT:("Days difference: " + diff)
+END FUNC
+
+FUNC demonstrate_random() #void
+    // Random operations
+    DEF random_int #int = Random:INT:(1, 100)
+    DEF random_float #float = Random:FLOAT:()
+    
+    DEF choices #[#str] = ["apple", "banana", "cherry", "date"]
+    DEF random_choice #str = Random:CHOICE:(choices)
+    
+    DEF numbers #[#int] = [1, 2, 3, 4, 5]
+    DEF shuffled #[#int] = Random:SHUFFLE:(numbers)
+    
+    IO:PRINT:("Random int: " + random_int)
+    IO:PRINT:("Random float: " + random_float)
+    IO:PRINT:("Random choice: " + random_choice)
+END FUNC 
