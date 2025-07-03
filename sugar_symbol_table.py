@@ -71,6 +71,7 @@ class SymbolInfo:
     is_const: bool = False  # For constants
     visibility: str = "public"  # public, private, protected, internal
     source_file: Optional[str] = None
+    param_types: Optional[List[str]] = None  # For function/method overloading
 
 class Scope:
     """A scope in the symbol table, with parent/children and symbols."""
@@ -79,7 +80,7 @@ class Scope:
         self.level = level
         self.parent = parent  # Parent Scope
         self.children = []   # List of child Scopes
-        self.symbols: Dict[str, SymbolInfo] = {}
+        self.symbols: Dict[str, Any] = {}  # str -> SymbolInfo or List[SymbolInfo] for functions
         self.logger = logging.getLogger("Scope")
         self.logger.debug(f"Created scope '{self.name}' at level {self.level}")
     def add_child(self, child_scope):
@@ -119,15 +120,6 @@ class SymbolTable:
             self.errors.append(error_msg)
             self.logger.error(error_msg)
             return False
-        # Check for redeclaration in current scope
-        if name in self.current_scope.symbols:
-            existing = self.current_scope.symbols[name]
-            error_msg = f"Redeclaration of '{name}' at line {line}, column {column}. " \
-                       f"Previously declared at line {existing.line}, column {existing.column}"
-            self.errors.append(error_msg)
-            self.logger.error(error_msg)
-            return False
-        # Create symbol info
         symbol_info = SymbolInfo(
             name=name,
             kind=kind,
@@ -137,21 +129,57 @@ class SymbolTable:
             scope_level=self.current_scope.level,
             **kwargs
         )
-        # Add to current scope
+        # Function overloading support
+        if kind == SymbolKind.FUNCTION:
+            overloads = self.current_scope.symbols.get(name, [])
+            # Check for signature clash
+            for overload in overloads:
+                if getattr(overload, 'param_types', None) == symbol_info.param_types:
+                    error_msg = (
+                        f"Redeclaration of overloaded function '{name}' with same parameter types at line {line}, column {column}. "
+                        f"Previously declared at line {overload.line}, column {overload.column}"
+                    )
+                    self.errors.append(error_msg)
+                    self.logger.error(error_msg)
+                    return False
+            overloads.append(symbol_info)
+            self.current_scope.symbols[name] = overloads
+            self.logger.info(f"Declared overloaded function '{name}' with param_types={symbol_info.param_types} in scope '{self.current_scope.name}' (level {self.current_scope.level})")
+            return True
+        # Non-function: check for redeclaration
+        if name in self.current_scope.symbols:
+            existing = self.current_scope.symbols[name]
+            error_msg = f"Redeclaration of '{name}' at line {line}, column {column}. " \
+                       f"Previously declared at line {existing.line}, column {existing.column}"
+            self.errors.append(error_msg)
+            self.logger.error(error_msg)
+            return False
         self.current_scope.symbols[name] = symbol_info
         if self.current_scope.level == 0:
             self.global_symbols[name] = symbol_info
         self.logger.info(f"Declared {kind.value} '{name}' in scope '{self.current_scope.name}' (level {self.current_scope.level})")
         return True
 
-    def lookup(self, name: str, current_scope_only: bool = False) -> Optional[SymbolInfo]:
-        """Look up a symbol by name, searching up the scope tree."""
+    def lookup(self, name: str, param_types: Optional[List[str]] = None, current_scope_only: bool = False) -> Optional[SymbolInfo]:
+        """Look up a symbol by name (and param_types for functions), searching up the scope tree."""
         scope = self.current_scope
         while scope is not None:
             if name in scope.symbols:
                 symbol = scope.symbols[name]
-                self.logger.debug(f"Found '{name}' in scope '{scope.name}' (level {scope.level})")
-                return symbol
+                if isinstance(symbol, list):  # function overloads
+                    if param_types is not None:
+                        for overload in symbol:
+                            if overload.param_types == param_types:
+                                self.logger.debug(f"Found overloaded function '{name}' with param_types={param_types} in scope '{scope.name}' (level {scope.level})")
+                                return overload
+                        self.logger.debug(f"No matching overload for function '{name}' with param_types={param_types} in scope '{scope.name}' (level {scope.level})")
+                        return None
+                    else:
+                        self.logger.debug(f"Returning first overload for function '{name}' in scope '{scope.name}' (level {scope.level})")
+                        return symbol[0] if symbol else None
+                else:
+                    self.logger.debug(f"Found '{name}' in scope '{scope.name}' (level {scope.level})")
+                    return symbol
             if current_scope_only:
                 break
             scope = scope.parent
@@ -174,9 +202,15 @@ class SymbolTable:
             return False
         return True
 
-    # For all other methods, raise NotImplementedError for now
     def update(self, name: str, **kwargs) -> bool:
-        raise NotImplementedError
+        symbol = self.lookup(name)
+        if symbol is None:
+            return False
+        for key, value in kwargs.items():
+            if hasattr(symbol, key):
+                setattr(symbol, key, value)
+        return True
+
     def get_current_scope_symbols(self) -> Dict[str, SymbolInfo]:
         """Return a copy of the current scope's symbols."""
         return self.current_scope.symbols.copy()
@@ -185,10 +219,14 @@ class SymbolTable:
         all_symbols = {}
 
         def collect_symbols(scope, prefix=""):
-            for symbol in scope.symbols.values():
-                # Use qualified name: scope1.scope2.symbol
-                qualified_name = f"{prefix}{symbol.name}" if not prefix else f"{prefix}.{symbol.name}"
-                all_symbols[qualified_name] = symbol
+            for name, symbol in scope.symbols.items():
+                if isinstance(symbol, list):  # function overloads
+                    for idx, overload in enumerate(symbol):
+                        qualified_name = f"{prefix}{name}__overload{idx}" if prefix else f"{name}__overload{idx}"
+                        all_symbols[qualified_name] = overload
+                else:
+                    qualified_name = f"{prefix}{symbol.name}" if not prefix else f"{prefix}.{symbol.name}"
+                    all_symbols[qualified_name] = symbol
             for child in scope.children:
                 child_prefix = f"{prefix}{child.name}." if prefix else f"{child.name}."
                 collect_symbols(child, child_prefix)
@@ -208,25 +246,28 @@ class SymbolTable:
             if scope.symbols:
                 # Group symbols by kind
                 symbols_by_kind = {}
-                for symbol in scope.symbols.values():
-                    kind = symbol.kind.value
-                    if kind not in symbols_by_kind:
-                        symbols_by_kind[kind] = []
-                    symbols_by_kind[kind].append(symbol)
-                
+                for name, symbol in scope.symbols.items():
+                    if isinstance(symbol, list):
+                        for overload in symbol:
+                            kind = overload.kind.value
+                            symbols_by_kind.setdefault(kind, []).append(overload)
+                    else:
+                        kind = symbol.kind.value
+                        symbols_by_kind.setdefault(kind, []).append(symbol)
                 # Print symbols grouped by kind
                 for kind, symbols in sorted(symbols_by_kind.items()):
                     print(f"{indent_str}   {kind.upper()} VALUES:")
                     for symbol in sorted(symbols, key=lambda s: s.name):
                         type_display = f" : {symbol.type}" if symbol.type else ""
-                        print(f"{indent_str}     {symbol.name}{type_display} (line {symbol.line})")
+                        if symbol.kind == SymbolKind.FUNCTION and symbol.param_types is not None:
+                            print(f"{indent_str}     {symbol.name}({', '.join(symbol.param_types)}){type_display} (line {symbol.line})")
+                        else:
+                            print(f"{indent_str}     {symbol.name}{type_display} (line {symbol.line})")
             else:
                 print(f"{indent_str}  (no symbols)")
-            
             # Print child scopes
             for child in scope.children:
                 print_scope_recursive(child, indent + 1)
-        
         # Start from root scope
         print_scope_recursive(self.root_scope)
         print("="*60)
@@ -572,14 +613,22 @@ class SymbolTableGenerator:
             name = str(name_token)
         # Extract return type
         return_type = self.extract_type_from_tree(return_type_tree)
-        self.logger.info(f"Processing function declaration: {name} -> {return_type}")
+        # Extract parameter types
+        param_types = []
+        if param_list is not None and hasattr(param_list, 'children') and param_list.children:
+            for param in param_list.children:
+                if hasattr(param, 'data') and param.data == 'parameter' and len(param.children) >= 2:
+                    type_info = self.extract_type_from_tree(param.children[1])
+                    param_types.append(type_info)
+        self.logger.info(f"Processing function declaration: {name}({', '.join(param_types)}) -> {return_type}")
         self.symbol_table.declare(
             name=name,
             kind=SymbolKind.FUNCTION,
             type_info=return_type,
             line=self.current_line,
             column=self.current_column,
-            is_qualified=False  # Will handle qualified names later
+            is_qualified=False,  # Will handle qualified names later
+            param_types=param_types
         )
         # Enter function scope and process parameters
         self.symbol_table.enter_scope(f"function_{name}_{self.current_line}_{self.current_column}")

@@ -1,0 +1,69 @@
+FUNC greet(name #str, greeting #str) #str
+    DEF response #str = greeting + " " + name
+    RETURN response
+END FUNC
+
+FUNC greet(name #str, goodbye #str) #str  // should error with same parameter types
+    DEF response #str = goodbye + " " + name
+    RETURN response
+END FUNC
+
+FUNC greet() #str  // should error with same parameter types
+    DEF response #str = "Hello, World!"
+    RETURN response
+END FUNC
+
+// Valid: different parameter counts
+FUNC foo() #int
+    RETURN 0
+END FUNC
+
+FUNC foo(a #int) #int
+    RETURN a
+END FUNC
+
+FUNC foo(a #int, b #int) #int
+    RETURN a + b
+END FUNC
+
+// Valid: different parameter types
+FUNC bar(a #int) #int
+    RETURN a
+END FUNC
+
+FUNC bar(a #str) #int
+    RETURN 0
+END FUNC
+
+// Valid: same types, different order
+FUNC baz(a #int, b #str) #int
+    RETURN a
+END FUNC
+
+FUNC baz(b #str, a #int) #int
+    RETURN a
+END FUNC
+
+// Error: same name and same parameter types
+FUNC conflict(a #int, b #str) #int
+    RETURN a
+END FUNC
+
+FUNC conflict(a #int, b #str) #int
+    RETURN a
+END FUNC
+
+// Valid: no parameters
+FUNC noparams() #int
+    RETURN 1
+END FUNC
+
+// Error: same name, same param types, different return type (should error if not allowed)
+FUNC retconflict(a #int) #int
+    RETURN a
+END FUNC
+
+FUNC retconflict(a #int) #str
+    RETURN "oops"
+END FUNC
+
