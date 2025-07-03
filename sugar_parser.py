@@ -354,6 +354,30 @@ class SugarASTTransformer(Transformer):
     def NOT_EQUAL_TO(self, token):
         return token
 
+    def PLUS(self, token):
+        return token
+
+    def MINUS(self, token):
+        return token
+
+    def TIMES(self, token):
+        return token
+
+    def DIVIDE(self, token):
+        return token
+
+    def MODULO(self, token):
+        return token
+
+    def NOT(self, token):
+        return token
+
+    def AND(self, token):
+        return token
+
+    def OR(self, token):
+        return token
+
     def qualified_identifier(self, items):
         # Join identifiers with colons for qualified names
         name = ":".join(str(item) for item in items)

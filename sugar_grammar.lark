@@ -103,10 +103,10 @@ spawn_statement: "SPAWN" expression
 ?expression: or_expression
 
 ?or_expression: and_expression
-              | or_expression "||" and_expression
+              | or_expression OR and_expression
 
 ?and_expression: equality_expression  
-               | and_expression "&&" equality_expression
+               | and_expression AND equality_expression
 
 ?equality_expression: relational_expression
                     | equality_expression equality_op relational_expression
@@ -119,18 +119,18 @@ equality_op: EQUAL_TO | NOT_EQUAL_TO
 relational_op: LESS_THAN | GREATER_THAN | LESS_THAN_OR_EQUAL_TO | GREATER_THAN_OR_EQUAL_TO
 
 ?additive_expression: multiplicative_expression
-                   | additive_expression "+" multiplicative_expression
-                   | additive_expression "-" multiplicative_expression
+                   | additive_expression PLUS multiplicative_expression
+                   | additive_expression MINUS multiplicative_expression
 
 ?multiplicative_expression: unary_expression
-                         | multiplicative_expression "*" unary_expression
-                         | multiplicative_expression "/" unary_expression
-                         | multiplicative_expression "%" unary_expression
+                         | multiplicative_expression TIMES unary_expression
+                         | multiplicative_expression DIVIDE unary_expression
+                         | multiplicative_expression MODULO unary_expression
 
 ?unary_expression: postfix_expression
-                | "!" unary_expression
-                | "-" unary_expression
-                | "+" unary_expression
+                | NOT unary_expression
+                | MINUS unary_expression
+                | PLUS unary_expression
 
 ?postfix_expression: primary_expression
                   | postfix_expression method_call
@@ -247,6 +247,16 @@ STATIC: "STATIC"
 
 // OVERRIDE
 OVERRIDE: "OVERRIDE"
+
+PLUS: "+"
+MINUS: "-"
+TIMES: "*"
+DIVIDE: "/"
+MODULO: "%"
+NOT: "!"
+AND: "&&"
+OR: "||"
+
 
 %import common.WS
 %ignore WS
