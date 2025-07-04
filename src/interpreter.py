@@ -14,5 +14,5 @@ class SugarInterpreter:
         self.logger.info("Interpreter started.")
         if hasattr(self.ast, 'data') and self.ast.data == 'program':
             for stmt in self.ast.children:
-                self.statement_handler.handle_statement(stmt, self.global_env)
+                self.statement_handler.handle_statement(stmt, self.global_env, self.symbol_table)
         self.logger.info(f"Global environment after execution: {self.global_env}") 

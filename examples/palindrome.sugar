@@ -12,7 +12,7 @@ FUNC is_palindrome(s #str) #bool
     END for
     
     DEF reversed_letters #[#char] = letters :REVERSE:
-    RETURN letters :EQ: (reversed_letters)
+    RETURN letters == (reversed_letters)
 END FUNC
 
 // Test the function

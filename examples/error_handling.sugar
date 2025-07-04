@@ -11,16 +11,16 @@ TYPE DivisionByZeroError EXTENDS Error
 END TYPE
 
 FUNC safe_divide(a #float, b #float) #float
-    if $b :EQ: 0$ DO
+    if $b == 0$ DO
         THROW DivisionByZeroError(a, "Division by zero")
     END if
     RETURN a / b
 END FUNC
 
 FUNC validate_age(age #int) #bool
-    if $age :LT: 0$ DO
+    if $age < 0$ DO
         THROW ValueError(age, "Age cannot be negative")
-    else if $age :GT: 150$ DO
+    else if $age > 150$ DO
         THROW ValueError(age, "Age seems unrealistic")
     END if
     RETURN true
@@ -28,7 +28,7 @@ END FUNC
 
 FUNC process_data(data #any) #str
     TRY
-        if $data :EQ: null$ DO
+        if $data == null$ DO
             THROW ValueError(null, "Data cannot be null")
         END if
         

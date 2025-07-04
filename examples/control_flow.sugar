@@ -1,9 +1,9 @@
 // Control Flow Example
 
 FUNC classify_number(n #int) #str
-    if $n :LT: 0$ DO
+    if $n < 0$ DO
         RETURN "negative"
-    else if $n :EQ: 0$ DO
+    else if $n == 0$ DO
         RETURN "zero"
     else DO
         RETURN "positive"
@@ -19,7 +19,7 @@ FUNC sum_array(arr #[#int]) #int
 END FUNC
 
 FUNC countdown(n #int) #void
-    while n :GT: 0 DO
+    while n > 0 DO
         IO:PRINT:(n)
         n := n - 1
     END while
@@ -28,7 +28,7 @@ END FUNC
 
 FUNC find_element(arr #[#int], target #int) #int
     for DEF i #int in arr :LENGTH: DO
-        if $arr :GET: (i) :EQ: target$ DO
+        if $arr :GET: (i) == target$ DO
             RETURN i
         END if
     END for

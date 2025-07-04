@@ -1,3 +1,3 @@
 DEF arr #[#int] = [1, 2, 3]
-DEF has_two #bool = arr :ANY: (FUNC (x #int) -> x :EQ: 2)
-DEF all_pos #bool = arr :ALL: (FUNC (x #int) -> x :GT: 0) 
+DEF has_two #bool = arr :ANY: (FUNC (x #int) -> x == 2)
+DEF all_pos #bool = arr :ALL: (FUNC (x #int) -> x > 0) 

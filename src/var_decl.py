@@ -2,13 +2,14 @@ from .type_analysis import TypeAnalyzer
 from .literal_eval import LiteralEvaluator
 from .expression_eval import ExpressionEvaluator
 from .collections_eval import CollectionEvaluator
-from .values import SugarArray, SugarMap
+from .function_eval import FunctionEvaluator
+from .values import SugarArray, SugarMap, SugarInt
 
 class VariableDeclarationHandler:
     """Handles variable declarations."""
     def __init__(self, logger):
         self.logger = logger
-    def handle_declaration(self, node, env):
+    def handle_declaration(self, node, env, symbol_table=None):
         if not hasattr(node, 'data') or node.data != 'variable_declaration':
             return
         if len(node.children) < 3:
@@ -24,7 +25,7 @@ class VariableDeclarationHandler:
         elif is_array:
             self._handle_array_declaration(name, expr, env)
         elif type_name:
-            self._handle_primitive_declaration(name, type_name, expr, env)
+            self._handle_primitive_declaration(name, type_name, expr, env, symbol_table)
         else:
             self.logger.warning(f"UNSUPPORTED TYPE in DEF {name} #... not handled yet.")
     def _extract_identifier_name(self, name_token):
@@ -45,11 +46,16 @@ class VariableDeclarationHandler:
             self.logger.info(f"Declared array variable {name} = {elements}")
         else:
             self.logger.warning(f"Non-array literal in DEF {name} #[#...] = ... not handled yet.")
-    def _handle_primitive_declaration(self, name, type_name, expr, env):
+    def _handle_primitive_declaration(self, name, type_name, expr, env, symbol_table=None):
         """Handle primitive variable declaration."""
         # Handle literal expressions
         if hasattr(expr, 'data') and expr.data == 'literal':
             self._handle_literal_declaration(name, type_name, expr, env)
+        # Handle function calls
+        elif (hasattr(expr, 'data') and expr.data == 'primary_expression' and 
+              len(expr.children) > 1 and hasattr(expr.children[1], 'data') and 
+              expr.children[1].data == 'argument_list'):
+            self._handle_function_call_declaration(name, type_name, expr, env, symbol_table)
         # Handle all other expression types
         elif hasattr(expr, 'data'):
             self._handle_expression_declaration(name, type_name, expr, env)
@@ -61,5 +67,16 @@ class VariableDeclarationHandler:
         self.logger.info(f"Declared {type_name} variable {name} = {value}")
     def _handle_expression_declaration(self, name, type_name, expr, env):
         value = ExpressionEvaluator.evaluate_expression(expr, env)
+        env.set(name, value)
+        self.logger.info(f"Declared {type_name} variable {name} = {value}")
+    
+    def _handle_function_call_declaration(self, name, type_name, expr, env, symbol_table):
+        """Handle variable declaration with function call."""
+        if symbol_table is None:
+            self.logger.warning(f"Symbol table not available for function call in DEF {name}")
+            env.set(name, SugarInt(0))
+            return
+            
+        value = FunctionEvaluator.evaluate_function_call(expr, env, symbol_table)
         env.set(name, value)
         self.logger.info(f"Declared {type_name} variable {name} = {value}") 

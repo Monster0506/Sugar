@@ -1,2 +1,2 @@
 DEF arr #[#int] = [1, 2, 3, 4]
-DEF evens #[#int] = arr :FILTER: (FUNC (x #int) -> x % 2 :EQ: 0) 
+DEF evens #[#int] = arr :FILTER: (FUNC (x #int) -> x % 2 == 0) 

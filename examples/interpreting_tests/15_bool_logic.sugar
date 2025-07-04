@@ -1,5 +1,5 @@
-DEF t #bool = 3 :LT: 5 // true
-DEF b #bool = 3 :GE: 3
+DEF t #bool = 3 < 5 // true
+DEF b #bool = 3 >= 3
 DEF c #bool = t && b 
 DEF f #bool = :F:
 
@@ -10,7 +10,7 @@ DEF e #bool = t || :F: // true
 DEF r #bool = :F: || :F: // false
 
 DEF g #bool = !t // false
-DEF h #bool = !(3 :LT: 2) // true
+DEF h #bool = !(3 < 2) // true
 
 DEF i #bool = t && b || :F: // true
 DEF j #bool = (t && b) || :F: // true
@@ -18,7 +18,7 @@ DEF k #bool = t && (b || :F:) // true
 DEF l #bool = !t || b // true
 DEF m #bool = !(t && b) // false
 
-DEF n #bool = (3 :LT: 5) && (2 :GT: 1)
-DEF o #bool = (3 :LT: 5) || (2 :LT: 1)
-DEF p #bool = ((3 :LT: 5) && (2 :GT: 1)) || (1 :EQ: 2)
-DEF q #bool = !((3 :LT: 5) && (2 :GT: 1)) 
+DEF n #bool = (3 < 5) && (2 > 1)
+DEF o #bool = (3 < 5) || (2 < 1)
+DEF p #bool = ((3 < 5) && (2 > 1)) || (1 == 2)
+DEF q #bool = !((3 < 5) && (2 > 1)) 

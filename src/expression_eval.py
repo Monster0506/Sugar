@@ -29,6 +29,8 @@ class ExpressionEvaluator:
             return ExpressionEvaluator._evaluate_unary_expression(node, env)
         elif node.data == 'primary_expression':
             return ExpressionEvaluator._evaluate_primary_expression(node, env)
+        elif node.data == 'literal':
+            return LiteralEvaluator.evaluate_literal(node)
         
         return SugarInt(0)
     
@@ -58,7 +60,7 @@ class ExpressionEvaluator:
     
     @staticmethod
     def _evaluate_relational_expression(node, env):
-        """Handle relational expressions like 3 :LT: 5."""
+        """Handle relational expressions like 3 < 5."""
         if len(node.children) != 3:
             return SugarBool(False)
             
@@ -84,13 +86,13 @@ class ExpressionEvaluator:
             left_num = left_val.value
             right_num = right_val.value
             
-            if op_type == 'LESS_THAN':  # :LT:
+            if op_type == 'LESS_THAN':  # <
                 return SugarBool(left_num < right_num)
-            elif op_type == 'GREATER_THAN':  # :GT:
+            elif op_type == 'GREATER_THAN':  # >
                 return SugarBool(left_num > right_num)
-            elif op_type == 'LESS_THAN_OR_EQUAL_TO':  # :LE:
+            elif op_type == 'LESS_THAN_OR_EQUAL_TO':  # <=
                 return SugarBool(left_num <= right_num)
-            elif op_type == 'GREATER_THAN_OR_EQUAL_TO':  # :GE:
+            elif op_type == 'GREATER_THAN_OR_EQUAL_TO':  # >=
                 return SugarBool(left_num >= right_num)
         
         return SugarBool(False)
@@ -242,7 +244,7 @@ class ExpressionEvaluator:
     
     @staticmethod
     def _evaluate_primary_expression(node, env):
-        """Handle primary expressions like literals and identifiers."""
+        """Handle primary expressions like literals, identifiers, and function calls."""
         if not node.children:
             return SugarInt(0)
             
@@ -251,11 +253,18 @@ class ExpressionEvaluator:
         if hasattr(child, 'data') and child.data == 'literal':
             return LiteralEvaluator.evaluate_literal(child)
         elif hasattr(child, 'type') and child.type == 'IDENTIFIER':
-            var_name = str(child.value)
-            try:
-                return env.get(var_name)
-            except NameError:
+            # Check if this is a function call (has argument list as second child)
+            if len(node.children) > 1 and hasattr(node.children[1], 'data') and node.children[1].data == 'argument_list':
+                # This is a function call - we need the symbol table to resolve overloads
+                # For now, return a default value - function calls will be handled by the variable declaration handler
                 return SugarInt(0)
+            else:
+                # This is a variable reference
+                var_name = str(child.value)
+                try:
+                    return env.get(var_name)
+                except NameError:
+                    return SugarInt(0)
         
         return SugarInt(0)
     

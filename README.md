@@ -65,7 +65,7 @@ END FUNC
 
 - Collection operations: `:ADD:`, `:REMOVE:`, `:GET:`, `:REVERSE:`, `:LENGTH:`
 - String operations: `:UPPER:`, `:LOWER:`, `:SPLIT:`
-- Comparison operators: `:EQ:`, `:NE:`, `:LT:`, `:GT:`, `:LE:`, `:GE:`
+- Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `>=`
 - Pipeline operator: `:>` for functional composition
 
 ## Project Structure

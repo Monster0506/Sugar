@@ -27,7 +27,7 @@ CLASS GradeBook IMPLEMENTS Gradable
     END CONSTRUCTOR
     
     FUNC add_student(student #Student) #bool
-        if $THIS.students :LENGTH: :GE: 30$ DO
+        if $THIS.students :LENGTH: >= 30$ DO
             RETURN false
         END if
         
@@ -36,7 +36,7 @@ CLASS GradeBook IMPLEMENTS Gradable
     END FUNC
     
     FUNC calculate_average() #float
-        if $THIS.students :LENGTH: :EQ: 0$ DO
+        if $THIS.students :LENGTH: == 0$ DO
             RETURN 0.0
         END if
         
@@ -45,7 +45,7 @@ CLASS GradeBook IMPLEMENTS Gradable
     END FUNC
     
     FUNC is_passing() #bool
-        RETURN THIS:calculate_average:() :GE: 70.0
+        RETURN THIS:calculate_average:() >= 70.0
     END FUNC
     
     FUNC get_top_students(limit #int) #[#Student]
@@ -75,7 +75,7 @@ END CLASS
 
 // Extension methods for Student
 FUNC Student:calculate_average() #float
-    if $THIS.grades :LENGTH: :EQ: 0$ DO
+    if $THIS.grades :LENGTH: == 0$ DO
         RETURN 0.0
     END if
     
@@ -84,7 +84,7 @@ FUNC Student:calculate_average() #float
 END FUNC
 
 FUNC Student:is_passing() #bool
-    RETURN THIS:calculate_average:() :GE: 60.0
+    RETURN THIS:calculate_average:() >= 60.0
 END FUNC
 
 // Main program
@@ -127,9 +127,9 @@ FUNC main() #void
             IO:PRINT:("No students enrolled")
         CASE 1 DO
             IO:PRINT:("Only one student")
-        CASE n IF $n :LT: 5$ DO
+        CASE n IF $n < 5$ DO
             IO:PRINT:("Small class: " + n + " students")
-        CASE n IF $n :LT: 20$ DO
+        CASE n IF $n < 20$ DO
             IO:PRINT:("Medium class: " + n + " students")
         DEFAULT DO
             IO:PRINT:("Large class: " + student_count + " students")

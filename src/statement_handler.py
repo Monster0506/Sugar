@@ -9,11 +9,11 @@ class StatementHandler:
         self.logger = logger
         self.declaration_handler = VariableDeclarationHandler(logger)
         self.assignment_handler = VariableAssignmentHandler(logger)
-    def handle_statement(self, node, env):
+    def handle_statement(self, node, env, symbol_table=None):
         if not hasattr(node, 'data'):
             return
         statement_handlers = {
-            'variable_declaration': self.declaration_handler.handle_declaration,
+            'variable_declaration': lambda n, e: self.declaration_handler.handle_declaration(n, e, symbol_table),
             'variable_assignment': self.assignment_handler.handle_assignment,
             'expression_statement': self._handle_expression_statement,
             'if_statement': self._handle_if_statement,
