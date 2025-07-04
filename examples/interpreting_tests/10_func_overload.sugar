@@ -2,7 +2,17 @@ FUNC foo(a #int) #int
     RETURN a
 END FUNC
 FUNC foo(a #str) #int
-    RETURN 0
+    RETURN foo(4)
 END FUNC
 DEF x #int = foo(5)
 DEF y #int = foo("hi") 
+
+FUNC bar(a #int) #int
+    if $a <= 1$ do
+        RETURN a
+    else do
+        RETURN bar(a - 1) + bar(a - 2)
+    END if
+END FUNC
+DEF z #int = bar(5)
+IO:PRINT:(z)

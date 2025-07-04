@@ -2,7 +2,7 @@ TYPE MyError EXTENDS Error
     message #str
 END TYPE
 FUNC risky(x #int) #int
-    if $x < 0$ DO
+    if $x < 0$ do
         THROW MyError("negative")
     END if
     RETURN x
@@ -11,13 +11,13 @@ FUNC test() #str
     TRY
         TRY
             risky(-1)
-        CATCH e #MyError DO
+        CATCH e #MyError do
             IO:PRINT:("Caught: " + e.message)
             THROW e
         FINALLY
             IO:PRINT:("Inner finally")
         END TRY
-    CATCH e #MyError DO
+    CATCH e #MyError do
         RETURN "Outer: " + e.message
     FINALLY
         IO:PRINT:("Outer finally")

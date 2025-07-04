@@ -11,16 +11,16 @@ TYPE DivisionByZeroError EXTENDS Error
 END TYPE
 
 FUNC safe_divide(a #float, b #float) #float
-    if $b == 0$ DO
+    if $b == 0$ do
         THROW DivisionByZeroError(a, "Division by zero")
     END if
     RETURN a / b
 END FUNC
 
 FUNC validate_age(age #int) #bool
-    if $age < 0$ DO
+    if $age < 0$ do
         THROW ValueError(age, "Age cannot be negative")
-    else if $age > 150$ DO
+    else if $age > 150$ do
         THROW ValueError(age, "Age seems unrealistic")
     END if
     RETURN true
@@ -28,16 +28,16 @@ END FUNC
 
 FUNC process_data(data #any) #str
     TRY
-        if $data == null$ DO
+        if $data == null$ do
             THROW ValueError(null, "Data cannot be null")
         END if
         
         DEF result #str = "Processed: " + data
         RETURN result
-    CATCH error #ValueError DO
+    CATCH error #ValueError do
         IO:PRINT:("Value error: " + error.message)
         RETURN "Error occurred"
-    CATCH error #DivisionByZeroError DO
+    CATCH error #DivisionByZeroError do
         IO:PRINT:("Division error: " + error.message)
         RETURN "Division error"
     FINALLY
@@ -49,7 +49,7 @@ FUNC risky_operation() #void
     TRY
         DEF result #float = safe_divide(10.0, 0.0)
         IO:PRINT:("Result: " + result)
-    CATCH error #DivisionByZeroError DO
+    CATCH error #DivisionByZeroError do
         IO:PRINT:("Caught division error: " + error.message)
     END TRY
 END FUNC

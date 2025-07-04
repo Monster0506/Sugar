@@ -27,7 +27,7 @@ CLASS GradeBook IMPLEMENTS Gradable
     END CONSTRUCTOR
     
     FUNC add_student(student #Student) #bool
-        if $THIS.students :LENGTH: >= 30$ DO
+        if $THIS.students :LENGTH: >= 30$ do
             RETURN false
         END if
         
@@ -36,7 +36,7 @@ CLASS GradeBook IMPLEMENTS Gradable
     END FUNC
     
     FUNC calculate_average() #float
-        if $THIS.students :LENGTH: == 0$ DO
+        if $THIS.students :LENGTH: == 0$ do
             RETURN 0.0
         END if
         
@@ -62,12 +62,12 @@ CLASS GradeBook IMPLEMENTS Gradable
             // Add top students
             DEF top_students #[#Student] = THIS:get_top_students:(5)
             report := report + "Top students:\n"
-            for DEF student #Student in top_students DO
+            for DEF student #Student in top_students do
                 report := report + "- " + student.name + ": " + student:calculate_average:() + "\n"
             END for
             
             RETURN report
-        CATCH error #any DO
+        CATCH error #any do
             RETURN "Error generating report: " + error
         END TRY
     END FUNC
@@ -75,7 +75,7 @@ END CLASS
 
 // Extension methods for Student
 FUNC Student:calculate_average() #float
-    if $THIS.grades :LENGTH: == 0$ DO
+    if $THIS.grades :LENGTH: == 0$ do
         RETURN 0.0
     END if
     
@@ -123,15 +123,15 @@ FUNC main() #void
     // Demonstrate pattern matching
     DEF student_count #int = math_course.students :LENGTH:
     MATCH student_count
-        CASE 0 DO
+        CASE 0 do
             IO:PRINT:("No students enrolled")
-        CASE 1 DO
+        CASE 1 do
             IO:PRINT:("Only one student")
-        CASE n IF $n < 5$ DO
+        CASE n IF $n < 5$ do
             IO:PRINT:("Small class: " + n + " students")
-        CASE n IF $n < 20$ DO
+        CASE n IF $n < 20$ do
             IO:PRINT:("Medium class: " + n + " students")
-        DEFAULT DO
+        DEFAULT do
             IO:PRINT:("Large class: " + student_count + " students")
     END MATCH
     

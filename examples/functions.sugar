@@ -15,19 +15,19 @@ FUNC greet(name #str, greeting #str) #str
 END FUNC
 
 FUNC factorial(n #int) #int
-    if $n <= 1$ DO
+    if $n <= 1$ do
         RETURN 1
-    else DO
+    else do
         RETURN n * factorial(n - 1)
     END if
 END FUNC
 
 FUNC max_of_three(a #int, b #int, c #int) #int
-    if $a > b && a > c$ DO
+    if $a > b && a > c$ do
         RETURN a
-    else if $b > c$ DO
+    else if $b > c$ do
         RETURN b
-    else DO
+    else do
         RETURN c
     END if
 END FUNC

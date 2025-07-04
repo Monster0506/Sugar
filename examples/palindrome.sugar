@@ -3,9 +3,9 @@
 FUNC is_palindrome(s #str) #bool
     DEF letters #[#char] = []
     
-    for DEF c #char in s DO
+    for DEF c #char in s do
         DEF is_alnum #bool = c :ALNUM:
-        if $is_alnum$ DO
+        if $is_alnum$ do
             DEF lower_char #char = c :LOWER:
             letters :ADD: (lower_char)
         END if

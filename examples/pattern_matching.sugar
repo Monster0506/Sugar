@@ -2,32 +2,32 @@
 
 FUNC describe_value(value #any) #str
     MATCH value
-        CASE 0 DO
+        CASE 0 do
             RETURN "zero"
-        CASE n IF $n < 0$ DO
+        CASE n IF $n < 0$ do
             RETURN "negative number"
-        CASE #str s DO
+        CASE #str s do
             RETURN "string: " + s
-        CASE #[#int] arr IF $arr :LENGTH: > 3$ DO
+        CASE #[#int] arr IF $arr :LENGTH: > 3$ do
             RETURN "long array"
-        CASE #[#int] arr DO
+        CASE #[#int] arr do
             RETURN "short array"
-        DEFAULT DO
+        DEFAULT do
             RETURN "unknown type"
     END MATCH
 END FUNC
 
 FUNC process_command(command #any) #str
     MATCH command
-        CASE "start" DO
+        CASE "start" do
             RETURN "Starting application..."
-        CASE "stop" DO
+        CASE "stop" do
             RETURN "Stopping application..."
-        CASE "restart" DO
+        CASE "restart" do
             RETURN "Restarting application..."
-        CASE #str cmd IF $cmd :LENGTH: > 10$ DO
+        CASE #str cmd IF $cmd :LENGTH: > 10$ do
             RETURN "Long command: " + cmd
-        DEFAULT DO
+        DEFAULT do
             RETURN "Unknown command"
     END MATCH
 END FUNC

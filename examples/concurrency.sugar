@@ -1,7 +1,7 @@
 // Concurrency Example
 
 FUNC worker_task(id #int) #void
-    for DEF i #int in 5 DO
+    for DEF i #int in 5 do
         IO:PRINT:("Worker " + id + " processing task " + i)
         // Simulate work
         DEF delay #int = Random:INT:(100, 500)
@@ -29,7 +29,7 @@ END FUNC
 FUNC task_with_result() #int
     // Simulate some computation
     DEF result #int = 0
-    for DEF i #int in 1000000 DO
+    for DEF i #int in 1000000 do
         result := result + i
     END for
     RETURN result
@@ -55,7 +55,7 @@ END FUNC
 
 FUNC background_monitor() #void
     SPAWN FUNC() 
-        while true DO
+        while true do
             IO:PRINT:("Background monitor running...")
             // Simulate monitoring work
             DEF sleep_time #int = Random:INT:(1000, 3000)

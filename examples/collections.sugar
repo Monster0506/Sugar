@@ -33,9 +33,9 @@ FUNC string_operations() #void
     DEF sentence #str = "The quick brown fox"
     
     // Character operations
-    for DEF c #char in sentence DO
+    for DEF c #char in sentence do
         DEF is_alpha #bool = c :ALNUM:
-        if $is_alpha$ DO
+        if $is_alpha$ do
             DEF upper_char #char = c :UPPER:
             IO:PRINT:(upper_char)
         END if
