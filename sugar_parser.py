@@ -238,7 +238,10 @@ class SugarASTTransformer(Transformer):
         return Tree("method_call", items)
 
     def method_name(self, items):
-        return Tree("method_name", items)
+        # The items should contain the method name token
+        if items:
+            return Tree("method_name", items)
+        return Tree("method_name", [])
 
     def property_access(self, items):
         return Tree("property_access", items)
@@ -396,6 +399,58 @@ class SugarASTTransformer(Transformer):
         return token
 
     def STATIC(self, token):
+        return token
+
+    # Method name tokens
+    def ADD(self, token):
+        return token
+
+    def REMOVE(self, token):
+        return token
+
+    def GET(self, token):
+        return token
+
+    def REVERSE(self, token):
+        return token
+
+    def LENGTH(self, token):
+        return token
+
+    def INSERT(self, token):
+        return token
+
+    def UPPER(self, token):
+        return token
+
+    def LOWER(self, token):
+        return token
+
+    def ALNUM(self, token):
+        return token
+
+    def SPLIT(self, token):
+        return token
+
+    def MAP(self, token):
+        return token
+
+    def FILTER(self, token):
+        return token
+
+    def REDUCE(self, token):
+        return token
+
+    def FIND(self, token):
+        return token
+
+    def ANY(self, token):
+        return token
+
+    def ALL(self, token):
+        return token
+
+    def JOIN(self, token):
         return token
 
     def __default__(self, data, children, meta):

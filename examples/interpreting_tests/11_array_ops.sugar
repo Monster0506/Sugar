@@ -2,4 +2,15 @@ DEF arr #[#int] = [1]
 arr :ADD: (2)
 DEF len #int = arr :LENGTH:
 DEF val #int = arr :GET: (1) 
-arr :INSERT: (1, 3) 
+arr :INSERT: (1, 3)
+arr :REMOVE: (0)
+DEF first #int = arr :GET: (0)
+arr :REVERSE:
+DEF last #int = arr :GET: (0)
+arr :ADD: (5)
+arr :ADD: (7)
+DEF filtered #[#int] = arr :FILTER: (1)
+DEF mapped #[#int] = arr :MAP: (1)
+DEF found #int = arr :FIND: (1)
+DEF has_five #bool = arr :ANY: (1)
+DEF all_positive #bool = arr :ALL: (1) 

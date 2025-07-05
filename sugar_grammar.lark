@@ -140,10 +140,7 @@ relational_op: LESS_THAN | GREATER_THAN | LESS_THAN_OR_EQUAL_TO | GREATER_THAN_O
 method_call: ":" method_name ":" "(" argument_list? ")"
           | ":" method_name ":"
 
-method_name: "ADD" | "REMOVE" | "GET" | "REVERSE" | "LENGTH" | "INSERT"
-          | "UPPER" | "LOWER" | "ALNUM" | "SPLIT"
-          | "MAP" | "FILTER" | "REDUCE" | "FIND" | "ANY" | "ALL"
-          | "JOIN" | IDENTIFIER
+method_name:  IDENTIFIER
 
 property_access: "." IDENTIFIER
 
