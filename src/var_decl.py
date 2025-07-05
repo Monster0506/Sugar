@@ -44,6 +44,14 @@ class VariableDeclarationHandler:
             elements = CollectionEvaluator.evaluate_array_literal(expr, env)
             env.set(name, SugarArray(elements))
             self.logger.info(f"Declared array variable {name} = {elements}")
+        elif hasattr(expr, 'data') and expr.data == 'postfix_expression':
+            # Handle array method calls that return arrays (like SLICE, FILTER, MAP)
+            result = ExpressionEvaluator.evaluate_expression(expr, env)
+            if isinstance(result, SugarArray):
+                env.set(name, result)
+                self.logger.info(f"Declared array variable {name} = {result.elements}")
+            else:
+                self.logger.warning(f"Postfix expression in DEF {name} #[#...] = ... did not return an array")
         else:
             self.logger.warning(f"Non-array literal in DEF {name} #[#...] = ... not handled yet.")
     def _handle_primitive_declaration(self, name, type_name, expr, env, symbol_table=None):

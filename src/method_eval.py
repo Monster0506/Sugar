@@ -1,5 +1,5 @@
 import logging
-from .values import SugarArray, SugarMap, SugarStr, SugarInt, SugarBool
+from .values import SugarArray, SugarMap, SugarStr, SugarInt, SugarBool, SugarFloat
 from .literal_eval import LiteralEvaluator
 
 class MethodCallEvaluator:
@@ -83,6 +83,30 @@ class MethodCallEvaluator:
                 logging.getLogger("SugarInterpreter").error("ALL requires arguments")
                 return SugarInt(0)
             return MethodCallEvaluator._handle_array_all(argument_list_node, target)
+        elif method_name == "SET":
+            if argument_list_node is None:
+                logging.getLogger("SugarInterpreter").error("SET requires arguments")
+                return SugarInt(0)
+            return MethodCallEvaluator._handle_array_set(argument_list_node, target)
+        elif method_name == "CONTAINS":
+            if argument_list_node is None:
+                logging.getLogger("SugarInterpreter").error("CONTAINS requires arguments")
+                return SugarInt(0)
+            return MethodCallEvaluator._handle_array_contains(argument_list_node, target)
+        elif method_name == "INDEX_OF":
+            if argument_list_node is None:
+                logging.getLogger("SugarInterpreter").error("INDEX_OF requires arguments")
+                return SugarInt(0)
+            return MethodCallEvaluator._handle_array_index_of(argument_list_node, target)
+        elif method_name == "SLICE":
+            if argument_list_node is None:
+                logging.getLogger("SugarInterpreter").error("SLICE requires arguments")
+                return SugarInt(0)
+            return MethodCallEvaluator._handle_array_slice(argument_list_node, target)
+        elif method_name == "SORT":
+            return MethodCallEvaluator._handle_array_sort(target)
+        elif method_name == "SUM":
+            return MethodCallEvaluator._handle_array_sum(target)
         else:
             logging.getLogger("SugarInterpreter").error(f"Unknown array method: {method_name}")
             return SugarInt(0)
@@ -302,4 +326,147 @@ class MethodCallEvaluator:
             return value
         else:
             logging.getLogger("SugarInterpreter").error(f"Invalid map key type")
-            return SugarInt(0) 
+            return SugarInt(0)
+
+    @staticmethod
+    def _handle_array_set(argument_list_node, target):
+        """Handle arr :SET: (index, value)"""
+        if not hasattr(argument_list_node, 'data') or argument_list_node.data != 'argument_list':
+            return SugarInt(0)
+        if len(argument_list_node.children) < 2:
+            logging.getLogger("SugarInterpreter").error("SET requires index and value arguments")
+            return SugarInt(0)
+
+        index_literal = argument_list_node.children[0]
+        value_literal = argument_list_node.children[1]
+
+        index_value = LiteralEvaluator.evaluate_literal(index_literal)
+        value = LiteralEvaluator.evaluate_literal(value_literal)
+
+        if isinstance(index_value, SugarInt):
+            index = index_value.value
+            if 0 <= index < len(target.elements):
+                old_value = target.elements[index]
+                target.elements[index] = value
+                logging.getLogger("SugarInterpreter").info(f"Set index {index} from {old_value} to {value}")
+                return value
+            else:
+                logging.getLogger("SugarInterpreter").error(f"Array index {index} out of bounds for set")
+                return SugarInt(0)
+        return SugarInt(0)
+
+    @staticmethod
+    def _handle_array_contains(argument_list_node, target):
+        """Handle arr :CONTAINS: (value)"""
+        if not hasattr(argument_list_node, 'data') or argument_list_node.data != 'argument_list':
+            return SugarBool(False)
+        if not argument_list_node.children:
+            return SugarBool(False)
+
+        value_literal = argument_list_node.children[0]
+        search_value = LiteralEvaluator.evaluate_literal(value_literal)
+
+        for element in target.elements:
+            if MethodCallEvaluator._values_equal(element, search_value):
+                logging.getLogger("SugarInterpreter").info(f"Found {search_value} in array")
+                return SugarBool(True)
+
+        logging.getLogger("SugarInterpreter").info(f"Value {search_value} not found in array")
+        return SugarBool(False)
+
+    @staticmethod
+    def _handle_array_index_of(argument_list_node, target):
+        """Handle arr :INDEX_OF: (value)"""
+        if not hasattr(argument_list_node, 'data') or argument_list_node.data != 'argument_list':
+            return SugarInt(-1)
+        if not argument_list_node.children:
+            return SugarInt(-1)
+
+        value_literal = argument_list_node.children[0]
+        search_value = LiteralEvaluator.evaluate_literal(value_literal)
+
+        for i, element in enumerate(target.elements):
+            if MethodCallEvaluator._values_equal(element, search_value):
+                logging.getLogger("SugarInterpreter").info(f"Found {search_value} at index {i}")
+                return SugarInt(i)
+
+        logging.getLogger("SugarInterpreter").info(f"Value {search_value} not found, returning -1")
+        return SugarInt(-1)
+
+    @staticmethod
+    def _handle_array_slice(argument_list_node, target):
+        """Handle arr :SLICE: (start, end)"""
+        if not hasattr(argument_list_node, 'data') or argument_list_node.data != 'argument_list':
+            return SugarArray([])
+        if len(argument_list_node.children) < 2:
+            logging.getLogger("SugarInterpreter").error("SLICE requires start and end arguments")
+            return SugarArray([])
+
+        start_literal = argument_list_node.children[0]
+        end_literal = argument_list_node.children[1]
+
+        start_value = LiteralEvaluator.evaluate_literal(start_literal)
+        end_value = LiteralEvaluator.evaluate_literal(end_literal)
+
+        if isinstance(start_value, SugarInt) and isinstance(end_value, SugarInt):
+            start = start_value.value
+            end = end_value.value
+
+            # Clamp indices to valid range
+            start = max(0, min(start, len(target.elements)))
+            end = max(start, min(end, len(target.elements)))
+
+            sliced_elements = target.elements[start:end]
+            result = SugarArray(sliced_elements)
+            logging.getLogger("SugarInterpreter").info(f"Sliced array from {start} to {end}, length: {len(sliced_elements)}")
+            return result
+
+        logging.getLogger("SugarInterpreter").error("SLICE requires integer start and end values")
+        return SugarArray([])
+
+    @staticmethod
+    def _handle_array_sort(target):
+        """Handle arr :SORT:"""
+        try:
+            # Sort elements by their value attribute if they have one
+            target.elements.sort(key=lambda x: x.value if hasattr(x, 'value') else 0)
+            logging.getLogger("SugarInterpreter").info(f"Sorted array: {target.elements}")
+            return target
+        except Exception as e:
+            logging.getLogger("SugarInterpreter").error(f"Error sorting array: {e}")
+            return target
+
+    @staticmethod
+    def _handle_array_sum(target):
+        """Handle arr :SUM:"""
+        total = 0
+        count = 0
+
+        for element in target.elements:
+            if hasattr(element, 'value') and isinstance(element.value, (int, float)):
+                total += element.value
+                count += 1
+
+        if count == 0:
+            logging.getLogger("SugarInterpreter").warning("SUM called on array with no numeric elements")
+            return SugarInt(0)
+
+        # Return SugarInt for integer sums, SugarFloat for float sums
+        if isinstance(total, int):
+            result = SugarInt(total)
+        else:
+            result = SugarFloat(total)
+
+        logging.getLogger("SugarInterpreter").info(f"Sum of {count} elements: {total}")
+        return result
+
+    @staticmethod
+    def _values_equal(value1, value2):
+        """Helper method to compare two Sugar values for equality"""
+        if type(value1) != type(value2):
+            return False
+
+        if hasattr(value1, 'value') and hasattr(value2, 'value'):
+            return value1.value == value2.value
+
+        return value1 == value2
