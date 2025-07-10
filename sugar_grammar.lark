@@ -40,8 +40,8 @@ type_field: IDENTIFIER type
 
 // Class Declaration  
 class_declaration: "CLASS" IDENTIFIER extends_clause? implements_clause? class_body "END" "CLASS"
-extends_clause: "EXTENDS" IDENTIFIER
-implements_clause: "IMPLEMENTS" IDENTIFIER
+extends_clause: "EXTENDS" IDENTIFIER ("," IDENTIFIER)
+implements_clause: "IMPLEMENTS" IDENTIFIER ("," IDENTIFIER)
 
 
 
@@ -85,6 +85,8 @@ pattern: literal
        | type IDENTIFIER
        | "[" pattern_list? "]"
        | object_literal
+       | map_literal
+       | tuple_literal
 guard: "IF" "$" expression "$"
 pattern_list: pattern ("," pattern)*
 
@@ -146,7 +148,7 @@ array_access: "[" expression "]"
                   | IDENTIFIER "(" argument_list? ")"
                   | "(" expression ")"
                   | array_literal
-                  | empty_dict_literal
+                  | empty_object_literal
                   | tuple_literal
                   | object_literal
                   | map_literal
@@ -160,15 +162,12 @@ literal: BOOLEAN | INTEGER | FLOAT | STRING | CHAR
 
 array_literal: "[" argument_list? "]"
 
-// Combined dictionary literal that handles both maps and objects
-dict_literal: "{" "}"                                    // empty dict
-           | "{" dict_entries "}"                        // non-empty dict
 
 map_literal: "{" map_entries+ "}"
 map_entries: map_entry ("," map_entry)*
 map_entry: expression "->" expression 
-empty_dict_literal: "{" "}"
-object_literal: "{" dict_entries "}" 
+empty_object_literal: "{" "}"
+object_literal: "{" dict_entries+ "}" 
 
 dict_entries: dict_entry ("," dict_entry)*
 dict_entry: IDENTIFIER ":" expression                    // object entry (property: value)
