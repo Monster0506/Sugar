@@ -71,8 +71,7 @@ else_clause: "else" "do" statement*
 
 for_statement: "for" "DEF" IDENTIFIER type "in" expression "do" statement* "END" "for"
 
-while_statement: "while" expression "do" statement* "END" "while"
-while_statement2: "while" "$" expression "$" "do" statement* "END" "while"
+while_statement: "while" "$" expression "$" "do" statement* "END" "while"
 
 // Error Handling
 try_statement: "TRY" statement* catch_clause* finally_clause? "END" "TRY"

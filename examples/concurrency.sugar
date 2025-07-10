@@ -55,7 +55,7 @@ END FUNC
 
 FUNC background_monitor() #void
     SPAWN FUNC() 
-        while true do
+        while $true$ do
             IO:PRINT:("Background monitor running...")
             // Simulate monitoring work
             DEF sleep_time #int = Random:INT:(1000, 3000)

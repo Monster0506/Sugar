@@ -19,7 +19,7 @@ FUNC sum_array(arr #[#int]) #int
 END FUNC
 
 FUNC countdown(n #int) #void
-    while n > 0 do
+    while $n > 0$ do
         IO:PRINT:(n)
         n := n - 1
     END while
