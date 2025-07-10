@@ -6,7 +6,6 @@ program: statement*
           | variable_assignment
           | this_assignment
           | function_declaration
-          | function_declaration_qualified
           | type_declaration
           | class_declaration
           | interface_declaration
@@ -26,8 +25,7 @@ variable_assignment: IDENTIFIER ":=" expression
 this_assignment: "THIS" ":" IDENTIFIER ":=" expression
 
 // Function Declaration
-function_declaration: "FUNC" IDENTIFIER "(" parameter_list? ")" type function_body "END" "FUNC"
-function_declaration_qualified: "FUNC" qualified_identifier "(" parameter_list? ")" type function_body "END" "FUNC"
+function_declaration: "FUNC" (IDENTIFIER | qualified_identifier) "(" parameter_list? ")" type function_body "END" "FUNC"
 qualified_identifier: IDENTIFIER (":" IDENTIFIER)*
 parameter_list: parameter ("," parameter)*
 parameter: IDENTIFIER type
@@ -35,21 +33,21 @@ function_body: statement*
 
 // Type Declaration
 type_declaration: "TYPE" IDENTIFIER type_body "END" "TYPE"
-              | "TYPE" IDENTIFIER "EXTENDS" IDENTIFIER type_body "END" "TYPE"
+              | "TYPE" IDENTIFIER extends_clause type_body "END" "TYPE"
+
 type_body: type_field*
 type_field: IDENTIFIER type
 
 // Class Declaration  
-class_declaration: "CLASS" IDENTIFIER class_body "END" "CLASS"
-                | "CLASS" IDENTIFIER "EXTENDS" IDENTIFIER class_body "END" "CLASS"
-                | "CLASS" IDENTIFIER "IMPLEMENTS" IDENTIFIER class_body "END" "CLASS"
+class_declaration: "CLASS" IDENTIFIER extends_clause? implements_clause? class_body "END" "CLASS"
+extends_clause: "EXTENDS" IDENTIFIER
+implements_clause: "IMPLEMENTS" IDENTIFIER
+
+
+
 class_body: class_member*
-class_member: access_modifier? property_declaration
-           | access_modifier? method_declaration
-           | constructor_declaration
-           | STATIC property_declaration
-           | STATIC method_declaration
-           | OVERRIDE method_declaration
+class_member: access_modifier? STATIC? OVERRIDE? (property_declaration | method_declaration)
+            | constructor_declaration
 
 access_modifier: PUBLIC | PRIVATE | PROTECTED
 
@@ -86,11 +84,9 @@ pattern: literal
        | IDENTIFIER
        | type IDENTIFIER
        | "[" pattern_list? "]"
-       | dict_literal_pattern
+       | object_literal
 guard: "IF" "$" expression "$"
 pattern_list: pattern ("," pattern)*
-dict_literal_pattern: "{" pattern_dict? "}"
-pattern_dict: pattern ":" pattern ("," pattern ":" pattern)*
 
 // Statements
 return_statement: "RETURN" expression?
@@ -150,9 +146,12 @@ array_access: "[" expression "]"
                   | IDENTIFIER "(" argument_list? ")"
                   | "(" expression ")"
                   | array_literal
-                  | dict_literal
+                  | empty_dict_literal
                   | tuple_literal
+                  | object_literal
+                  | map_literal
                   | lambda_expression
+                  | anonymous_function
                   | "THIS"
                   | "SUPER" "(" argument_list? ")"
 
@@ -165,14 +164,19 @@ array_literal: "[" argument_list? "]"
 dict_literal: "{" "}"                                    // empty dict
            | "{" dict_entries "}"                        // non-empty dict
 
+map_literal: "{" map_entries+ "}"
+map_entries: map_entry ("," map_entry)*
+map_entry: expression "->" expression 
+empty_dict_literal: "{" "}"
+object_literal: "{" dict_entries "}" 
+
 dict_entries: dict_entry ("," dict_entry)*
-dict_entry: expression "->" expression                   // map entry (key -> value)
-          | IDENTIFIER ":" expression                    // object entry (property: value)
+dict_entry: IDENTIFIER ":" expression                    // object entry (property: value)
 
 tuple_literal: "(" expression "," expression ("," expression)* ")"
 
 lambda_expression: "FUNC" "(" parameter_list? ")" "->" expression
-                 | "FUNC" "(" parameter_list? ")" function_body "END" "FUNC"
+anonymous_function: "FUNC" "(" parameter_list? ")" function_body "END" "FUNC"
 
 argument_list: expression ("," expression)*
 
