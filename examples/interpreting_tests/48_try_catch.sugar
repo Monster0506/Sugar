@@ -8,7 +8,7 @@ FUNC test() #str
     TRY
         risky()
         RETURN "ok"
-    CATCH e #MyError DO
+    CATCH e #MyError do
         RETURN e.message
     FINALLY
         IO:PRINT:("done")

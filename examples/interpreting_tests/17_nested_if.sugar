@@ -1,6 +1,6 @@
 DEF x #int = 5
-if $x > 0$ DO
-    if $x < 10$ DO
+if $x > 0$ do
+    if $x < 10$ do
         DEF y #int = 1
     END if
 END if 

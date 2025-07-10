@@ -1,7 +1,7 @@
 DEF x #int = 0
 MATCH x
-    CASE 0 DO
+    CASE 0 do
         DEF y #int = 1
-    DEFAULT DO
+    DEFAULT do
         DEF y #int = 2
 END MATCH 

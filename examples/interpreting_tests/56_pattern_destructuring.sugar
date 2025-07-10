@@ -1,7 +1,7 @@
 DEF t #(#int, #str) = (1, "a")
 MATCH t
-    CASE (#int x, #str y) DO
+    CASE (#int x, #str y) do
         DEF s #str = y
-    DEFAULT DO
+    DEFAULT do
         DEF s #str = "no match"
 END MATCH 

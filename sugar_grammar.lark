@@ -65,24 +65,24 @@ interface_body: interface_member*
 interface_member: "FUNC" IDENTIFIER "(" parameter_list? ")" type
 
 // Control Flow
-if_statement: "if" "$" expression "$" "DO" statement* elif_clause* else_clause? "END" "if"
-elif_clause: "else" "if" "$" expression "$" "DO" statement*
-else_clause: "else" "DO" statement*
+if_statement: "if" "$" expression "$" "do" statement* elif_clause* else_clause? "END" "if"
+elif_clause: "else" "if" "$" expression "$" "do" statement*
+else_clause: "else" "do" statement*
 
-for_statement: "for" "DEF" IDENTIFIER type "in" expression "DO" statement* "END" "for"
+for_statement: "for" "DEF" IDENTIFIER type "in" expression "do" statement* "END" "for"
 
-while_statement: "while" expression "DO" statement* "END" "while"
-while_statement2: "while" "$" expression "$" "DO" statement* "END" "while"
+while_statement: "while" expression "do" statement* "END" "while"
+while_statement2: "while" "$" expression "$" "do" statement* "END" "while"
 
 // Error Handling
 try_statement: "TRY" statement* catch_clause* finally_clause? "END" "TRY"
-catch_clause: "CATCH" IDENTIFIER type "DO" statement*
+catch_clause: "CATCH" IDENTIFIER type "do" statement*
 finally_clause: "FINALLY" statement*
 
 // Pattern Matching
 match_statement: "MATCH" expression case_clause* default_clause? "END" "MATCH"
-case_clause: "CASE" pattern guard? "DO" statement*
-default_clause: "DEFAULT" "DO" statement*
+case_clause: "CASE" pattern guard? "do" statement*
+default_clause: "DEFAULT" "do" statement*
 pattern: literal
        | IDENTIFIER
        | type IDENTIFIER

@@ -1,6 +1,6 @@
 DEF x #int = 2
-if $x > 3$ DO
+if $x > 3$ do
     DEF y #int = 1
-else DO
+else do
     DEF y #int = 0
 END if 
