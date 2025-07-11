@@ -18,6 +18,12 @@ program: statement*
           | throw_statement
           | expression_statement
           | spawn_statement
+          | import_statement
+
+// Module System
+import_statement: "import" dotted_name
+
+dotted_name: IDENTIFIER ("." IDENTIFIER)*
 
 // Variable Declaration
 variable_declaration: "DEF" IDENTIFIER type "=" expression
