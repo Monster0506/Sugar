@@ -21,95 +21,95 @@ program: statement*
           | import_statement
 
 // Module System
-import_statement: "import" dotted_name
+import_statement: IMPORT dotted_name
 
-dotted_name: IDENTIFIER ("." IDENTIFIER)*
+dotted_name: IDENTIFIER (DOT IDENTIFIER)*
 
 // Variable Declaration
-variable_declaration: "DEF" IDENTIFIER type "=" expression
-variable_assignment: IDENTIFIER ":=" expression
-this_assignment: "THIS" ":" IDENTIFIER ":=" expression
+variable_declaration: DEF IDENTIFIER type EQUALS expression
+variable_assignment: IDENTIFIER ASSIGN expression
+this_assignment: THIS COLON IDENTIFIER ASSIGN expression
 
 // Function Declaration
-function_declaration: "FUNC" (IDENTIFIER | qualified_identifier) "(" parameter_list? ")" type function_body "END" "FUNC"
-qualified_identifier: IDENTIFIER (":" IDENTIFIER)*
-parameter_list: parameter ("," parameter)*
+function_declaration: FUNC IDENTIFIER LPAR parameter_list? RPAR type? function_body END
+parameter_list: parameter (COMMA parameter)*
 parameter: IDENTIFIER type
 function_body: statement*
 
+
+
+
 // Type Declaration
-type_declaration: "TYPE" IDENTIFIER type_body "END" "TYPE"
-              | "TYPE" IDENTIFIER extends_clause type_body "END" "TYPE"
+type_declaration: TYPE IDENTIFIER type_body END
+              | TYPE IDENTIFIER extends_clause type_body END
 
 type_body: type_field*
 type_field: IDENTIFIER type
 
-// Class Declaration  
-class_declaration: "CLASS" IDENTIFIER extends_clause? implements_clause? class_body "END" "CLASS"
-extends_clause: "EXTENDS" IDENTIFIER ("," IDENTIFIER)
-implements_clause: "IMPLEMENTS" IDENTIFIER ("," IDENTIFIER)
-
-
+// Class Declaration
+class_declaration: CLASS IDENTIFIER extends_clause? implements_clause? class_body END
+extends_clause: EXTENDS IDENTIFIER (COMMA IDENTIFIER)*
+implements_clause: IMPLEMENTS IDENTIFIER (COMMA IDENTIFIER)*
 
 class_body: class_member*
 class_member: access_modifier? STATIC? OVERRIDE? (property_declaration | method_declaration)
-            | constructor_declaration
+            | access_modifier? constructor_declaration
 
 access_modifier: PUBLIC | PRIVATE | PROTECTED
 
-property_declaration: IDENTIFIER type ("=" expression)?
+property_declaration: IDENTIFIER type (EQUALS expression)?
 
-method_declaration: "FUNC" IDENTIFIER "(" parameter_list? ")" type function_body "END" "FUNC"
+method_declaration: FUNC IDENTIFIER LPAR parameter_list? RPAR type function_body END
 
-constructor_declaration: "CONSTRUCTOR" "(" parameter_list? ")" function_body "END" "CONSTRUCTOR"
+constructor_declaration: CONSTRUCTOR LPAR parameter_list? RPAR function_body END
 
 // Interface Declaration
-interface_declaration: "INTERFACE" IDENTIFIER interface_body "END" "INTERFACE"
+interface_declaration: INTERFACE IDENTIFIER interface_body END
 interface_body: interface_member*
-interface_member: "FUNC" IDENTIFIER "(" parameter_list? ")" type
+interface_member: FUNC IDENTIFIER LPAR parameter_list? RPAR type
 
 // Control Flow
-if_statement: "if" "$" expression "$" "do" statement* elif_clause* else_clause? "END" "if"
-elif_clause: "else" "if" "$" expression "$" "do" statement*
-else_clause: "else" "do" statement*
+if_statement: IF_KW DOLLAR expression DOLLAR DO_KW statement* elif_clause* else_clause? END
+elif_clause: ELSE_IF DOLLAR expression DOLLAR DO_KW statement*
+else_clause: ELSE_KW DO_KW statement*
 
-for_statement: "for" "DEF" IDENTIFIER type "in" expression "do" statement* "END" "for"
+for_statement: FOR_KW DEF IDENTIFIER type IN_KW expression DO_KW statement* END
 
-while_statement: "while" "$" expression "$" "do" statement* "END" "while"
+while_statement: WHILE_KW DOLLAR expression DOLLAR DO_KW statement* END
 
 // Error Handling
-try_statement: "TRY" statement* catch_clause* finally_clause? "END" "TRY"
-catch_clause: "CATCH" IDENTIFIER type "do" statement*
-finally_clause: "FINALLY" statement*
+try_statement: TRY_KW statement* catch_clause* finally_clause? END
+catch_clause: CATCH_KW IDENTIFIER type DO_KW statement*
+finally_clause: FINALLY_KW DO_KW statement* 
 
 // Pattern Matching
-match_statement: "MATCH" expression case_clause* default_clause? "END" "MATCH"
-case_clause: "CASE" pattern guard? "do" statement*
-default_clause: "DEFAULT" "do" statement*
+match_statement: MATCH_KW expression case_clause* default_clause? END
+case_clause: CASE_KW pattern guard? DO_KW statement*
+default_clause: DEFAULT_KW DO_KW statement*
 pattern: literal
        | IDENTIFIER
        | type IDENTIFIER
-       | "[" pattern_list? "]"
+       | LBRACKET pattern_list? RBRACKET
        | object_literal
        | map_literal
        | tuple_literal
-guard: "IF" "$" expression "$"
-pattern_list: pattern ("," pattern)*
+guard: IF_KW DOLLAR expression DOLLAR
+pattern_list: pattern (COMMA pattern)*
 
 // Statements
-return_statement: "RETURN" expression?
-throw_statement: "THROW" expression
+return_statement: RETURN_KW expression?
+throw_statement: THROW_KW expression
 expression_statement: expression
-spawn_statement: "SPAWN" expression
+spawn_statement: SPAWN_KW expression
 
 // Expressions
 ?expression: or_expression
 
 ?or_expression: and_expression
-              | or_expression OR and_expression
+              | or_expression OR_OP and_expression
 
-?and_expression: equality_expression  
-               | and_expression AND equality_expression
+?and_expression: equality_expression
+               | and_expression AND_OP equality_expression
 
 ?equality_expression: relational_expression
                     | equality_expression equality_op relational_expression
@@ -131,7 +131,7 @@ relational_op: LESS_THAN | GREATER_THAN | LESS_THAN_OR_EQUAL_TO | GREATER_THAN_O
                          | multiplicative_expression MODULO unary_expression
 
 ?unary_expression: postfix_expression
-                | NOT unary_expression
+                | NOT_OP unary_expression
                 | MINUS unary_expression
                 | PLUS unary_expression
 
@@ -140,19 +140,20 @@ relational_op: LESS_THAN | GREATER_THAN | LESS_THAN_OR_EQUAL_TO | GREATER_THAN_O
                   | postfix_expression property_access
                   | postfix_expression array_access
 
-method_call: ":" method_name ":" "(" argument_list? ")"
-          | ":" method_name ":"
+method_call: COLON method_name COLON LPAR argument_list? RPAR
+          | COLON method_name COLON
 
 method_name:  IDENTIFIER
 
-property_access: "." IDENTIFIER
+property_access: DOT IDENTIFIER
 
-array_access: "[" expression "]"
+array_access: LBRACKET expression RBRACKET
 
 ?primary_expression: literal
                   | IDENTIFIER
-                  | IDENTIFIER "(" argument_list? ")"
-                  | "(" expression ")"
+                  | IDENTIFIER LPAR argument_list? RPAR
+                  | method_call
+                  | LPAR expression RPAR
                   | array_literal
                   | empty_object_literal
                   | tuple_literal
@@ -160,109 +161,134 @@ array_access: "[" expression "]"
                   | map_literal
                   | lambda_expression
                   | anonymous_function
-                  | "THIS"
-                  | "SUPER" "(" argument_list? ")"
+                  | THIS
+                  | SUPER LPAR argument_list? RPAR
 
 // Literals
-literal: BOOLEAN | INTEGER | FLOAT | STRING | CHAR 
+literal: BOOLEAN | INTEGER | FLOAT | STRING | CHAR
 
-array_literal: "[" argument_list? "]"
+array_literal: LBRACKET argument_list? RBRACKET
 
+map_literal: LBRACE map_entries+ RBRACE
+map_entries: map_entry (COMMA map_entry)*
+map_entry: expression ARROW_OP expression
+empty_object_literal: LBRACE RBRACE
+object_literal: LBRACE dict_entries+ RBRACE
 
-map_literal: "{" map_entries+ "}"
-map_entries: map_entry ("," map_entry)*
-map_entry: expression "->" expression 
-empty_object_literal: "{" "}"
-object_literal: "{" dict_entries+ "}" 
+dict_entries: dict_entry (COMMA dict_entry)*
+dict_entry: IDENTIFIER COLON expression                    // object entry (property: value)
 
-dict_entries: dict_entry ("," dict_entry)*
-dict_entry: IDENTIFIER ":" expression                    // object entry (property: value)
+tuple_literal: LPAR expression COMMA expression (COMMA expression)* RPAR
 
-tuple_literal: "(" expression "," expression ("," expression)* ")"
+lambda_expression: FUNC LPAR parameter_list? RPAR ARROW_OP expression
+anonymous_function: FUNC LPAR parameter_list? RPAR type function_body END
 
-lambda_expression: "FUNC" "(" parameter_list? ")" "->" expression
-anonymous_function: "FUNC" "(" parameter_list? ")" function_body "END" "FUNC"
-
-argument_list: expression ("," expression)*
+argument_list: expression (COMMA expression)*
 
 // Types
-type: primitive_type
-    | array_type  
-    | map_type
-    | tuple_type
-    | custom_type
+type: HASH type_specifier
 
-primitive_type: INT_TYPE | FLOAT_TYPE | BOOL_TYPE | CHAR_TYPE | STR_TYPE | VOID_TYPE | ANY_TYPE
+type_specifier: PRIMITIVE_TYPE | array_type | map_type | tuple_type | custom_type
 
-array_type: "#[" type "]"
+PRIMITIVE_TYPE: "int" | "float" | "bool" | "char" | "str" | "void" | "any"
+array_type: LBRACKET type RBRACKET
+map_type: LBRACE type COMMA type RBRACE
+tuple_type: LPAR type (COMMA type)+ RPAR
+custom_type: IDENTIFIER
 
-map_type: "#{" type "," type "}"
 
-tuple_type: "#(" type ("," type)+ ")"
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %                                  TOKENS                                   %
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-custom_type: "#" IDENTIFIER
 
-// Tokens
-IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
-
-INTEGER: /[0-9]+/
-
-FLOAT: /[0-9]+\.[0-9]+/
-
-STRING: /"([^"\\]|\\.)*"/
-
-CHAR: /'([^'\\]|\\.)'/
-
-BOOLEAN: TRUE | FALSE
-
-// Comments and Whitespace
-COMMENT: "//" /[^\n]*/
-
-// TYPE DEFINITIONS
-
-INT_TYPE: "#int"
-FLOAT_TYPE: "#float"
-BOOL_TYPE: "#bool"
-CHAR_TYPE: "#char"
-STR_TYPE: "#str"
-VOID_TYPE: "#void"
-ANY_TYPE: "#any"
-
-// BOOL_TYPE
+// 1. Single-word Keywords (Reserved words - also high precedence)
+ELSE_IF: "elif" // Added this as a multi-word keyword
+END: "end"
 TRUE: ":T:"
 FALSE: ":F:"
-
-// RELATIONAL OPERATORS
-GREATER_THAN: ">"
-LESS_THAN: "<"
-GREATER_THAN_OR_EQUAL_TO: ">="
-LESS_THAN_OR_EQUAL_TO: "<="
-
-// EQUALITY OPERATORS
-EQUAL_TO: "=="
-NOT_EQUAL_TO: "!="
-
-// ACCESS MODIFIERS
 PUBLIC: "PUBLIC"
 PRIVATE: "PRIVATE"
 PROTECTED: "PROTECTED"
-
-// STATIC
 STATIC: "STATIC"
-
-// OVERRIDE
 OVERRIDE: "OVERRIDE"
+IMPORT: "import"
+DEF: "DEF"
+THIS: "THIS"
+FUNC: "FUNC"
+TYPE: "TYPE"
+CLASS: "CLASS"
+EXTENDS: "EXTENDS"
+IMPLEMENTS: "IMPLEMENTS"
+CONSTRUCTOR: "CONSTRUCTOR"
+INTERFACE: "INTERFACE"
+IF_KW: "if" // Renamed to avoid clash with `IF` guard
+DO_KW: "do" // Renamed for clarity
+ELSE_KW: "else" // Renamed for clarity
+FOR_KW: "for" // Renamed for clarity
+IN_KW: "in"
+WHILE_KW: "while" // Renamed for clarity
+TRY_KW: "TRY" // Renamed for clarity
+CATCH_KW: "CATCH" // Renamed for clarity
+FINALLY_KW: "FINALLY" // Renamed for clarity
+MATCH_KW: "MATCH" // Renamed for clarity
+CASE_KW: "CASE" // Renamed for clarity
+DEFAULT_KW: "DEFAULT" // Renamed for clarity
+// IF (for guard) is handled by IF_KW now since "IF" is a single token.
+RETURN_KW: "RETURN" // Renamed for clarity
+THROW_KW: "THROW" // Renamed for clarity
+SPAWN_KW: "SPAWN" // Renamed for clarity
+SUPER: "SUPER"
 
+// 2. Multi-character Operators (Ordered by length or specificity)
+ASSIGN: ":="
+EQUAL_TO: "=="
+NOT_EQUAL_TO: "!="
+GREATER_THAN_OR_EQUAL_TO: ">="
+LESS_THAN_OR_EQUAL_TO: "<="
+AND_OP: "&&" // Renamed from AND
+OR_OP: "||"  // Renamed from OR
+ARROW_OP: "->"
+
+// 3. Single-character Operators
+DOT: "."
+COLON: ":"
+EQUALS: "=" // Assignment operator used in DECLARATION. Note: '==' is EQUAL_TO
+LPAR: "("
+RPAR: ")"
+LBRACKET: "["
+RBRACKET: "]"
+COMMA: ","
+LBRACE: "{"
+RBRACE: "}"
+HASH: "#"
+DOLLAR: "$"
 PLUS: "+"
 MINUS: "-"
 TIMES: "*"
 DIVIDE: "/"
 MODULO: "%"
-NOT: "!"
-AND: "&&"
-OR: "||"
+NOT_OP: "!" // Renamed from NOT to avoid potential conflict with NOT rule
+GREATER_THAN: ">"
+LESS_THAN: "<"
 
+// 4. Specific Literal Regexes (Ordered by specificity: FLOAT before INTEGER)
+FLOAT: /[0-9]+\.[0-9]+/
+INTEGER: /[0-9]+/
+STRING: /"(\\.|[^"\\])*"/
+CHAR: /'(\\.|[^'\\])'/
+
+// 5. Generic Identifier (MUST be last for alphanumeric tokens)
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+// 6. Boolean Literals (Using the TRUE/FALSE tokens defined above)
+BOOLEAN: TRUE | FALSE
+
+// 7. Comments and Whitespace (Ignored tokens, can be anywhere but often grouped)
+COMMENT: "//" /.* /
+_NL: /[\n]+/
 
 %import common.WS
 %ignore WS
 %ignore COMMENT
+%ignore _NL

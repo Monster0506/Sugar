@@ -38,7 +38,9 @@ def debug_class_wrapper(cls, logger_name=None):
                                      Defaults to None.
     """
     for name, method in cls.__dict__.items():
-        if callable(method) and not name.startswith("__"):  # Avoid wrapping dunder methods
+        if callable(method) and not name.startswith(
+            "__"
+        ):  # Avoid wrapping dunder methods
             # Use a more specific logger name for each method if desired
             method_logger_name = logger_name or cls.__name__
             setattr(cls, name, debug_wrapper(method, method_logger_name))
