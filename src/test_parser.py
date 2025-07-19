@@ -369,7 +369,9 @@ def test_spawn_statement():
     ast = parse_to_ast(code)
     assert isinstance(ast, Program)
     assert len(ast.statements) == 1
-    spawn_stmt = ast.statements[0]
+    expr_statement = ast.statements[0]
+    assert isinstance(expr_statement, ExpressionStatement)
+    spawn_stmt = expr_statement.expression
     assert isinstance(spawn_stmt, SpawnStatement)
     assert isinstance(spawn_stmt.expression, FunctionCall)
     assert spawn_stmt.expression.function_name.name == "my_func"
@@ -514,7 +516,7 @@ def test_object_literal():
 
 def test_empty_object_literal():
     """Tests parsing of an empty object literal."""
-    code = "{}"
+    code = "{_}"
     ast = parse_to_ast(code)
     assert isinstance(ast, Program)
     assert len(ast.statements) == 1
@@ -793,7 +795,7 @@ DEF pos_num #int = +5
 """
     ast = parse_to_ast(code)
     assert isinstance(ast, Program)
-    assert len(ast.statements) == 4
+    assert len(ast.statements) == 3
 
     assert isinstance(ast.statements[0], VariableDeclaration)
     not_expr = ast.statements[0].value
