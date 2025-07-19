@@ -55,6 +55,7 @@ from src.ast_nodes import (
     ObjectLiteral,
     ObjectPattern,
     OrExpression,
+    PatternList,
     Parameter,
     Program,
     PropertyAccess,
@@ -816,3 +817,13 @@ class SugarTransformer(Transformer):
         return MapEntryPattern(
             key=self.pattern(entry.key), value=self.pattern(entry.value)
         )
+
+    def tuple_pattern(self, _lparen, patterns, _rparen):
+        logging.debug(f"tuple_pattern: patterns={patterns}")
+        return TuplePattern(
+            patterns=list(self._filter_tokens_out(patterns.patterns)) or []
+        )
+
+    def pattern_list(self, *patterns):
+        logging.debug(f"pattern_list: patterns={patterns}")
+        return PatternList(patterns=list(self._filter_tokens_out(patterns)) or [])

@@ -91,9 +91,10 @@ pattern: literal
        | LBRACKET pattern_list? RBRACKET
        | object_literal
        | map_literal
-       | tuple_literal
+       | tuple_pattern
 guard: IF_KW DOLLAR expression DOLLAR
 pattern_list: pattern (COMMA pattern)*
+tuple_pattern: LPAR pattern_list? RPAR
 
 // Statements
 return_statement: RETURN_KW expression?

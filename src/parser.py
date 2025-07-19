@@ -17,7 +17,6 @@ def get_parser():
         start="program",
         parser="lalr",
         transformer=SugarTransformer(),
-        # debug=True,
     )
 
 

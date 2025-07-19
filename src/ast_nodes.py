@@ -430,6 +430,11 @@ class Pattern(Node):
 
 
 @dataclass
+class PatternList(Node):
+    patterns: list[Pattern] | None
+
+
+@dataclass
 class CaseClause(Node):
     pattern: Pattern
     guard: Expression | None
