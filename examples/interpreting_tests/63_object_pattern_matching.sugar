@@ -1,0 +1,7 @@
+DEF o #{  #int, #str } = { a -> "1", b -> "2" }
+MATCH o
+    CASE { a->"1", b-> "2" } do
+        DEF s #str = "match"
+    DEFAULT do
+        DEF s #str = "no match"
+end
