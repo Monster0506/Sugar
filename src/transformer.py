@@ -55,7 +55,6 @@ from src.ast_nodes import (
     ObjectLiteral,
     ObjectPattern,
     OrExpression,
-    PatternList,
     Parameter,
     Program,
     PropertyAccess,
@@ -664,10 +663,9 @@ class SugarTransformer(Transformer):
         return AnonymousFunction(parameters=parameters, body=body, type=return_type)
 
     def method_call(self, _colon1, method, _colon2, _lparen, *other):
-        print(
+        logging.debug(
             f"method_call: method={method}, other={other}, _lparen={_lparen}, _colon2={_colon2}, _colon_1= {_colon1}"
         )
-        print("looking here: ", other)
         arguments = list(self._filter_tokens_out(other[0]))
         if isinstance(other[0], Token) and other[0].type == "RPAR":
             # No arguments
@@ -711,52 +709,16 @@ class SugarTransformer(Transformer):
                 return LiteralPattern(literal=parts[0])
             elif isinstance(parts[0], Identifier):
                 return IdentifierPattern(name=parts[0])
-            elif isinstance(parts[0], ArrayLiteral):
-                return ArrayPattern(
-                    patterns=(
-                        [self.pattern(e) for e in parts[0].elements]
-                        if parts[0].elements
-                        else []
-                    )
-                )
-            elif isinstance(parts[0], ObjectLiteral):
-                return ObjectPattern(
-                    entries=(
-                        [
-                            self._transform_dict_entry_to_pattern(e)
-                            for e in parts[0].entries
-                        ]
-                        if parts[0].entries
-                        else []
-                    )
-                )
-            elif isinstance(parts[0], MapLiteral):
-                return MapPattern(
-                    entries=(
-                        [
-                            self._transform_map_entry_to_pattern(e)
-                            for e in parts[0].entries
-                        ]
-                        if parts[0].entries
-                        else []
-                    )
-                )
-            elif isinstance(parts[0], TupleLiteral):
-                return TuplePattern(
-                    patterns=(
-                        [self.pattern(e) for e in parts[0].elements]
-                        if parts[0].elements
-                        else []
-                    )
-                )
+            elif isinstance(parts[0], ArrayPattern):
+                return parts[0]
+            elif isinstance(parts[0], ObjectPattern):
+                return parts[0]
+            elif isinstance(parts[0], MapPattern):
+                return parts[0]
+            elif isinstance(parts[0], TuplePattern):
+                return parts[0]
             else:
                 return parts[0]
-        elif (
-            len(parts) > 1
-            and isinstance(parts[0], Token)
-            and parts[0].type == "LBRACKET"
-        ):
-            return ArrayPattern(patterns=list(self._filter_tokens_out(parts[1:-1])))
         elif (
             len(parts) == 2
             and isinstance(parts[0], Type)
@@ -820,10 +782,44 @@ class SugarTransformer(Transformer):
 
     def tuple_pattern(self, _lparen, patterns, _rparen):
         logging.debug(f"tuple_pattern: patterns={patterns}")
-        return TuplePattern(
-            patterns=list(self._filter_tokens_out(patterns.patterns)) or []
-        )
+        return TuplePattern(patterns=list(self._filter_tokens_out(patterns)) or [])
+
+    def object_pattern(self, _lbrace, entries, _rbrace):
+        logging.debug(f"object_pattern: entries={entries}")
+        return ObjectPattern(entries=entries or [])
+
+    def dict_pattern_entries(self, *entries):
+        logging.debug(f"dict_pattern_entries: entries={entries}")
+        return list(self._filter_tokens_out(entries))
+
+    def dict_pattern_entry(self, key, _colon, value):
+        logging.debug(f"dict_pattern_entry: key={key}, value={value}")
+        return DictEntryPattern(key=key, value=value)
+
+    def map_pattern(self, _lbrace, entries, _rbrace):
+        logging.debug(f"map_pattern: entries={entries}")
+        return MapPattern(entries=entries or [])
+
+    def map_pattern_entries(self, *entries):
+        logging.debug(f"map_pattern_entries: entries={entries}")
+        return list(self._filter_tokens_out(entries))
+
+    def map_pattern_entry(self, key, _arrow, value):
+        logging.debug(f"map_pattern_entry: key={key}, value={value}")
+        return MapEntryPattern(key=key, value=value)
+
+    def empty_object_pattern(self, *args):
+        logging.debug("empty_object_pattern")
+        return ObjectPattern(entries=[])
+
+    def empty_map_pattern(self, *args):
+        logging.debug("empty_map_pattern")
+        return MapPattern(entries=[])
+
+    def array_pattern(self, _lbracket, patterns, _rbracket):
+        logging.debug(f"array_pattern: patterns={patterns}")
+        return ArrayPattern(patterns=patterns or [])
 
     def pattern_list(self, *patterns):
         logging.debug(f"pattern_list: patterns={patterns}")
-        return PatternList(patterns=list(self._filter_tokens_out(patterns)) or [])
+        return list(self._filter_tokens_out(patterns))

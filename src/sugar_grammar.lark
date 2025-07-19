@@ -88,13 +88,24 @@ default_clause: DEFAULT_KW DO_KW statement*
 pattern: literal
        | IDENTIFIER
        | type IDENTIFIER
-       | LBRACKET pattern_list? RBRACKET
-       | object_literal
-       | map_literal
+       | array_pattern
+       | object_pattern
+       | map_pattern
        | tuple_pattern
+       | empty_object_pattern
+       | empty_map_pattern
 guard: IF_KW DOLLAR expression DOLLAR
 pattern_list: pattern (COMMA pattern)*
 tuple_pattern: LPAR pattern_list? RPAR
+object_pattern: LBRACE dict_pattern_entries RBRACE
+map_pattern: LBRACE map_pattern_entries RBRACE
+dict_pattern_entries: dict_pattern_entry (COMMA dict_pattern_entry)*
+dict_pattern_entry: IDENTIFIER COLON pattern
+map_pattern_entries: map_pattern_entry (COMMA map_pattern_entry)*
+map_pattern_entry: pattern ARROW_OP pattern
+empty_object_pattern: LBRACE UNDERSCORE RBRACE
+empty_map_pattern: LBRACE UNDERSCORE ARROW_OP UNDERSCORE RBRACE
+array_pattern: LBRACKET pattern_list? RBRACKET
 
 // Statements
 return_statement: RETURN_KW expression?
