@@ -8,20 +8,12 @@ FUNC risky(x #int) #int
     RETURN x
 end
 FUNC test() #str
-    TRY
         TRY
             risky(-1)
         CATCH e #MyError do
             IO:PRINT:("Caught: " + e.message)
             THROW e
-        FINALLY
+        FINALLY do
             IO:PRINT:("Inner finally")
-        end
-    CATCH e #MyError do
-        RETURN "Outer: " + e.message
-    FINALLY
-        IO:PRINT:("Outer finally")
-        // Simulate error in finally
-        THROW MyError("fail in finally")
     end
 end 

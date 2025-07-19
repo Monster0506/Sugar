@@ -6,8 +6,8 @@ DEF s #str = "Hello"
 DEF len #int = s :LENGTH:()
 
 // String-specific operations (case conversion)
-DEF upper_s #str = s :UPPER:
-DEF lower_s #str = s :LOWER:
+DEF upper_s #str = s :UPPER:()
+DEF lower_s #str = s :LOWER:()
 
 // Array access operations
 DEF first_char #char = s :GET: (0)
@@ -31,7 +31,7 @@ DEF z_index #int = s :INDEX_OF: ('Z')
 
 // Array manipulation
 DEF copy #str = "abc"
-copy :REVERSE:
+copy :REVERSE:()
 DEF reversed_first #char = copy :GET: (0)
 
 // Remove operation
