@@ -1,5 +1,5 @@
 import argparse
-from parser import parse_to_ast
+from src.parser import parse_to_ast
 
 
 def main():

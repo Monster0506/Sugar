@@ -1,5 +1,5 @@
 FUNC compute() #int
     RETURN 42
-END FUNC
-DEF t #Task = SPAWN FUNC() RETURN compute() END FUNC
+end
+DEF t #Task = SPAWN FUNC() #int RETURN compute() end
 DEF r #int = t:JOIN:() 

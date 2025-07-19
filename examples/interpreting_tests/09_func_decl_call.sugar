@@ -1,4 +1,4 @@
 FUNC add(a #int, b #int) #int
     RETURN a + b
-END FUNC
+end
 DEF result #int = add(2, 3) 

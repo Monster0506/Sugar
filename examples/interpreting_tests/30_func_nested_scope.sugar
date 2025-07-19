@@ -2,6 +2,6 @@ FUNC test(x #int) #int
     if $x > 0$ do
         DEF y #int = x + 1
         RETURN y
-    END if
+    end
     RETURN 0
-END FUNC 
+end 

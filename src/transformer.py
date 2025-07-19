@@ -6,7 +6,7 @@ import logging
 
 from lark import Token, Transformer, Tree, v_args
 
-from ast_nodes import (
+from src.ast_nodes import (
     AccessModifier,
     AdditiveExpression,
     AndExpression,
@@ -82,13 +82,11 @@ from ast_nodes import (
     VariableDeclaration,
     WhileStatement,
 )
-from utils import debug_class_wrapper
-
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+from src.utils import debug_class_wrapper
 
 
 @v_args(inline=True)
-@debug_class_wrapper
+# @debug_class_wrapper
 class SugarTransformer(Transformer):
     def program(self, *statements):
         logging.debug(f"program: statements={statements}")
@@ -104,9 +102,9 @@ class SugarTransformer(Transformer):
             func_name_node = children[0]
             arguments = []
             if len(children) == 4 and isinstance(children[2], list):
-                arguments = children[
-                    2
-                ]  # argument_list method returns a list of expressions
+                arguments = list(
+                    self._filter_tokens_out(children[2])
+                )  # argument_list method returns a list of expressions
             elif len(children) == 3 and children[2].type == "RPAR":
                 arguments = []  # No arguments
 
@@ -319,6 +317,10 @@ class SugarTransformer(Transformer):
 
     def STRING(self, token):
         logging.debug(f"STRING: token={token}")
+        return Literal(value=token.value[1:-1])  # Remove quotes
+
+    def CHAR(self, token):
+        logging.debug(f"CHAR: token={token}")
         return Literal(value=token.value[1:-1])  # Remove quotes
 
     def argument_list(self, *expressions):
@@ -630,9 +632,18 @@ class SugarTransformer(Transformer):
         logging.debug(f"dict_entry: key={key}, value={value}")
         return DictEntry(key=key, value=value)
 
-    def empty_object_literal(self, _lbrace, _rbrace):
+    def empty_object_literal(self, *args):
         logging.debug("empty_object_literal")
         return ObjectLiteral(entries=[])
+
+    def empty_list_literal(self, *args):
+        return ArrayLiteral(elements=[])
+
+    def empty_map_literal(self, *args):
+        return MapLiteral(entries=[])
+
+    def empty_tuple_literal(self, *args):
+        return TupleLiteral(elements=[])
 
     def tuple_literal(self, _lparen, *elements):
         logging.debug(f"tuple_literal: elements={elements}")
@@ -641,6 +652,7 @@ class SugarTransformer(Transformer):
 
     def lambda_expression(self, _func, _lpar, params, _rpar, _arrow, body):
         logging.debug(f"lambda_expression: params={params}, body={body}")
+        params = list(filter(lambda x: isinstance(x, Parameter), params))
         return LambdaExpression(parameters=params or [], body=body)
 
     def anonymous_function(self, _func, _lpar, *everythingelse):
@@ -651,7 +663,14 @@ class SugarTransformer(Transformer):
         return AnonymousFunction(parameters=parameters, body=body, type=return_type)
 
     def method_call(self, _colon1, method, _colon2, _lparen, *other):
+        print(
+            f"method_call: method={method}, other={other}, _lparen={_lparen}, _colon2={_colon2}, _colon_1= {_colon1}"
+        )
+        print("looking here: ", other)
         arguments = list(self._filter_tokens_out(other[0]))
+        if isinstance(other[0], Token) and other[0].type == "RPAR":
+            # No arguments
+            arguments = []
 
         base = Identifier("THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION")
 

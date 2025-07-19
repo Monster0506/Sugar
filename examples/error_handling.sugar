@@ -3,34 +3,34 @@
 TYPE ValueError EXTENDS Error
     value #any
     message #str
-END TYPE
+end
 
 TYPE DivisionByZeroError EXTENDS Error
     dividend #float
     message #str
-END TYPE
+end
 
 FUNC safe_divide(a #float, b #float) #float
     if $b == 0$ do
         THROW DivisionByZeroError(a, "Division by zero")
-    END if
+    end
     RETURN a / b
-END FUNC
+end
 
 FUNC validate_age(age #int) #bool
     if $age < 0$ do
         THROW ValueError(age, "Age cannot be negative")
     else if $age > 150$ do
         THROW ValueError(age, "Age seems unrealistic")
-    END if
+    end
     RETURN true
-END FUNC
+end
 
 FUNC process_data(data #any) #str
     TRY
         if $data == null$ do
             THROW ValueError(null, "Data cannot be null")
-        END if
+        end
         
         DEF result #str = "Processed: " + data
         RETURN result
@@ -42,8 +42,8 @@ FUNC process_data(data #any) #str
         RETURN "Division error"
     FINALLY
         IO:PRINT:("Cleanup completed")
-    END TRY
-END FUNC
+    end
+end
 
 FUNC risky_operation() #void
     TRY
@@ -51,8 +51,8 @@ FUNC risky_operation() #void
         IO:PRINT:("Result: " + result)
     CATCH error #DivisionByZeroError do
         IO:PRINT:("Caught division error: " + error.message)
-    END TRY
-END FUNC
+    end
+end
 
 // Usage
 DEF result1 #str = process_data("valid data")

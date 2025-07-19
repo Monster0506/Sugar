@@ -2,7 +2,7 @@ from parser import parse_to_ast
 
 import pytest
 
-from ast_nodes import (
+from src.ast_nodes import (
     AdditiveExpression,
     AndExpression,
     AnonymousFunction,
@@ -375,6 +375,24 @@ def test_spawn_statement():
     assert spawn_stmt.expression.function_name.name == "my_func"
 
 
+def test_function_call():
+    """Tests parsing of a function call."""
+    code = """my_func(param1, param2)"""
+    ast = parse_to_ast(code)
+    assert isinstance(ast, Program)
+    assert len(ast.statements) == 1
+    ast_stmt = ast.statements[0]
+    assert isinstance(ast_stmt, ExpressionStatement)
+    assert isinstance(ast_stmt.expression, FunctionCall)
+    assert ast_stmt.expression.function_name.name == "my_func"
+    assert isinstance(ast_stmt.expression.arguments, list)
+    assert len(ast_stmt.expression.arguments) == 2
+    assert isinstance(ast_stmt.expression.arguments[0], Identifier)
+    assert ast_stmt.expression.arguments[0].name == "param1"
+    assert isinstance(ast_stmt.expression.arguments[1], Identifier)
+    assert ast_stmt.expression.arguments[1].name == "param2"
+
+
 def test_import_statement():
     """Tests parsing of an import statement."""
     code = """import my_module.utils"""
@@ -733,10 +751,12 @@ def test_and_expression():
 
 def test_additive_expression():
     """Tests parsing of additive expressions."""
-    code = "DEF result #int = 1 + 2 - 3"
+    code = """ DEF result #int = 1 + 2 - 3
+    DEF thingy #str = "a" +   result + "b"
+    """
     ast = parse_to_ast(code)
     assert isinstance(ast, Program)
-    assert len(ast.statements) == 1
+    assert len(ast.statements) == 2
     var_decl = ast.statements[0]
     assert isinstance(var_decl, VariableDeclaration)
     assert isinstance(var_decl.value, AdditiveExpression)
@@ -744,6 +764,10 @@ def test_additive_expression():
     assert var_decl.value.operator == "-"
     assert isinstance(var_decl.value.right, Literal)
     assert var_decl.value.right.value == 3
+
+    var_decl2 = ast.statements[1]
+    assert isinstance(var_decl2, VariableDeclaration)
+    print(var_decl2.value)
 
 
 def test_multiplicative_expression():
@@ -765,10 +789,11 @@ def test_unary_expressions():
     """Tests parsing of unary expressions."""
     code = """DEF result #bool = !:T:
 DEF num #int = -10
-DEF pos_num #int = +5"""
+DEF pos_num #int = +5
+"""
     ast = parse_to_ast(code)
     assert isinstance(ast, Program)
-    assert len(ast.statements) == 3
+    assert len(ast.statements) == 4
 
     assert isinstance(ast.statements[0], VariableDeclaration)
     not_expr = ast.statements[0].value

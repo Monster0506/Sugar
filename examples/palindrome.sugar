@@ -8,12 +8,12 @@ FUNC is_palindrome(s #str) #bool
         if $is_alnum$ do
             DEF lower_char #char = c :LOWER:
             letters :ADD: (lower_char)
-        END if
-    END for
+        end
+    end
     
     DEF reversed_letters #[#char] = letters :REVERSE:
     RETURN letters == (reversed_letters)
-END FUNC
+end
 
 // Test the function
 DEF test_string #str = "A man, a plan, a canal: Panama"

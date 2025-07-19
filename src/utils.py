@@ -1,7 +1,7 @@
 import logging
 
 
-def debug_wrapper(func, logger_name=None):
+def debug_wrapper(func, logger_name=None, level=logging.DEBUG):
     """
     A decorator that logs the arguments and keyword arguments of a function call.
 
@@ -14,7 +14,7 @@ def debug_wrapper(func, logger_name=None):
 
     def wrapper(*args, **kwargs):
         logger = logging.getLogger(logger_name or f"{func.__module__}.{func.__name__}")
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(level)
         # For methods, args[0] is 'self', so we log from args[1:]
         # For regular functions, args[0] is the first argument
         logged_args = args[1:] if hasattr(func, "__self__") else args
@@ -26,7 +26,7 @@ def debug_wrapper(func, logger_name=None):
     return wrapper
 
 
-def debug_class_wrapper(cls, logger_name=None):
+def debug_class_wrapper(cls, logger_name=None, level=logging.DEBUG):
     """
     A class decorator that applies the debug_wrapper to all callable methods
     within the class.
@@ -43,5 +43,5 @@ def debug_class_wrapper(cls, logger_name=None):
         ):  # Avoid wrapping dunder methods
             # Use a more specific logger name for each method if desired
             method_logger_name = logger_name or cls.__name__
-            setattr(cls, name, debug_wrapper(method, method_logger_name))
+            setattr(cls, name, debug_wrapper(method, method_logger_name, level))
     return cls

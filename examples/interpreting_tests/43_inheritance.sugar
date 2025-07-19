@@ -1,12 +1,12 @@
 CLASS Base
     FUNC foo() #int
         RETURN 1
-    END FUNC
-END CLASS
+    end
+end
 CLASS Derived EXTENDS Base
     OVERRIDE FUNC foo() #int
         RETURN 2
-    END FUNC
-END CLASS
+    end
+end
 DEF d #Derived = Derived()
 DEF r #int = d:foo:() 

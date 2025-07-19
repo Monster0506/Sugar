@@ -1,7 +1,7 @@
 FUNC add(a #int, b #int) #int
     RETURN a + b
-END FUNC
+end
 FUNC double(x #int) #int
     RETURN add(x, x)
-END FUNC
+end
 DEF y #int = double(3) 

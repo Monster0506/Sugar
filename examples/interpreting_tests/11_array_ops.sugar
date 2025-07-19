@@ -1,6 +1,6 @@
 DEF arr #[#int] = [1]
 arr :ADD: (2)
-DEF len #int = arr :LENGTH:
+DEF len #int = arr :LENGTH:()
 DEF val #int = arr :GET: (1) 
 arr :INSERT: (1, 3)
 arr :REMOVE: (0)

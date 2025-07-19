@@ -1,4 +1,4 @@
 DEF x #int = 3
 while $x > 0$ do
     x := x - 1
-END while 
+end 

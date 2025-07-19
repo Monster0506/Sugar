@@ -10,3 +10,10 @@ dependencies = [
     "pytest-cov>=6.2.1",
     "typing-extensions>=4.14.0",
 ]
+
+[tool.setuptools]
+packages = ["src"]
+package-dir = {"" = "."}
+
+[project.scripts]
+sugar = "src.sugar:main"

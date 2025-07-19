@@ -1,4 +1,4 @@
 FUNC get_five() #int
     RETURN 5
-END FUNC
+end
 DEF x #int = get_five() 

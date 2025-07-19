@@ -1,4 +1,4 @@
 FUNC inc(a #int) #int
     RETURN a + 1
-END FUNC
+end
 DEF b #int = inc(10) 

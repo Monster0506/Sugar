@@ -3,7 +3,7 @@
 
 // Basic string creation and length
 DEF s #str = "Hello"
-DEF len #int = s :LENGTH:
+DEF len #int = s :LENGTH:()
 
 // String-specific operations (case conversion)
 DEF upper_s #str = s :UPPER:
@@ -15,7 +15,7 @@ DEF last_char #char = s :GET: (4)
 
 // Array modification operations
 s :ADD: ('!')
-DEF len_after_add #int = s :LENGTH:
+DEF len_after_add #int = s :LENGTH:()
 
 s :INSERT: (0, 'X')
 DEF first_after_insert #char = s :GET: (0)
@@ -44,5 +44,5 @@ DEF multi #str = "world"
 multi :ADD: ('!')
 multi :INSERT: (0, 'H')
 multi :SET: (1, 'e')
-DEF final_length #int = multi :LENGTH:
+DEF final_length #int = multi :LENGTH:()
 DEF final_string #str = multi

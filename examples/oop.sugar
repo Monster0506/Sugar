@@ -4,12 +4,12 @@ TYPE Person
     name #str
     age #int
     email #str
-END TYPE
+end
 
 INTERFACE Drawable
     FUNC draw() #void
     FUNC resize(width #int, height #int) #bool
-END INTERFACE
+end
 
 CLASS Shape IMPLEMENTS Drawable
     PUBLIC x #int
@@ -20,22 +20,22 @@ CLASS Shape IMPLEMENTS Drawable
         THIS:x := x
         THIS:y := y
         THIS:color := color
-    END CONSTRUCTOR
+    end
     
     FUNC draw() #void
         IO:PRINT:("Drawing shape at (" + THIS:x: + ", " + THIS:y: + ")")
-    END FUNC
+    end
     
     FUNC resize(width #int, height #int) #bool
         THIS:x := THIS:x: + width
         THIS:y := THIS:y: + height
         RETURN true
-    END FUNC
+    end
     
     PRIVATE FUNC get_color() #str
         RETURN THIS:color:
-    END FUNC
-END CLASS
+    end
+end
 
 CLASS Circle EXTENDS Shape
     PRIVATE radius #float
@@ -43,16 +43,16 @@ CLASS Circle EXTENDS Shape
     CONSTRUCTOR(x #int, y #int, radius #float, color #str)
         SUPER(x, y, color)
         THIS:radius := radius
-    END CONSTRUCTOR
+    end
     
     OVERRIDE FUNC draw() #void
         IO:PRINT:("Drawing circle with radius " + THIS:radius:)
-    END FUNC
+    end
     
     STATIC FUNC create_unit_circle() #Circle
         RETURN Circle(0, 0, 1.0, "black")
-    END FUNC
-END CLASS
+    end
+end
 
 CLASS MathUtility
     STATIC PI #float = 3.14159
@@ -60,12 +60,12 @@ CLASS MathUtility
     
     STATIC FUNC square(x #float) #float
         RETURN x * x
-    END FUNC
+    end
     
     STATIC FUNC cube(x #float) #float
         RETURN x * x * x
-    END FUNC
-END CLASS
+    end
+end
 
 // Usage
 DEF person #Person = {

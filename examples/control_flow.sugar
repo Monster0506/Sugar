@@ -7,33 +7,33 @@ FUNC classify_number(n #int) #str
         RETURN "zero"
     else do
         RETURN "positive"
-    END if
-END FUNC
+    end
+end
 
 FUNC sum_array(arr #[#int]) #int
     DEF total #int = 0
     for DEF num #int in arr do
         total := total + num
-    END for
+    end
     RETURN total
-END FUNC
+end
 
 FUNC countdown(n #int) #void
     while $n > 0$ do
         IO:PRINT:(n)
         n := n - 1
-    END while
+    end
     IO:PRINT:("Blast off!")
-END FUNC
+end
 
 FUNC find_element(arr #[#int], target #int) #int
-    for DEF i #int in arr :LENGTH: do
+    for DEF i #int in arr :LENGTH:() do
         if $arr :GET: (i) == target$ do
             RETURN i
-        END if
-    END for
+        end
+    end
     RETURN -1
-END FUNC
+end
 
 // Usage
 DEF numbers #[#int] = [1, 2, 3, 4, 5]

@@ -1,16 +1,21 @@
+
 TYPE MyError EXTENDS Error
     message #str
-END TYPE
+end
+
 FUNC risky() #void
     THROW MyError("fail!")
-END FUNC
+end
+
+
+
 FUNC test() #str
     TRY
         risky()
         RETURN "ok"
     CATCH e #MyError do
         RETURN e.message
-    FINALLY
+    FINALLY do
         IO:PRINT:("done")
-    END TRY
-END FUNC 
+    end
+end 

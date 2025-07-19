@@ -17,7 +17,6 @@ program: statement*
           | return_statement
           | throw_statement
           | expression_statement
-          | spawn_statement
           | import_statement
 
 // Module System
@@ -156,11 +155,15 @@ array_access: LBRACKET expression RBRACKET
                   | LPAR expression RPAR
                   | array_literal
                   | empty_object_literal
+                  | empty_list_literal
+                  | empty_map_literal
+                  | empty_tuple_literal
                   | tuple_literal
                   | object_literal
                   | map_literal
                   | lambda_expression
                   | anonymous_function
+                  | spawn_statement
                   | THIS
                   | SUPER LPAR argument_list? RPAR
 
@@ -172,7 +175,10 @@ array_literal: LBRACKET argument_list? RBRACKET
 map_literal: LBRACE map_entries+ RBRACE
 map_entries: map_entry (COMMA map_entry)*
 map_entry: expression ARROW_OP expression
-empty_object_literal: LBRACE RBRACE
+empty_object_literal: LBRACE UNDERSCORE RBRACE
+empty_list_literal: LBRACKET UNDERSCORE RBRACKET
+empty_map_literal: LBRACE UNDERSCORE ARROW_OP UNDERSCORE RBRACE
+empty_tuple_literal: LPAR UNDERSCORE RPAR
 object_literal: LBRACE dict_entries+ RBRACE
 
 dict_entries: dict_entry (COMMA dict_entry)*
@@ -222,22 +228,21 @@ EXTENDS: "EXTENDS"
 IMPLEMENTS: "IMPLEMENTS"
 CONSTRUCTOR: "CONSTRUCTOR"
 INTERFACE: "INTERFACE"
-IF_KW: "if" // Renamed to avoid clash with `IF` guard
-DO_KW: "do" // Renamed for clarity
-ELSE_KW: "else" // Renamed for clarity
-FOR_KW: "for" // Renamed for clarity
+IF_KW: "if" 
+DO_KW: "do" 
+ELSE_KW: "else" 
+FOR_KW: "for"
 IN_KW: "in"
-WHILE_KW: "while" // Renamed for clarity
-TRY_KW: "TRY" // Renamed for clarity
-CATCH_KW: "CATCH" // Renamed for clarity
-FINALLY_KW: "FINALLY" // Renamed for clarity
-MATCH_KW: "MATCH" // Renamed for clarity
-CASE_KW: "CASE" // Renamed for clarity
-DEFAULT_KW: "DEFAULT" // Renamed for clarity
-// IF (for guard) is handled by IF_KW now since "IF" is a single token.
-RETURN_KW: "RETURN" // Renamed for clarity
-THROW_KW: "THROW" // Renamed for clarity
-SPAWN_KW: "SPAWN" // Renamed for clarity
+WHILE_KW: "while"
+TRY_KW: "TRY"
+CATCH_KW: "CATCH" 
+FINALLY_KW: "FINALLY"
+MATCH_KW: "MATCH"
+CASE_KW: "CASE"
+DEFAULT_KW: "DEFAULT"
+RETURN_KW: "RETURN"
+THROW_KW: "THROW"
+SPAWN_KW: "SPAWN"
 SUPER: "SUPER"
 
 // 2. Multi-character Operators (Ordered by length or specificity)
@@ -246,14 +251,14 @@ EQUAL_TO: "=="
 NOT_EQUAL_TO: "!="
 GREATER_THAN_OR_EQUAL_TO: ">="
 LESS_THAN_OR_EQUAL_TO: "<="
-AND_OP: "&&" // Renamed from AND
-OR_OP: "||"  // Renamed from OR
+AND_OP: "&&"
+OR_OP: "||"
 ARROW_OP: "->"
 
 // 3. Single-character Operators
 DOT: "."
 COLON: ":"
-EQUALS: "=" // Assignment operator used in DECLARATION. Note: '==' is EQUAL_TO
+EQUALS: "="
 LPAR: "("
 RPAR: ")"
 LBRACKET: "["
@@ -268,9 +273,10 @@ MINUS: "-"
 TIMES: "*"
 DIVIDE: "/"
 MODULO: "%"
-NOT_OP: "!" // Renamed from NOT to avoid potential conflict with NOT rule
+NOT_OP: "!"
 GREATER_THAN: ">"
 LESS_THAN: "<"
+UNDERSCORE: "_"
 
 // 4. Specific Literal Regexes (Ordered by specificity: FLOAT before INTEGER)
 FLOAT: /[0-9]+\.[0-9]+/

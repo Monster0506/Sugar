@@ -14,7 +14,7 @@ FUNC demonstrate_math() #void
     IO:PRINT:("PI: " + pi)
     IO:PRINT:("Square root of 16: " + sqrt_result)
     IO:PRINT:("2^8: " + pow_result)
-END FUNC
+end
 
 FUNC demonstrate_io() #void
     // Input/Output operations
@@ -28,7 +28,7 @@ FUNC demonstrate_io() #void
     DEF content #str = IO:READ_FILE:("test.txt")
     IO:PRINT:("File content: " + content)
     IO:APPEND_FILE:("test.txt", "\nAppended line")
-END FUNC
+end
 
 FUNC demonstrate_time() #void
     // Time operations
@@ -39,7 +39,7 @@ FUNC demonstrate_time() #void
     DEF future_date #any = now :ADD_DAYS: (7)
     DEF diff #any = future_date :DIFF: (now)
     IO:PRINT:("Days difference: " + diff)
-END FUNC
+end
 
 FUNC demonstrate_random() #void
     // Random operations
@@ -55,4 +55,4 @@ FUNC demonstrate_random() #void
     IO:PRINT:("Random int: " + random_int)
     IO:PRINT:("Random float: " + random_float)
     IO:PRINT:("Random choice: " + random_choice)
-END FUNC 
+end 

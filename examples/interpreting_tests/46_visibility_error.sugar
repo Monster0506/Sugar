@@ -2,7 +2,7 @@ CLASS Secret
     PRIVATE val #int
     CONSTRUCTOR()
         THIS:val := 42
-    END CONSTRUCTOR
-END CLASS
+    end
+end
 DEF s #Secret = Secret()
 DEF x #int = s.val // should error 

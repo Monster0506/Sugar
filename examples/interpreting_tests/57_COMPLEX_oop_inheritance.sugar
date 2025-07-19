@@ -1,30 +1,30 @@
 INTERFACE Drawable
     FUNC draw() #void
-END INTERFACE
+end
 CLASS Shape IMPLEMENTS Drawable
     PUBLIC x #int
     PUBLIC y #int
     CONSTRUCTOR(x #int, y #int)
         THIS:x := x
         THIS:y := y
-    END CONSTRUCTOR
+    end
     FUNC draw() #void
         IO:PRINT:("Shape at (" + THIS:x + ", " + THIS:y + ")")
-    END FUNC
-END CLASS
+    end
+end
 CLASS Circle EXTENDS Shape
     PRIVATE radius #float
     CONSTRUCTOR(x #int, y #int, r #float)
         SUPER(x, y)
         THIS:radius := r
-    END CONSTRUCTOR
+    end
     OVERRIDE FUNC draw() #void
         IO:PRINT:("Circle radius " + THIS:radius)
-    END FUNC
+    end
     STATIC FUNC unit() #Circle
         RETURN Circle(0, 0, 1.0)
-    END FUNC
-END CLASS
+    end
+end
 DEF c #Circle = Circle(1, 2, 3.0)
 c:draw:()
 DEF u #Circle = Circle:unit:() 

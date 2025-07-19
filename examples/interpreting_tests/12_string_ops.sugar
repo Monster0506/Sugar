@@ -1,5 +1,5 @@
 DEF s #str = "Hello"
 DEF up #str = s :UPPER:
 DEF lo #str = s :LOWER:
-DEF l #int = s :LENGTH: 
+DEF l #int = s :LENGTH:() 
 s :INSERT: (1,"A")

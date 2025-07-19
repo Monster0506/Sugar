@@ -1,4 +1,4 @@
 FUNC foo(x #int) #int
     DEF x #int = 5
     RETURN x
-END FUNC 
+end 

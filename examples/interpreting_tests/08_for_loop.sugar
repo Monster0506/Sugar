@@ -3,4 +3,4 @@ DEF sum #int = 0
 for DEF n #int in arr do
     DEF double #int = n * 2
     sum := sum + double
-END for 
+end 

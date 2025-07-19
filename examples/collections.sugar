@@ -7,12 +7,12 @@ FUNC demonstrate_collections() #void
     numbers :ADD: (6)
     numbers :INSERT: (0, 0)
     DEF first #int = numbers :GET: (0)
-    DEF length #int = numbers :LENGTH:
+    DEF length #int = numbers :LENGTH:()()
     
     // String operations
     DEF text #str = "Hello World"
-    DEF upper_text #str = text :UPPER:
-    DEF lower_text #str = text :LOWER:
+    DEF upper_text #str = text :UPPER:()
+    DEF lower_text #str = text :LOWER:()
     DEF words #[#str] = text :SPLIT: (' ')
     
     // Collection functional operations
@@ -27,17 +27,17 @@ FUNC demonstrate_collections() #void
         :FILTER:(FUNC (x #int) -> x > 2)
         :MAP:(FUNC (x #int) -> x * 2)
         :REDUCE:(FUNC (acc #int, x #int) -> acc + x, 0)
-END FUNC
+end 
 
 FUNC string_operations() #void
     DEF sentence #str = "The quick brown fox"
     
     // Character operations
     for DEF c #char in sentence do
-        DEF is_alpha #bool = c :ALNUM:
+        DEF is_alpha #bool = c :ALNUM:()
         if $is_alpha$ do
-            DEF upper_char #char = c :UPPER:
+            DEF upper_char #char = c :UPPER:()
             IO:PRINT:(upper_char)
-        END if
-    END for
-END FUNC 
+        end
+    end 
+end

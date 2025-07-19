@@ -4,4 +4,4 @@ MATCH t
         DEF s #str = y
     DEFAULT do
         DEF s #str = "no match"
-END MATCH 
+end 

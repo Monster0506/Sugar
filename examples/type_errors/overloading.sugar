@@ -1,69 +1,69 @@
 FUNC greet(name #str, greeting #str) #str
     DEF response #str = greeting + " " + name
     RETURN response
-END FUNC
+end
 
 FUNC greet(name #str, goodbye #str) #str  // should error with same parameter types
     DEF response #str = goodbye + " " + name
     RETURN response
-END FUNC
+end
 
 FUNC greet() #str  // should error with same parameter types
     DEF response #str = "Hello, World!"
     RETURN response
-END FUNC
+end
 
 // Valid: different parameter counts
 FUNC foo() #int
     RETURN 0
-END FUNC
+end
 
 FUNC foo(a #int) #int
     RETURN a
-END FUNC
+end
 
 FUNC foo(a #int, b #int) #int
     RETURN a + b
-END FUNC
+end
 
 // Valid: different parameter types
 FUNC bar(a #int) #int
     RETURN a
-END FUNC
+end
 
 FUNC bar(a #str) #int
     RETURN 0
-END FUNC
+end
 
 // Valid: same types, different order
 FUNC baz(a #int, b #str) #int
     RETURN a
-END FUNC
+end
 
 FUNC baz(b #str, a #int) #int
     RETURN a
-END FUNC
+end
 
 // Error: same name and same parameter types
 FUNC conflict(a #int, b #str) #int
     RETURN a
-END FUNC
+end
 
 FUNC conflict(a #int, b #str) #int
     RETURN a
-END FUNC
+end
 
 // Valid: no parameters
 FUNC noparams() #int
     RETURN 1
-END FUNC
+end
 
 // Error: same name, same param types, different return type (should error if not allowed)
 FUNC retconflict(a #int) #int
     RETURN a
-END FUNC
+end
 
 FUNC retconflict(a #int) #str
     RETURN "oops"
-END FUNC
+end
 

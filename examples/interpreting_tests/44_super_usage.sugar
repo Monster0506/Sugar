@@ -2,18 +2,18 @@ CLASS Parent
     value #int
     CONSTRUCTOR(x #int)
         THIS:value := x
-    END CONSTRUCTOR
+    end
     FUNC get() #int
         RETURN THIS:value
-    END FUNC
-END CLASS
+    end
+end
 CLASS Child EXTENDS Parent
     CONSTRUCTOR(x #int)
         SUPER(x)
-    END CONSTRUCTOR
+    end
     OVERRIDE FUNC get() #int
         RETURN SUPER:get:() + 1
-    END FUNC
-END CLASS
+    end
+end
 DEF c #Child = Child(5)
 DEF v #int = c:get:() 

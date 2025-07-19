@@ -1,6 +1,6 @@
 TYPE MyError EXTENDS Error
     message #str
-END TYPE
+end
 FUNC fail() #void
     THROW MyError("fail!")
-END FUNC 
+end 

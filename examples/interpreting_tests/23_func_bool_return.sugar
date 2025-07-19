@@ -1,4 +1,4 @@
 FUNC is_even(n #int) #bool
     RETURN n % 2 == 0
-END FUNC
+end
 DEF b #bool = is_even(4) 

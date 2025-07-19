@@ -255,15 +255,15 @@ class TupleLiteral(Expression):
 @dataclass
 class LambdaExpression(Expression):
     # Represents `FUNC LPAR parameter_list? RPAR ARROW_OP expression`
-    parameters: list["Parameter"] | None
+    parameters: list[Parameter] | None
     body: Expression  # A single expression as the lambda's body
 
 
 @dataclass
 class AnonymousFunction(Expression):
     # Represents `FUNC LPAR parameter_list? RPAR function_body END`
-    parameters: list["Parameter"] | None
-    body: list["Statement"]  # A block of statements as the function's body
+    parameters: list[Parameter] | None
+    body: list[Statement]  # A block of statements as the function's body
     type: Type | None = None  # Optional return type
 
 

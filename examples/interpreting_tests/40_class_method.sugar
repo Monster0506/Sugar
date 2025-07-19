@@ -2,11 +2,11 @@ CLASS Adder
     value #int
     CONSTRUCTOR()
         THIS:value := 0
-    END CONSTRUCTOR
+    end
     FUNC add(x #int) #int
         THIS:value := THIS:value + x
         RETURN THIS:value
-    END FUNC
-END CLASS
+    end
+end
 DEF a #Adder = Adder()
 DEF r #int = a:add:(5) 

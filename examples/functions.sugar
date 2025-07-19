@@ -2,25 +2,25 @@
 
 FUNC add(a #int, b #int) #int
     RETURN a + b
-END FUNC
+end
 
 FUNC greet(name #str) #str
     DEF greeting #str = "Hello, " + name + "!"
     RETURN greeting
-END FUNC
+end
 
 FUNC greet(name #str, greeting #str) #str
     DEF response #str = greeting + " " + name
     RETURN response
-END FUNC
+end
 
 FUNC factorial(n #int) #int
     if $n <= 1$ do
         RETURN 1
     else do
         RETURN n * factorial(n - 1)
-    END if
-END FUNC
+    end
+end
 
 FUNC max_of_three(a #int, b #int, c #int) #int
     if $a > b && a > c$ do
@@ -29,8 +29,8 @@ FUNC max_of_three(a #int, b #int, c #int) #int
         RETURN b
     else do
         RETURN c
-    END if
-END FUNC
+    end
+end
 
 // Function calls
 DEF result1 #int = add(5, 3)
@@ -41,13 +41,13 @@ DEF result4 #int = max_of_three(10, 20, 15)
 FUNC car(name #str) #str
     DEF car_name #str = _build_car_name(name, 2025)
     RETURN car_name
-END FUNC
+end
 
 FUNC car(name #str, year #int) #str
     DEF car_name #str = _build_car_name(name, year)
     RETURN car_name
-END FUNC
+end
 
 FUNC _build_car_name(name #str, year #int) #str
     RETURN name + " " + year
-END FUNC
+end

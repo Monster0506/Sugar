@@ -1,10 +1,10 @@
 INTERFACE IAdd
     FUNC add(x #int, y #int) #int
-END INTERFACE
+end
 CLASS MyAdder IMPLEMENTS IAdd
     FUNC add(x #int, y #int) #int
         RETURN x + y
-    END FUNC
-END CLASS
+    end
+end
 DEF a #MyAdder = MyAdder()
 DEF r #int = a:add:(2, 3) 

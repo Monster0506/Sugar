@@ -1,5 +1,5 @@
 TYPE Person
     name #str
     age #int
-END TYPE
+end
 DEF p #Person = {name: "Alice", age: 30} 
