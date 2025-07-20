@@ -5,7 +5,7 @@ DEF val #int = arr :GET: (1)
 arr :INSERT: (1, 3)
 arr :REMOVE: (0)
 DEF first #int = arr :GET: (0)
-arr :REVERSE:
+arr :REVERSE:()
 DEF last #int = arr :GET: (0)
 arr :ADD: (5)
 arr :ADD: (7)

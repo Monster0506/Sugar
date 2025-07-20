@@ -1,7 +1,7 @@
 CLASS Counter
     value #int
     CONSTRUCTOR()
-        THIS:value := 0
+        THIS.value := 0
     end
 end
 DEF c #Counter = Counter() 

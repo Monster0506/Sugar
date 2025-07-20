@@ -2,8 +2,8 @@ CLASS Example
     PUBLIC a #int
     PRIVATE b #int
     CONSTRUCTOR()
-        THIS:a := 1
-        THIS:b := 2
+        THIS.a := 1
+        THIS.b := 2
     end
 end
 DEF e #Example = Example()

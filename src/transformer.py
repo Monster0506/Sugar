@@ -82,7 +82,7 @@ from src.ast_nodes import (
     VariableDeclaration,
     WhileStatement,
 )
-from src.utils import debug_class_wrapper
+from src.utils import debug_class_wrapper, debug_wrapper
 
 
 @v_args(inline=True)
@@ -134,11 +134,31 @@ class SugarTransformer(Transformer):
                 arguments = children[2]
                 arguments = list(self._filter_tokens_out(arguments))
             return SuperCall(arguments=arguments)
+        if (
+            isinstance(children[0], Token)
+            and len(children) == 5
+            and children[0].type == "SUPER"
+        ):
+            arguments = children[3]
+            arguments = list(self._filter_tokens_out(arguments))
+            return SuperCall(arguments=arguments)
 
         logging.warning(f"Unhandled primary_expression children: {children}")
         return Tree("primary_expression", list(children))
 
-    def variable_declaration(self, _def, name, var_type, _equals, value):
+    def variable_declaration(self, _def, name, *rest):
+        logging.debug(f"variable_declaration: name={name}, rest={rest}")
+        var_type = list(filter(lambda x: isinstance(x, Type), rest))[0]
+        value = list(
+            filter(
+                lambda x: isinstance(x, Expression) or isinstance(x, Statement), rest
+            )
+        )[0]
+        property_access = list(filter(lambda x: isinstance(x, PropertyAccess), rest))
+        if property_access:
+            property_access = property_access[0]
+            name = Identifier(name=property_access.property_name.name)
+
         logging.debug(
             f"variable_declaration: name={name}, var_type={var_type}, value={value}"
         )
@@ -171,7 +191,8 @@ class SugarTransformer(Transformer):
 
     def parameter_list(self, *parameters):
         logging.debug(f"parameter_list: parameters={parameters}")
-        return list(parameters)
+
+        return list(self._filter_tokens_out(parameters))
 
     def parameter(self, name, param_type):
         logging.debug(f"parameter: name={name}, param_type={param_type}")
@@ -372,6 +393,7 @@ class SugarTransformer(Transformer):
         *modifiers: MethodCall | PropertyAccess | ArrayAccess,
     ):
         # The first child is the primary_expression, subsequent children are modifiers
+        #
         current_expr = base_expr
         for modifier in modifiers:
             if isinstance(modifier, MethodCall):
@@ -384,6 +406,7 @@ class SugarTransformer(Transformer):
             elif isinstance(modifier, ArrayAccess):
                 modifier.base = current_expr
                 current_expr = modifier
+
             else:
                 # This should not happen if the grammar and previous transformers are correct
                 raise TypeError(
@@ -556,7 +579,7 @@ class SugarTransformer(Transformer):
     def method_declaration(self, _func, name, _lpar, *rest):
         logging.debug(f"method_declaration: name={name}, rest={rest}")
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
-        return_type = rest[1] if len(rest) > 1 and isinstance(rest[1], Type) else None
+        return_type = list(filter(lambda x: isinstance(x, Type), rest))[0]
         body = rest[-2] if len(rest) > 2 else []
         return MethodDeclaration(
             name=name,
@@ -823,3 +846,44 @@ class SugarTransformer(Transformer):
     def pattern_list(self, *patterns):
         logging.debug(f"pattern_list: patterns={patterns}")
         return list(self._filter_tokens_out(patterns))
+
+    def assignable_target(self, token, property_access=None):
+        logging.debug(f"assignable_target: token={token}")
+        if not property_access:
+            if isinstance(token, Identifier):
+                return token
+            else:
+                return Identifier(name=token.value)
+        return PropertyAccess(
+            base=Identifier(name=token.value),
+            property_name=Identifier(name=property_access.property_name.name),
+        )
+
+    def target_expression(self, token, property_access=None):
+        logging.debug(f"target_expression: token={token}")
+        base = token if isinstance(token, Identifier) else Identifier(name=token.value)
+        if not property_access:
+            return base
+        return PropertyAccess(
+            base=base,
+            property_name=Identifier(name=property_access.property_name.name),
+        )
+
+    def super_method_call(self, _super, _colon, name, _colon2, _lparen, *arguments):
+        logging.debug(f"super_method_call: arguments={arguments}, name={name}")
+
+        return MethodCall(
+            base=SuperCall(),
+            function_name=name,
+            arguments=list(self._filter_tokens_out(arguments)),
+        )
+
+    def super_constructor_call(self, _super, _colon1, _lparen, *arguments):
+        arguments = []
+        if len(arguments) == 2:
+            args = list(self._filter_tokens_out(arguments[0]))
+            if all(map(lambda x: isinstance(x, Expression), args)):
+                arguments = list(self._filter_tokens_out(args))
+
+        print("ARGUMENTS HERE: ", arguments)
+        return SuperCall(arguments=arguments if arguments else None)

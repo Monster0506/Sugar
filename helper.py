@@ -27,7 +27,7 @@ for filename in os.listdir(SUGAR_DIR):
         selected_files.append(selected_file)
 
 
-errors = []
+errors = {}
 
 if not selected_file:
     print(f"No .sugar file starting with {number_str} found in {SUGAR_DIR}.")
@@ -38,16 +38,24 @@ for selected_file in selected_files:
     result = subprocess.run(
         f"sugar {selected_file}", shell=True, capture_output=True, text=True
     )
-
-    if result.returncode != 0 or "Unexpected" in result.stdout:
+    out = result.stdout.strip().lower()
+    if (
+        result.returncode != 0
+        or "unexpected" in out
+        or "out of range" in out
+        or "missing" in out
+        or "required positional argument" in out
+    ):
         print(
             f"Error processing {selected_file}: {result.stderr.strip()}\n{result.stdout.strip()}"
         )
-        errors.append(selected_file)
+        errors[selected_file] = f"{result.stderr.strip()}\n{result.stdout.strip()}"
     else:
-        print(f"Successfully processed {selected_file}.")
+        # print(f"Successfully processed {selected_file}.")
         print(result.stdout.strip())
 
 
 print(f"Processed {len(selected_files)} files.")
-print(f"Errors in {len(errors)} files: {errors}")
+for file in errors:
+    print(f"Error in file: {file}")
+    print(errors[file])

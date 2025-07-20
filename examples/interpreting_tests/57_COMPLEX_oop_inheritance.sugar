@@ -5,21 +5,21 @@ CLASS Shape IMPLEMENTS Drawable
     PUBLIC x #int
     PUBLIC y #int
     CONSTRUCTOR(x #int, y #int)
-        THIS:x := x
-        THIS:y := y
+        THIS.x := x
+        THIS.y := y
     end
     FUNC draw() #void
-        IO:PRINT:("Shape at (" + THIS:x + ", " + THIS:y + ")")
+        IO:PRINT:("Shape at (" + THIS.x + ", " + THIS.y + ")")
     end
 end
 CLASS Circle EXTENDS Shape
     PRIVATE radius #float
     CONSTRUCTOR(x #int, y #int, r #float)
-        SUPER(x, y)
-        THIS:radius := r
+        SUPER:(x, y)
+        THIS.radius := r
     end
     OVERRIDE FUNC draw() #void
-        IO:PRINT:("Circle radius " + THIS:radius)
+        IO:PRINT:("Circle radius " + THIS.radius)
     end
     STATIC FUNC unit() #Circle
         RETURN Circle(0, 0, 1.0)

@@ -16,9 +16,9 @@ DEF index_of_nine #int = arr :INDEX_OF: (9)
 DEF slice_result #[#int] = arr :SLICE: (1, 4)
 
 // Test SUM operation
-DEF total #int = arr :SUM:
+DEF total #int = arr :SUM:()
 
 // Test SORT operation
 DEF unsorted #[#int] = [5, 2, 8, 1, 9]
-unsorted :SORT:
+unsorted :SORT:()
 DEF sorted_first #int = unsorted :GET: (0)

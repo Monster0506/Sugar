@@ -1,7 +1,7 @@
 CLASS Secret
     PRIVATE val #int
     CONSTRUCTOR()
-        THIS:val := 42
+        THIS.val := 42
     end
 end
 DEF s #Secret = Secret()

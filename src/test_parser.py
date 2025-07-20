@@ -96,15 +96,16 @@ def test_variable_assignment():
 
 def test_this_assignment():
     """Tests parsing of a 'this' assignment."""
-    code = "THIS:my_prop := 30"
+    code = "DEF THIS.my_prop #int = 30"
     ast = parse_to_ast(code)
 
     assert isinstance(ast, Program)
     assert len(ast.statements) == 1
 
     statement = ast.statements[0]
-    assert isinstance(statement, ThisAssignment)
-    assert statement.property_name.name == "my_prop"
+    assert isinstance(statement, VariableDeclaration)
+    assert isinstance(statement.name, PropertyAccess)
+    assert statement.name.property_name.name == "my_prop"
     assert isinstance(statement.value, Literal)
     assert statement.value.value == 30
 
@@ -692,7 +693,7 @@ def test_pattern_matching_all_forms():
 
 def test_super_call():
     """Tests parsing of a SUPER() call."""
-    code = "SUPER(1, 2)"
+    code = "SUPER:(1,2)"
     ast = parse_to_ast(code)
     assert isinstance(ast, Program)
     assert len(ast.statements) == 1

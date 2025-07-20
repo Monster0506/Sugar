@@ -4,7 +4,6 @@ program: statement*
 
 ?statement: variable_declaration
           | variable_assignment
-          | this_assignment
           | function_declaration
           | type_declaration
           | class_declaration
@@ -25,9 +24,17 @@ import_statement: IMPORT dotted_name
 dotted_name: IDENTIFIER (DOT IDENTIFIER)*
 
 // Variable Declaration
-variable_declaration: DEF IDENTIFIER type EQUALS expression
-variable_assignment: IDENTIFIER ASSIGN expression
-this_assignment: THIS COLON IDENTIFIER ASSIGN expression
+variable_declaration: DEF target_expression type EQUALS expression
+variable_assignment: target_expression ASSIGN expression
+
+
+target_expression: IDENTIFIER
+                | THIS
+                | SUPER
+                 | IDENTIFIER property_access
+                 | THIS property_access  
+                 | SUPER property_access
+
 
 // Function Declaration
 function_declaration: FUNC IDENTIFIER LPAR parameter_list? RPAR type? function_body END
@@ -153,16 +160,24 @@ relational_op: LESS_THAN | GREATER_THAN | LESS_THAN_OR_EQUAL_TO | GREATER_THAN_O
 
 method_call: COLON method_name COLON LPAR argument_list? RPAR
           | COLON method_name COLON
+super_method_call: SUPER COLON method_name COLON LPAR argument_list? RPAR
+this_method_call: THIS COLON method_name COLON LPAR argument_list? RPAR
 
 method_name:  IDENTIFIER
+            | THIS
+            | SUPER
 
 property_access: DOT IDENTIFIER
 
 array_access: LBRACKET expression RBRACKET
 
 ?primary_expression: literal
-                  | IDENTIFIER
+                  | target_expression
                   | IDENTIFIER LPAR argument_list? RPAR
+                  | SUPER COLON LPAR argument_list? RPAR
+                  | super_method_call
+                  | THIS COLON LPAR argument_list? RPAR
+                  | this_method_call
                   | method_call
                   | LPAR expression RPAR
                   | array_literal
@@ -176,8 +191,6 @@ array_access: LBRACKET expression RBRACKET
                   | lambda_expression
                   | anonymous_function
                   | spawn_statement
-                  | THIS
-                  | SUPER LPAR argument_list? RPAR
 
 // Literals
 literal: BOOLEAN | INTEGER | FLOAT | STRING | CHAR
@@ -221,7 +234,7 @@ custom_type: IDENTIFIER
 
 
 // 1. Single-word Keywords (Reserved words - also high precedence)
-ELSE_IF: "elif" // Added this as a multi-word keyword
+ELSE_IF: "elif"
 END: "end"
 TRUE: ":T:"
 FALSE: ":F:"
