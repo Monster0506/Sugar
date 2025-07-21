@@ -781,28 +781,6 @@ class SugarTransformer(Transformer):
 
         return main_body, elif_clauses, else_clase
 
-    def _filter_body_for_statements(self, body):
-        for piece in body:
-            if isinstance(piece, Statement):
-                yield piece
-            elif isinstance(piece, Token):
-                if piece.type == "END":
-                    break
-
-    def _filter_tokens_out(self, lst):
-        for piece in lst:
-            if isinstance(piece, Token):
-                continue
-            yield piece
-
-    def _transform_dict_entry_to_pattern(self, entry: DictEntry) -> DictEntryPattern:
-        return DictEntryPattern(key=entry.key, value=self.pattern(entry.value))
-
-    def _transform_map_entry_to_pattern(self, entry: MapEntry) -> MapEntryPattern:
-        return MapEntryPattern(
-            key=self.pattern(entry.key), value=self.pattern(entry.value)
-        )
-
     def tuple_pattern(self, _lparen, patterns, _rparen):
         logging.debug(f"tuple_pattern: patterns={patterns}")
         return TuplePattern(patterns=list(self._filter_tokens_out(patterns)) or [])
@@ -885,5 +863,26 @@ class SugarTransformer(Transformer):
             if all(map(lambda x: isinstance(x, Expression), args)):
                 arguments = list(self._filter_tokens_out(args))
 
-        print("ARGUMENTS HERE: ", arguments)
         return SuperCall(arguments=arguments if arguments else None)
+
+    def _filter_body_for_statements(self, body):
+        for piece in body:
+            if isinstance(piece, Statement):
+                yield piece
+            elif isinstance(piece, Token):
+                if piece.type == "END":
+                    break
+
+    def _filter_tokens_out(self, lst):
+        for piece in lst:
+            if isinstance(piece, Token):
+                continue
+            yield piece
+
+    def _transform_dict_entry_to_pattern(self, entry: DictEntry) -> DictEntryPattern:
+        return DictEntryPattern(key=entry.key, value=self.pattern(entry.value))
+
+    def _transform_map_entry_to_pattern(self, entry: MapEntry) -> MapEntryPattern:
+        return MapEntryPattern(
+            key=self.pattern(entry.key), value=self.pattern(entry.value)
+        )

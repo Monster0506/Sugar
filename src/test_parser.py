@@ -700,12 +700,12 @@ def test_super_call():
     expr_stmt = ast.statements[0]
     assert isinstance(expr_stmt, ExpressionStatement)
     assert isinstance(expr_stmt.expression, SuperCall)
-    assert isinstance(expr_stmt.expression.arguments, list)
-    assert len(expr_stmt.expression.arguments) == 2
-    assert isinstance(expr_stmt.expression.arguments[0], Literal)
-    assert expr_stmt.expression.arguments[0].value == 1
-    assert isinstance(expr_stmt.expression.arguments[1], Literal)
-    assert expr_stmt.expression.arguments[1].value == 2
+    assert isinstance(expr_stmt.expression.stuff, list)
+    assert len(expr_stmt.expression.stuff) == 2
+    assert isinstance(expr_stmt.expression.stuff[0], Literal)
+    assert expr_stmt.expression.stuff[0].value == 1
+    assert isinstance(expr_stmt.expression.stuff[1], Literal)
+    assert expr_stmt.expression.stuff[1].value == 2
 
 
 def test_float_literal():
