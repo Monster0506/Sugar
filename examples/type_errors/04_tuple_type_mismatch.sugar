@@ -1,0 +1,1 @@
+DEF my_tuple #(#str, #int) = ("hello", "world")

@@ -1,5 +1,3 @@
-from parser import parse_to_ast
-
 import pytest
 
 from src.ast_nodes import (
@@ -61,6 +59,7 @@ from src.ast_nodes import (
     VariableDeclaration,
     WhileStatement,
 )
+from src.parser import parse_to_ast
 
 
 def test_variable_declaration():
@@ -682,7 +681,6 @@ def test_pattern_matching_all_forms():
     match_stmt = ast.statements[0]
     assert isinstance(match_stmt, MatchStatement)
     assert len(match_stmt.case_clauses) == 6
-    print(match_stmt.case_clauses)
     assert isinstance(match_stmt.case_clauses[0].pattern, LiteralPattern)
     assert isinstance(match_stmt.case_clauses[1].pattern, TypedIdentifierPattern)
     assert isinstance(match_stmt.case_clauses[2].pattern, ArrayPattern)
@@ -770,7 +768,6 @@ def test_additive_expression():
 
     var_decl2 = ast.statements[1]
     assert isinstance(var_decl2, VariableDeclaration)
-    print(var_decl2.value)
 
 
 def test_multiplicative_expression():

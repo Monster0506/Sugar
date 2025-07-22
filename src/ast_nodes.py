@@ -72,7 +72,7 @@ class ThisAssignment(Statement):
 class FunctionDeclaration(Statement):
     name: Identifier
     parameters: list[Parameter]
-    return_type: Type | None
+    return_type: Type
     body: list[Statement]
 
 

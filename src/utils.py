@@ -15,13 +15,13 @@ def debug_wrapper(func, logger_name=None, level=logging.DEBUG):
     def wrapper(*args, **kwargs):
         logger = logging.getLogger(logger_name or f"{func.__module__}.{func.__name__}")
         logger.setLevel(level)
-        # For methods, args[0] is 'self', so we log from args[1:]
-        # For regular functions, args[0] is the first argument
         logged_args = args[1:] if hasattr(func, "__self__") else args
         logger.debug(
             f"{func.__name__} called with args: {logged_args!r} and kwargs: {kwargs!r}"
         )
-        return func(*args, **kwargs)  # Crucially, call the original function!
+        result = func(*args, **kwargs)
+        logger.debug(f"{func.__name__} returned result: {result!r}")
+        return result
 
     return wrapper
 
@@ -38,10 +38,7 @@ def debug_class_wrapper(cls, logger_name=None, level=logging.DEBUG):
                                      Defaults to None.
     """
     for name, method in cls.__dict__.items():
-        if callable(method) and not name.startswith(
-            "__"
-        ):  # Avoid wrapping dunder methods
-            # Use a more specific logger name for each method if desired
+        if callable(method) and not name.startswith("__"):
             method_logger_name = logger_name or cls.__name__
             setattr(cls, name, debug_wrapper(method, method_logger_name, level))
     return cls

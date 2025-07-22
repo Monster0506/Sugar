@@ -1,4 +1,16 @@
 FUNC add(a #int, b #int) #int
     RETURN a + b
 end
-DEF result #int = add(2, 3) 
+DEF result #int = add(8, 3) 
+
+
+FUNC fibb(a #int) #int
+    if $a==1$ do
+        RETURN 1
+    elif $a==0$ do
+        RETURN 0
+    end
+    RETURN fibb(a-2) + fibb(a-1)
+end
+
+DEF fibr #int = fibb(5)

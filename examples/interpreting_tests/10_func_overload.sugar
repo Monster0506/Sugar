@@ -15,4 +15,3 @@ FUNC bar(a #int) #int
     end
 end
 DEF z #int = bar(5)
-IO:PRINT:(z)

@@ -1,4 +1,4 @@
 DEF arr #[#int] = [1, 2, 3]
-DEF first #int = arr :GET: (0) 
+// DEF first #int = arr :GET: (0) 
 arr := [4, 5, 6]
-first := arr :GET: (2) 
+// first := arr :GET: (2) 
