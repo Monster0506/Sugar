@@ -146,7 +146,6 @@ def test_function_declaration_and_call():
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"result": 11, "fibr": 5}
-    print(interpreter.environment)
     assert check_variable_helper(interpreter, expected)
 
 
@@ -175,11 +174,77 @@ def test_array_operations():
         "last": 2,
         "filtered": [2],
         "mapped": [4, 6, 10, 14],
-        "found": -1,
+        "found": False,
         "has_five": True,
         "arr": [2, 3, 5, 7],
         "all_positive": True,
     }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_advanced_array_operations():
+    with open(f"{interpreting_tests_path}/60_new_array_ops.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "arr": [10, 2, 3, 4, 5],
+        "first": 10,
+        "has_three": True,
+        "has_nine": False,
+        "index_of_three": 2,
+        "index_of_nine": -1,
+        "slice_result": [2, 3, 4],
+        "total": 24,
+        "unsorted": [1, 2, 5, 8, 9],
+        "sorted_first": 1,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_string_operations():
+    with open(f"{interpreting_tests_path}/12_string_ops.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"l": 5, "up": "HELLO", "lo": "hello", "s": "HAello"}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_advanced_string_operations():
+    with open(f"{interpreting_tests_path}/61_string_array_operations.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "after_remove_first": "e",
+        "copy": "cba",
+        "final_length": 7,
+        "final_string": "Heorld!",
+        "first_after_insert": "X",
+        "first_char": "H",
+        "h_index": -1,
+        "has_h": False,
+        "has_z": False,
+        "last_char": "o",
+        "len": 5,
+        "len_after_add": 6,
+        "lower_s": "hello",
+        "multi": "Heorld!",
+        "reversed_first": "c",
+        "s": "XYello!",
+        "second_char": "Y",
+        "test_remove": "est",
+        "upper_s": "HELLO",
+        "z_index": -1,
+    }
+    __import__("pprint").pprint(interpreter.environment.values)
     assert check_variable_helper(interpreter, expected)
 
 

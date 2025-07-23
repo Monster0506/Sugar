@@ -3,7 +3,7 @@ from src.ast_nodes import ArrayType, MapType, TupleType, Type
 
 class TypeChecker:
     def assert_type(self, value, expected_type):
-        
+
         if isinstance(expected_type, ArrayType):
             return self._assert_array(value, expected_type)
         elif isinstance(expected_type, MapType):
@@ -28,7 +28,7 @@ class TypeChecker:
             raise TypeError(f"Unknown simple type: {expected_type.name}")
 
         if not isinstance(value, type_map[expected_type.name]):
-            
+
             raise TypeError(
                 f"Type mismatch: expected {expected_type.name}, got {type(value).__name__}"
             )
@@ -39,7 +39,7 @@ class TypeChecker:
         return True
 
     def _assert_array(self, value, expected_type: ArrayType):
-        if not isinstance(value, list):
+        if not (isinstance(value, list)):
             raise TypeError(f"Expected an array, but got {type(value).__name__}")
 
         if expected_type.base_type is None:
@@ -76,7 +76,10 @@ class TypeChecker:
 
     def is_assignable(self, value, target_type: Type):
         if isinstance(value, list):
-            return self._assert_array(value, target_type)
+            if isinstance(target_type, ArrayType):
+                return self._assert_array(value, target_type)
+            else:
+                return False  # A list cannot be assigned to a non-array type like str
         try:
             self.assert_type(value, target_type)
             return True
@@ -86,4 +89,3 @@ class TypeChecker:
     def __repr__(self) -> str:
         attrs: str = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
         return f"{self.__class__.__name__}({attrs})"
-

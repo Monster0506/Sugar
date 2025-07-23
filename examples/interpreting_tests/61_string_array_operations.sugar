@@ -1,6 +1,3 @@
-// Test 61: Comprehensive String Array Operations
-// Since #str is an alias for #[#char], all array operations should work on strings
-
 // Basic string creation and length
 DEF s #str = "Hello"
 DEF len #int = s :LENGTH:()
@@ -14,13 +11,13 @@ DEF first_char #char = s :GET: (0)
 DEF last_char #char = s :GET: (4)
 
 // Array modification operations
-s :ADD: ('!')
+s:=s  :ADD: ('!')
 DEF len_after_add #int = s :LENGTH:()
 
-s :INSERT: (0, 'X')
+s:=s  :INSERT: (0, 'X')
 DEF first_after_insert #char = s :GET: (0)
 
-s :SET: (1, 'Y')
+s:=s  :SET: (1, 'Y')
 DEF second_char #char = s :GET: (1)
 
 // Search operations
@@ -31,18 +28,18 @@ DEF z_index #int = s :INDEX_OF: ('Z')
 
 // Array manipulation
 DEF copy #str = "abc"
-copy :REVERSE:()
+copy:= copy :REVERSE:()
 DEF reversed_first #char = copy :GET: (0)
 
 // Remove operation
 DEF test_remove #str = "test"
-test_remove :REMOVE: (0)
+test_remove:= test_remove :REMOVE: (0)
 DEF after_remove_first #char = test_remove :GET: (0)
 
 // Multiple operations on same string
 DEF multi #str = "world"
-multi :ADD: ('!')
-multi :INSERT: (0, 'H')
-multi :SET: (1, 'e')
+multi:= multi :ADD: ('!')
+multi:= multi :INSERT: (0, 'H')
+multi:= multi :SET: (1, 'e')
 DEF final_length #int = multi :LENGTH:()
 DEF final_string #str = multi

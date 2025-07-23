@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from lark.tree import ParseTree
 
 from src.ast_nodes import *
-from src.builtin_operations import array_operations
+from src.builtin_operations import array_operations, str_operations
 from src.type_checker import TypeChecker
 
 
@@ -275,33 +275,38 @@ class Interpreter:
         base = self.visit(node.base)
         method_name = node.function_name.name
 
-        if not self.environment.type_checker.is_assignable(
+        can_use_array = self.environment.type_checker.is_assignable(
             base, ArrayType(name="[dynamic]", base_type=None)
-        ):
-            raise TypeError(f"Cannot call method '{method_name}' on non-array type.")
+        )
+        can_use_str = self.environment.type_checker.is_assignable(base, Type("str"))
 
-        if method_name not in array_operations:
-            raise NotImplementedError(
-                f"Method '{method_name}' is not implemented for arrays."
-            )
+        if can_use_str and method_name in str_operations.keys():
+            operation = str_operations[method_name]
+            evaluated_args = [self.visit(arg) for arg in node.arguments]
+            print(f"[DEBUG] visit_MethodCall (str): base={base}, method_name={method_name}, evaluated_args={evaluated_args}")
 
-        operation = array_operations[method_name]
-        evaluated_args = [self.visit(arg) for arg in node.arguments]
+            new_value = operation(base, *evaluated_args)
+            return new_value
 
-        # For methods that modify the array in-place
-        if method_name in ["ADD", "INSERT", "REMOVE", "REVERSE"]:
-            operation(base, *evaluated_args)
-            return None  # Or return the modified array if you prefer
+        elif can_use_array and method_name in array_operations.keys():
+            operation = array_operations[method_name]
+            evaluated_args = [self.visit(arg) for arg in node.arguments]
+
+            if method_name in ["ADD", "INSERT", "REMOVE", "REVERSE"]:
+                operation(base, *evaluated_args)
+                return None
+            else:
+                result = operation(base, *evaluated_args)
+                return result
         else:
-            # For methods that return a new value
-            return operation(base, *evaluated_args)
+            raise NotImplementedError(
+                f"Method '{method_name}' is not implemented for this type."
+            )
 
     def visit_LambdaExpression(self, node: LambdaExpression):
 
         def lambda_func(*args):
-            # Save the current environment
             calling_environment = self.environment
-            # Create a new environment for the function call, enclosing the calling environment
             self.environment = Environment(calling_environment)
 
             for param, arg_value in zip(node.parameters, args):
@@ -309,7 +314,6 @@ class Interpreter:
 
             result = self.visit(node.body)
 
-            # Restore the original environment after the function call
             self.environment = calling_environment
             return result
 
@@ -317,25 +321,20 @@ class Interpreter:
 
     def visit_AnonymousFunction(self, node: AnonymousFunction):
         def anon_func(*args):
-            # Save the current environment
             calling_environment = self.environment
-            # Create a new environment for the function call, enclosing the calling environment
             self.environment = Environment(calling_environment)
 
-            # Define parameters in the new environment
             for param, arg_value in zip(node.parameters, args):
                 self.environment.define(param.name.name, arg_value, param.param_type)
 
-            # Execute the function body
             for statement in node.body:
                 self.visit(statement)
                 if self.return_value is not None:
                     break
 
             result = self.return_value
-            self.return_value = None  # Reset for next calls
+            self.return_value = None
 
-            # Restore the original environment after the function call
             self.environment = calling_environment
             return result
 
