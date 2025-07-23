@@ -161,6 +161,28 @@ def test_function_overload():
     assert check_variable_helper(interpreter, expected)
 
 
+def test_array_operations():
+    with open(f"{interpreting_tests_path}/11_array_ops.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "len": 2,
+        "val": 2,
+        "first": 3,
+        "last": 2,
+        "filtered": [2],
+        "mapped": [4, 6, 10, 14],
+        "found": -1,
+        "has_five": True,
+        "arr": [2, 3, 5, 7],
+        "all_positive": True,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
     results = []
     for k, v in expected.items():
@@ -169,4 +191,3 @@ def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) ->
         correct_value = item.value == v
         results.append(isvar and correct_value)
     return all(results)
-
