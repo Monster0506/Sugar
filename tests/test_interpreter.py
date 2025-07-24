@@ -3,8 +3,10 @@ from typing import Any
 
 import pytest
 
+from src.ast_nodes import Program
 from src.interpreter import Interpreter, Variable
 from src.parser import Parser
+
 
 example_path = Path("examples").resolve()
 interpreting_tests_path = (example_path / "interpreting_tests").resolve()
@@ -15,6 +17,7 @@ def test_variable_declaration():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     assert isinstance(interpreter.environment.get("x"), Variable)
@@ -26,6 +29,7 @@ def test_variable_assignment():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     assert isinstance(interpreter.environment.get("x"), Variable)
@@ -37,6 +41,7 @@ def test_variable_types():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"a": 2, "b": 3.5, "c": False, "d": "B", "e": "world"}
@@ -48,6 +53,7 @@ def test_array_declaration():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"arr": [4, 5, 6]}
@@ -59,6 +65,7 @@ def test_type_mismatch():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     with pytest.raises(TypeError):
         interpreter.interpret(ast)
@@ -69,6 +76,7 @@ def test_array_type_mismatch():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     with pytest.raises(TypeError):
         interpreter.interpret(ast)
@@ -79,6 +87,7 @@ def test_map_type_mismatch():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     with pytest.raises(TypeError):
         interpreter.interpret(ast)
@@ -89,6 +98,7 @@ def test_tuple_type_mismatch():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     with pytest.raises(TypeError):
         interpreter.interpret(ast)
@@ -99,6 +109,7 @@ def test_map_declaration():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"m": {"c": 3, "d": 4}}
@@ -110,6 +121,7 @@ def test_if_statement():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"y": 1}
@@ -121,6 +133,7 @@ def test_if_else_statement():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"y": 0}
@@ -132,6 +145,7 @@ def test_for_loop():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"sum": 12}  # (1*2) + (2*2) + (3*2) = 2 + 4 + 6 = 12
@@ -143,6 +157,7 @@ def test_function_declaration_and_call():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"result": 11, "fibr": 5}
@@ -154,6 +169,8 @@ def test_function_overload():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"x": 5, "y": 4, "z": 5}
@@ -165,6 +182,7 @@ def test_array_operations():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {
@@ -187,6 +205,7 @@ def test_advanced_array_operations():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {
@@ -209,6 +228,7 @@ def test_string_operations():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"l": 5, "up": "HELLO", "lo": "hello", "s": "HAello"}
@@ -220,6 +240,7 @@ def test_advanced_string_operations():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {
@@ -252,9 +273,22 @@ def test_while_loop():
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
+    assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"x": 0}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_func_return():
+    with open(f"{interpreting_tests_path}/14_func_return.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"b": 11}
     assert check_variable_helper(interpreter, expected)
 
 

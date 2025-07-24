@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from lark.tree import ParseTree
-
 from src.ast_nodes import *
 from src.builtin_operations import array_operations, str_operations
 from src.type_checker import TypeChecker
@@ -301,7 +299,9 @@ class Interpreter:
 
         elif can_use_array and method_name in array_operations.keys():
             operation = array_operations[method_name]
-            evaluated_args = [self.visit(arg) for arg in node.arguments]
+            evaluated_args = (
+                [self.visit(arg) for arg in node.arguments] if node.arguments else []
+            )
 
             if method_name in ["ADD", "INSERT", "REMOVE", "REVERSE"]:
                 operation(base, *evaluated_args)

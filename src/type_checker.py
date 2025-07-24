@@ -21,7 +21,7 @@ class TypeChecker:
             "float": float,
             "str": str,
             "bool": bool,
-            "char": str,  # Assuming char is represented as a string of length 1
+            "char": str,
         }
         if expected_type.name not in type_map:
 
