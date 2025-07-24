@@ -89,3 +89,73 @@ class TypeChecker:
     def __repr__(self) -> str:
         attrs: str = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
         return f"{self.__class__.__name__}({attrs})"
+
+    def get_runtime_type(self, value) -> Type:
+        """
+        Infers the AST Type object from a Python runtime value.
+        """
+        if isinstance(value, int):
+            return Type("int")
+        elif isinstance(value, float):
+            return Type("float")
+        elif isinstance(value, str):
+            if len(value) == 1:
+                return Type("char")
+            return Type("str")
+        elif isinstance(value, bool):
+            return Type("bool")
+        # elif isinstance(value, list):
+        # # For lists, try to determine the base type if possible
+        # if not value:  # Empty list
+        #     return ArrayType(name="[]", base_type=Type("dynamic"))  # Or Type("any")
+        #
+        # # Try to find a common base type for all elements
+        # first_element_type = self.get_runtime_type(value[0])
+        # all_same_type = True
+        # for item in value:
+        #     if not self.is_assignable_type_to_type(
+        #         self.get_runtime_type(item), first_element_type
+        #     ):
+        #         all_same_type = False
+        #         break
+        #
+        # if all_same_type:
+        #     return ArrayType(
+        #         name=f"[{first_element_type.name}]", base_type=first_element_type
+        #     )
+        # else:
+        #     return ArrayType(
+        #         name="[dynamic]", base_type=Type("dynamic")
+        #     )  # Mixed types, or just "dynamic"
+        # elif isinstance(value, dict):
+        #     # For maps, infer key and value types
+        #     if not value:
+        #         return MapType(
+        #             name="{}", key_type=Type("dynamic"), value_type=Type("dynamic")
+        #         )
+        #
+        #     # Take the first key-value pair as a hint, or iterate for a common type
+        #     first_key, first_value = next(iter(value.items()))
+        #     key_type = self.get_runtime_type(first_key)
+        #     value_type = self.get_runtime_type(first_value)
+        #
+        #     # You might want to do a more robust common type inference here for complex scenarios
+        #     return MapType(
+        #         name=f"{{{key_type.name}:{value_type.name}}}",
+        #         key_type=key_type,
+        #         value_type=value_type,
+        #     )
+        # elif isinstance(value, tuple):
+        #     # For tuples, infer types for each element
+        #     element_types = [self.get_runtime_type(item) for item in value]
+        #     return TupleType(
+        #         name=f"({', '.join(t.name for t in element_types)})",
+        #         types=element_types,
+        #     )
+        elif value is None:
+            return Type("null")  # Assuming you have a 'null' or 'None' type
+        elif callable(value):  # For functions, lambdas, etc.
+            return Type("function")
+        else:
+
+            raise TypeError("Could not infer runtime type")

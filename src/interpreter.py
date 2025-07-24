@@ -7,7 +7,7 @@ from src.type_checker import TypeChecker
 
 @dataclass
 class Variable:
-    value: str
+    value: Any
     var_type: Type
 
 
@@ -164,21 +164,7 @@ class Interpreter:
         return self.visit_BinaryOperation(node)
 
     def visit_RelationalExpression(self, node: RelationalExpression):
-        left = self.visit(node.left)
-        right = self.visit(node.right)
-
-        if node.operator == ">":
-            return left > right
-        elif node.operator == "<":
-            return left < right
-        elif node.operator == ">=":
-            return left >= right
-        elif node.operator == "<=":
-            return left <= right
-        elif node.operator == "==":
-            return left == right
-        elif node.operator == "!=":
-            return left != right
+        return self.visit_BinaryOperation(node)
 
     def visit_IfStatement(self, node: IfStatement):
         if self.visit(node.condition):
@@ -372,3 +358,37 @@ class Interpreter:
             return result
 
         return anon_func
+
+    def visit_MatchStatement(self, node: MatchStatement):
+        expression = self.visit(node.expression)
+        matched = None
+        original_environment = self.environment
+        for case_clause in node.case_clauses:
+            self.environment = Environment(original_environment)
+            if isinstance(case_clause.pattern, IdentifierPattern):
+                self.environment.define(
+                    case_clause.pattern.name.name,
+                    expression,
+                    self.environment.type_checker.get_runtime_type(expression),
+                )
+                pattern = self.visit(case_clause.pattern)
+            else:
+                pattern = self.visit(case_clause.pattern)
+            guard = self.visit(case_clause.guard) if case_clause.guard else True
+            if expression == pattern and guard:
+                matched = case_clause
+                break
+        if not matched:
+            if node.default_clause:
+                for statement in node.default_clause.body:
+                    self.visit(statement)
+        else:
+            for statement in matched.body:
+                self.visit(statement)
+        self.environment = original_environment
+
+    def visit_LiteralPattern(self, node: LiteralPattern):
+        return self.visit(node.literal)
+
+    def visit_IdentifierPattern(self, node: IdentifierPattern):
+        return self.visit(node.name)

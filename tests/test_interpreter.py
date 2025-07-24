@@ -398,6 +398,34 @@ def test_method_call_pipeline():
     assert check_variable_helper(interpreter, expected)
 
 
+def test_basic_match_statements():
+    with open(f"{interpreting_tests_path}/22_match_basic.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "y": 1,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_match_statements_with_guard():
+    with open(f"{interpreting_tests_path}/64_match_with_guard.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "x": 2,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
     results = []
     for k, v in expected.items():

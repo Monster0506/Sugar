@@ -1,0 +1,11 @@
+DEF my_var #int = 2
+DEF x #int = 0
+
+MATCH my_var
+    CASE 1 do
+        x := 1
+    CASE n if $n % 2 <= 0$ do
+        x := n
+    DEFAULT do
+        x := 3
+end
