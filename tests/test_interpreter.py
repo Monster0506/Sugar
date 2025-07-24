@@ -280,7 +280,7 @@ def test_while_loop():
     assert check_variable_helper(interpreter, expected)
 
 
-def test_func_return():
+def test_function_return():
     with open(f"{interpreting_tests_path}/14_func_return.sugar", "r") as f:
         code = f.read()
     parser = Parser()
