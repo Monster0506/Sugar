@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 
 from src.ast_nodes import Program
-from src.interpreter import Interpreter, Variable
+from src.interpreter import Function, Interpreter, Variable
 from src.parser import Parser
 
 
@@ -319,6 +319,70 @@ def test_boolean_logic_and_operators():
         "o": True,
     }
 
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_tuple_declaration():
+    with open(f"{interpreting_tests_path}/16_tuple_decl.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "t": (1, "hi"),
+    }
+
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_nested_if_statements():
+    with open(f"{interpreting_tests_path}/17_nested_if.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"y": 1}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_function_with_no_parameters():
+    with open(f"{interpreting_tests_path}/18_func_no_params.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"x": 5}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_default_function():
+    with open(f"{interpreting_tests_path}/19_func_default.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    assert isinstance(interpreter.environment.get("foo"), list)
+    assert isinstance(interpreter.environment.get("foo")[0], Function)
+    assert len(interpreter.environment.get("foo")[0].params) == 0
+
+
+def test_array_map_method():
+    with open(f"{interpreting_tests_path}/20_array_map.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"doubled": [2, 4, 6], "arr": [1, 2, 3]}
     assert check_variable_helper(interpreter, expected)
 
 
