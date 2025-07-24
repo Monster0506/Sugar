@@ -67,7 +67,7 @@ class Interpreter:
         self.environment = Environment()
         self.return_value = None
 
-    def interpret(self, program: Program | ParseTree):
+    def interpret(self, program: Program):
         for statement in program.statements:
             self.visit(statement)
 
@@ -202,6 +202,14 @@ class Interpreter:
                 self.visit(statement)
         self.environment = original_environment
 
+    def visit_WhileStatement(self, node: WhileStatement):
+        original_environment = self.environment
+        while self.visit(node.condition):
+            self.environment = Environment(original_environment)
+            for statement in node.body:
+                self.visit(statement)
+        self.environment = original_environment
+
     def visit_FunctionDeclaration(self, node: FunctionDeclaration):
         func = Function(node.parameters, node.body, node.return_type)
         self.environment.define(node.name.name, func, node.return_type)
@@ -218,7 +226,9 @@ class Interpreter:
             raise TypeError(f"{func_name} is not a function.")
 
         # Evaluate arguments once
-        evaluated_args = [self.visit(arg) for arg in node.arguments]
+        evaluated_args = (
+            [self.visit(arg) for arg in node.arguments] if node.arguments else []
+        )
 
         func_to_call = self._get_correct_function(functions, evaluated_args)
 
@@ -282,8 +292,9 @@ class Interpreter:
 
         if can_use_str and method_name in str_operations.keys():
             operation = str_operations[method_name]
-            evaluated_args = [self.visit(arg) for arg in node.arguments]
-            print(f"[DEBUG] visit_MethodCall (str): base={base}, method_name={method_name}, evaluated_args={evaluated_args}")
+            evaluated_args = (
+                [self.visit(arg) for arg in node.arguments] if node.arguments else []
+            )
 
             new_value = operation(base, *evaluated_args)
             return new_value
@@ -309,7 +320,9 @@ class Interpreter:
             calling_environment = self.environment
             self.environment = Environment(calling_environment)
 
-            for param, arg_value in zip(node.parameters, args):
+            for param, arg_value in zip(
+                node.parameters if node.parameters else [], args
+            ):
                 self.environment.define(param.name.name, arg_value, param.param_type)
 
             result = self.visit(node.body)
@@ -324,7 +337,9 @@ class Interpreter:
             calling_environment = self.environment
             self.environment = Environment(calling_environment)
 
-            for param, arg_value in zip(node.parameters, args):
+            for param, arg_value in zip(
+                node.parameters if node.parameters else [], args
+            ):
                 self.environment.define(param.name.name, arg_value, param.param_type)
 
             for statement in node.body:

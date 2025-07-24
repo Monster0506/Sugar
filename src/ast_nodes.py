@@ -402,7 +402,7 @@ class InterfaceDeclaration(Statement):
 @dataclass
 class ArrayType(Type):
     name: str
-    base_type: Type
+    base_type: Type | None
 
 
 @dataclass

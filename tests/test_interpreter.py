@@ -244,7 +244,17 @@ def test_advanced_string_operations():
         "upper_s": "HELLO",
         "z_index": -1,
     }
-    __import__("pprint").pprint(interpreter.environment.values)
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_while_loop():
+    with open(f"{interpreting_tests_path}/13_while_loop.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"x": 0}
     assert check_variable_helper(interpreter, expected)
 
 
