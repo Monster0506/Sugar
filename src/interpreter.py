@@ -157,6 +157,12 @@ class Interpreter:
     def visit_MultiplicativeExpression(self, node: MultiplicativeExpression):
         return self.visit_BinaryOperation(node)
 
+    def visit_AndExpression(self, node: AndExpression):
+        return self.visit_BinaryOperation(node)
+
+    def visit_OrExpression(self, node: OrExpression):
+        return self.visit_BinaryOperation(node)
+
     def visit_RelationalExpression(self, node: RelationalExpression):
         left = self.visit(node.left)
         right = self.visit(node.right)
@@ -263,6 +269,18 @@ class Interpreter:
 
     def visit_EqualityExpression(self, node: EqualityExpression):
         return self.visit_BinaryOperation(node)
+
+    def visit_UnaryOperation(self, node: UnaryOperation):
+        value = self.visit(node.expression)
+        if node.operator == "!":
+            return not value
+        if node.operator == "-":
+            return -value
+        if node.operator == "+":
+            return +value
+
+    def visit_NotExpression(self, node: NotExpression):
+        return self.visit_UnaryOperation(node)
 
     def _get_correct_function(self, funcs: list[Function], evaluated_args: list):
         for func in funcs:

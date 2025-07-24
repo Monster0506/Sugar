@@ -97,7 +97,15 @@ class SugarTransformer(Transformer):
 
         if len(children) == 1:
             return children[0]
-
+        if (
+            len(children) == 3
+            and isinstance(children[0], Token)
+            and children[0].type == "LPAR"
+            and isinstance(children[2], Token)
+            and children[2].type == "RPAR"
+        ):
+            # The actual expression is the middle child
+            return children[1]
         if isinstance(children[0], Identifier) and children[1].type == "LPAR":
             func_name_node = children[0]
             arguments = []

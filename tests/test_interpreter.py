@@ -292,6 +292,36 @@ def test_function_return():
     assert check_variable_helper(interpreter, expected)
 
 
+def test_boolean_logic_and_operators():
+    with open(f"{interpreting_tests_path}/15_bool_logic.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "t": True,
+        "b": True,
+        "c": True,
+        "f": False,
+        "d": True,
+        "e": True,
+        "r": False,
+        "g": False,
+        "h": True,
+        "i": True,
+        "j": True,
+        "k": True,
+        "l": True,
+        "m": False,
+        "n": True,
+        "o": True,
+    }
+
+    assert check_variable_helper(interpreter, expected)
+
+
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
     results = []
     for k, v in expected.items():
