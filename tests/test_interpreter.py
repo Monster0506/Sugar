@@ -426,6 +426,61 @@ def test_match_statements_with_guard():
     assert check_variable_helper(interpreter, expected)
 
 
+def test_boolean_return_expression_from_function():
+    with open(f"{interpreting_tests_path}/23_func_bool_return.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "b": True,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_nested_function_calls():
+    with open(f"{interpreting_tests_path}/24_nested_func_call.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "y": 6,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_array_filter_method():
+    with open(f"{interpreting_tests_path}/25_array_filter.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "evens": [2, 4],
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_void_function():
+    with open(f"{interpreting_tests_path}/26_func_void.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    assert isinstance(interpreter.environment.get("print_hello"), list)
+    assert isinstance(interpreter.environment.get("print_hello")[0], Function)
+    assert len(interpreter.environment.get("print_hello")[0].params) == 0
+
+
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
     results = []
     for k, v in expected.items():
