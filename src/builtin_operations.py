@@ -1,3 +1,4 @@
+import functools
 from typing import Any
 
 
@@ -21,6 +22,7 @@ array_operations = {
     "SET": (_set_and_return_array),
     "CONTAINS": (lambda arr, val: val in arr),
     "SLICE": (lambda arr, start, end: arr[start:end]),
+    "REDUCE": (lambda arr, func, initial: functools.reduce(func, arr, initial)),
     "SUM": (lambda arr: sum(arr)),
     "SORT": (lambda arr: arr.sort()),
 }

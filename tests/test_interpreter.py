@@ -386,6 +386,18 @@ def test_array_map_method():
     assert check_variable_helper(interpreter, expected)
 
 
+def test_method_call_pipeline():
+    with open(f"{interpreting_tests_path}/21_pipeline.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"result": 24, "arr": [1, 2, 3, 4, 5]}
+    assert check_variable_helper(interpreter, expected)
+
+
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
     results = []
     for k, v in expected.items():
