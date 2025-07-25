@@ -80,8 +80,20 @@ str_operations = {
     "LOWER": (lambda s: s.lower()),
 }
 
+
+def _raise_value_error(key, d):
+    raise ValueError(f"{key} missing from {d}")
+
+
+def _safe_get(d, key):
+    print(f"safe_get with {key=}, {d=}")
+    if key in d:
+        return d.get(key)
+    raise KeyError(f"{key} missing from {d}")
+
+
 map_operations = {
-    "GET": (lambda d, key: d.get(key)),
+    "GET": (_safe_get),
     "SET": (_set_and_return_dict),
     "KEYS": (lambda d: list(d.keys())),
     "VALUES": (lambda d: list(d.values())),

@@ -591,3 +591,14 @@ def test_array_insert_operation():
     interpreter.interpret(ast)
     expected = {"arr": [1, 99, 2, 3]}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_missing_value_in_map_get_operation():
+    with open(f"{interpreting_tests_path}/33_map_get_missing.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(KeyError):
+        interpreter.interpret(ast)
