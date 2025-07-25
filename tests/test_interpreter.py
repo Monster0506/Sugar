@@ -602,3 +602,51 @@ def test_missing_value_in_map_get_operation():
     interpreter = Interpreter()
     with pytest.raises(KeyError):
         interpreter.interpret(ast)
+
+
+def test_string_concatenation():
+    with open(f"{interpreting_tests_path}/34_func_str_concat.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"msg": "Hello, World"}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_array_function():
+    with open(f"{interpreting_tests_path}/35_func_array_return.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"arr": [1, 2, 3]}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_map_function():
+    with open(f"{interpreting_tests_path}/36_func_map_return.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"m": {"a": 1, "b": 2}}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_tuple_function():
+    with open(f"{interpreting_tests_path}/37_func_tuple_return.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"t": (1, "a")}
+    assert check_variable_helper(interpreter, expected)
