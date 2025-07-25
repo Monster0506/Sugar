@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-
-
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarInstance
 from src.builtin_operations import array_operations, map_operations, str_operations
@@ -22,12 +20,6 @@ class Function:
     return_type: Type
 
 
-
-
-
-
-
-
 class Environment:
     def __init__(self, enclosing=None):
         self.values = {}
@@ -35,7 +27,6 @@ class Environment:
         self.type_checker = TypeChecker(self)
 
     def define(self, name, value, var_type: Type):
-        
         if isinstance(value, Function):
 
             if name in self.values.keys() and self.values[name]:
@@ -52,7 +43,7 @@ class Environment:
             self.values[name] = Variable(value, var_type)
 
     def assign(self, name, value):
-        
+
         if name in self.values:
             if isinstance(self.values[name], Variable):
                 self.type_checker.assert_type(value, self.values[name].var_type)
@@ -66,7 +57,7 @@ class Environment:
         raise NameError(f"Undefined variable '{name}'.")
 
     def get(self, name):
-        
+
         if name in self.values:
             return self.values[name]
         if self.enclosing is not None:
@@ -98,8 +89,6 @@ class Interpreter:
 
     def visit_Identifier(self, node: Identifier):
         name = node.name
-        if name.lower() == "this":
-            name = "this"
         value = self.environment.get(name)
         if isinstance(value, Variable):
             return value.value
@@ -142,18 +131,23 @@ class Interpreter:
                 # Check if the property already exists in the instance's environment
                 try:
                     base_instance.environment.get(property_name)
-                    # If it exists, assign to it
                     base_instance.environment.assign(property_name, value)
                 except NameError:
-                    # If it doesn't exist, define it
-                    # Get the property declaration from the class definition
-                    property_decl = base_instance.sugar_class.properties.get(property_name)
+                    property_decl = base_instance.sugar_class.properties.get(
+                        property_name
+                    )
                     if property_decl:
-                        base_instance.environment.define(property_name, value, property_decl.property_type)
+                        base_instance.environment.define(
+                            property_name, value, property_decl.property_type
+                        )
                     else:
-                        raise NameError(f"Undefined property '{property_name}' on instance of '{base_instance.sugar_class.name}'.")
+                        raise NameError(
+                            f"Undefined property '{property_name}' on instance of '{base_instance.sugar_class.name}'."
+                        )
             else:
-                raise TypeError(f"Cannot assign to property of non-instance type: {type(base_instance).__name__}")
+                raise TypeError(
+                    f"Cannot assign to property of non-instance type: {type(base_instance).__name__}"
+                )
         else:
             self.environment.assign(node.name.name, value)
 
@@ -251,7 +245,9 @@ class Interpreter:
         functions = self.environment.get(func_name.name)
 
         if isinstance(functions, SugarClass):
-            instance = SugarInstance(sugar_class=functions, environment=Environment(self.environment))
+            instance = SugarInstance(
+                sugar_class=functions, environment=Environment(self.environment)
+            )
             if functions.constructor:
                 self._execute_function(functions.constructor, [], instance)
             return instance
@@ -308,10 +304,11 @@ class Interpreter:
                         return func
             return None
         elif isinstance(funcs, SugarClass):
-            # This case is for class instantiation, handled in visit_FunctionCall
             return funcs
         else:
-            raise TypeError(f"Expected a function or a class, but got {type(funcs).__name__}")
+            raise TypeError(
+                f"Expected a function or a class, but got {type(funcs).__name__}"
+            )
 
     def _execute_function(self, func: Function, args: list, instance=None):
         # Save the current environment
@@ -319,7 +316,9 @@ class Interpreter:
         # Create a new environment for the function call, enclosing the calling environment
         self.environment = Environment(calling_environment)
         if instance:
-            self.environment.define("this", instance, None) # Type will be checked later
+            self.environment.define(
+                "THIS", instance, None
+            )  # Type will be checked later
 
         for param, arg_value in zip(func.params, args):
             self.environment.define(param.name.name, arg_value, param.param_type)
@@ -344,11 +343,15 @@ class Interpreter:
             if method_name in base.sugar_class.methods:
                 method = base.sugar_class.methods[method_name]
                 evaluated_args = (
-                    [self.visit(arg) for arg in node.arguments] if node.arguments else []
+                    [self.visit(arg) for arg in node.arguments]
+                    if node.arguments
+                    else []
                 )
                 return self._execute_function(method, evaluated_args, base)
             else:
-                raise AttributeError(f"Method '{method_name}' not found on instance of {base.sugar_class.name}")
+                raise AttributeError(
+                    f"Method '{method_name}' not found on instance of {base.sugar_class.name}"
+                )
 
         assumed_type = self.environment.type_checker.get_runtime_type(base)
 
@@ -404,24 +407,24 @@ class Interpreter:
             return new_value
         else:
             raise NotImplementedError(
-                f"Method '{method_name}' is not implemented for this type."
+                f"Method '{method_name}' is not implemented for this type {assumed_type}"
             )
-
-    
-
-    
 
     def visit_PropertyAccess(self, node: PropertyAccess):
         base = self.visit(node.base)
         if isinstance(base, SugarInstance):
             return base.environment.get(node.property_name.name).value
         else:
-            raise TypeError(f"Cannot access property on non-instance type: {type(base).__name__}")
+            raise TypeError(
+                f"Cannot access property on non-instance type: {type(base).__name__}"
+            )
 
     def visit_ThisAssignment(self, node: ThisAssignment):
-        this_instance = self.environment.get("this")
+        this_instance = self.environment.get("THIS")
         if not isinstance(this_instance, SugarInstance):
-            raise TypeError("'this' is not defined in the current scope or is not an instance.")
+            raise TypeError(
+                "'THIS' is not defined in the current scope or is not an instance."
+            )
 
         value = self.visit(node.value)
         this_instance.environment.assign(node.property_name.name, value)
