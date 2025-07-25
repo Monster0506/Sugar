@@ -12,6 +12,16 @@ example_path = Path("examples").resolve()
 interpreting_tests_path = (example_path / "interpreting_tests").resolve()
 
 
+def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
+    results = []
+    for k, v in expected.items():
+        item = interpreter.environment.get(k)
+        isvar = isinstance(item, Variable)
+        correct_value = item.value == v
+        results.append(isvar and correct_value)
+    return all(results)
+
+
 def test_variable_declaration():
     with open(f"{interpreting_tests_path}/01_var_decl.sugar", "r") as f:
         code = f.read()
@@ -426,7 +436,7 @@ def test_match_statements_with_guard():
     assert check_variable_helper(interpreter, expected)
 
 
-def test_boolean_return_expression_from_function():
+def test_boolean_function():
     with open(f"{interpreting_tests_path}/23_func_bool_return.sugar", "r") as f:
         code = f.read()
     parser = Parser()
@@ -481,11 +491,27 @@ def test_void_function():
     assert len(interpreter.environment.get("print_hello")[0].params) == 0
 
 
-def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
-    results = []
-    for k, v in expected.items():
-        item = interpreter.environment.get(k)
-        isvar = isinstance(item, Variable)
-        correct_value = item.value == v
-        results.append(isvar and correct_value)
-    return all(results)
+def test_char_function():
+    with open(f"{interpreting_tests_path}/27_func_char.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "c": "A",
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_():
+    with open(f"{interpreting_tests_path}/28_map_set.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"m": {"a": 1, "b": 2}}
+    assert check_variable_helper(interpreter, expected)

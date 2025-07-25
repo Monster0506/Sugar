@@ -10,3 +10,4 @@ CLASS Adder
 end
 DEF a #Adder = Adder()
 DEF r #int = a:add:(5) 
+DEF b #int = a:add:(5) 

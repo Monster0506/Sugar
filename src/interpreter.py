@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from pytest import param
+
 from src.ast_nodes import *
 from src.builtin_operations import array_operations, str_operations
 from src.type_checker import TypeChecker
@@ -287,11 +289,23 @@ class Interpreter:
         base = self.visit(node.base)
         method_name = node.function_name.name
 
+        assumed_type = self.environment.type_checker.get_runtime_type(base)
+
+        # TODO: check with tuples
+        # this is working for simple,maps,arrays, should figure out how to use this. isinstance(assumed_type, arrayType) etc
+        # TODO: Implement this
+        # print(assumed_type)
         can_use_array = self.environment.type_checker.is_assignable(
             base, ArrayType(name="[dynamic]", base_type=None)
         )
         can_use_str = self.environment.type_checker.is_assignable(base, Type("str"))
 
+        print(
+            f"test_evaluate type from runtime {self.environment.type_checker.get_runtime_type(base)}"
+        )
+        # can_use_map = self.environment.type_checker.is_assignable(
+        #     base
+        # )
         if can_use_str and method_name in str_operations.keys():
             operation = str_operations[method_name]
             evaluated_args = (

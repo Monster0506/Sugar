@@ -3,6 +3,7 @@ CLASS Base
         RETURN 1
     end
 end
+
 CLASS Derived EXTENDS Base
     OVERRIDE FUNC foo() #int
         RETURN 2
