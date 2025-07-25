@@ -20,11 +20,14 @@ class Function:
     return_type: Type
 
 
+
+
+
 class Environment:
     def __init__(self, enclosing=None):
         self.values = {}
         self.enclosing = enclosing
-        self.type_checker = TypeChecker()
+        self.type_checker = TypeChecker(self)
 
     def define(self, name, value, var_type: Type):
         if isinstance(value, Function):
@@ -33,6 +36,8 @@ class Environment:
                 self.values[name].append(value)
             else:
                 self.values[name] = [value]
+        elif isinstance(value, CustomType):
+            self.values[name] = value
         else:
             self.type_checker.assert_type(value, var_type)
             self.values[name] = Variable(value, var_type)
@@ -81,11 +86,10 @@ class Interpreter:
         raise NotImplementedError(f"generic_visit called to {method_name}")
 
     def visit_Identifier(self, node: Identifier):
-        return (
-            self.environment.get(node.name).value
-            if isinstance(self.environment.get(node.name), Variable)
-            else self.environment.get(node.name)
-        )
+        value = self.environment.get(node.name)
+        if isinstance(value, Variable):
+            return value.value
+        return value
 
     def visit_VariableDeclaration(self, node: VariableDeclaration):
         value = self.visit(node.value)
@@ -420,3 +424,15 @@ class Interpreter:
 
     def visit_IdentifierPattern(self, node: IdentifierPattern):
         return self.visit(node.name)
+
+    def visit_ObjectLiteral(self, node: ObjectLiteral):
+        obj = {}
+        for entry in node.entries:
+            key = entry.key.name
+            value = self.visit(entry.value)
+            obj[key] = value
+        return obj
+
+    def visit_TypeDeclaration(self, node: TypeDeclaration):
+        custom_type = CustomType(declaration=node)
+        self.environment.define(node.name.name, custom_type, None)

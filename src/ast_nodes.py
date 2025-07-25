@@ -499,3 +499,8 @@ class ObjectPattern(Pattern):
 @dataclass
 class End(Node):
     pass
+
+
+@dataclass
+class CustomType(Node):
+    declaration: TypeDeclaration

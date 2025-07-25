@@ -1,7 +1,9 @@
-from src.ast_nodes import ArrayType, MapType, TupleType, Type
+from src.ast_nodes import ArrayType, CustomType, MapType, TupleType, Type
 
 
 class TypeChecker:
+    def __init__(self, environment=None):
+        self.environment = environment
     def assert_type(self, value, expected_type):
 
         if isinstance(expected_type, ArrayType):
@@ -24,8 +26,7 @@ class TypeChecker:
             "char": str,
         }
         if expected_type.name not in type_map:
-
-            raise TypeError(f"Unknown simple type: {expected_type.name}")
+            return self._assert_custom_type(value, expected_type)
 
         if not isinstance(value, type_map[expected_type.name]):
 
@@ -71,6 +72,29 @@ class TypeChecker:
 
         for i, item in enumerate(value):
             self.assert_type(item, expected_type.types[i])
+
+        return True
+
+    def _assert_custom_type(self, value, expected_type: Type):
+        if not self.environment:
+            raise TypeError("Environment not set for type checker.")
+
+        type_def = self.environment.get(expected_type.name)
+        if not isinstance(type_def, CustomType):
+            raise TypeError(f"Unknown type: {expected_type.name}")
+
+        if not isinstance(value, dict):
+            raise TypeError(f"Expected an object of type {expected_type.name}, but got {type(value).__name__}")
+
+        type_fields = type_def.declaration.type_body
+        if len(value) != len(type_fields):
+            raise TypeError(f"Incorrect number of fields for type {expected_type.name}. Expected {len(type_fields)}, got {len(value)}")
+
+        for field_def in type_fields:
+            field_name = field_def.name.name
+            if field_name not in value:
+                raise TypeError(f"Missing field '{field_name}' in object of type {expected_type.name}")
+            self.assert_type(value[field_name], field_def.field_type)
 
         return True
 

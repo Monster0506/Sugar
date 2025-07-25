@@ -650,3 +650,15 @@ def test_tuple_function():
     interpreter.interpret(ast)
     expected = {"t": (1, "a")}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_type_declaration():
+    with open(f"{interpreting_tests_path}/38_type_decl.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"p": {"name": "Alice", "age": 30}}
+    assert check_variable_helper(interpreter, expected)

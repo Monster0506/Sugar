@@ -81,10 +81,6 @@ str_operations = {
 }
 
 
-def _raise_value_error(key, d):
-    raise ValueError(f"{key} missing from {d}")
-
-
 def _safe_get(d, key):
     print(f"safe_get with {key=}, {d=}")
     if key in d:
