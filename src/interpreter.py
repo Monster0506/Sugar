@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from typing import Any
 
-from pytest import param
+
 
 from src.ast_nodes import *
+from src.ast_nodes import SugarClass, SugarInstance
 from src.builtin_operations import array_operations, map_operations, str_operations
 from src.type_checker import TypeChecker
 
@@ -23,6 +25,9 @@ class Function:
 
 
 
+
+
+
 class Environment:
     def __init__(self, enclosing=None):
         self.values = {}
@@ -30,6 +35,7 @@ class Environment:
         self.type_checker = TypeChecker(self)
 
     def define(self, name, value, var_type: Type):
+        
         if isinstance(value, Function):
 
             if name in self.values.keys() and self.values[name]:
@@ -38,11 +44,15 @@ class Environment:
                 self.values[name] = [value]
         elif isinstance(value, CustomType):
             self.values[name] = value
+        elif isinstance(value, SugarClass):
+            self.values[name] = value
         else:
-            self.type_checker.assert_type(value, var_type)
+            if var_type is not None:
+                self.type_checker.assert_type(value, var_type)
             self.values[name] = Variable(value, var_type)
 
     def assign(self, name, value):
+        
         if name in self.values:
             if isinstance(self.values[name], Variable):
                 self.type_checker.assert_type(value, self.values[name].var_type)
@@ -56,6 +66,7 @@ class Environment:
         raise NameError(f"Undefined variable '{name}'.")
 
     def get(self, name):
+        
         if name in self.values:
             return self.values[name]
         if self.enclosing is not None:
@@ -86,7 +97,10 @@ class Interpreter:
         raise NotImplementedError(f"generic_visit called to {method_name}")
 
     def visit_Identifier(self, node: Identifier):
-        value = self.environment.get(node.name)
+        name = node.name
+        if name.lower() == "this":
+            name = "this"
+        value = self.environment.get(name)
         if isinstance(value, Variable):
             return value.value
         return value
@@ -121,7 +135,27 @@ class Interpreter:
 
     def visit_VariableAssignment(self, node: VariableAssignment):
         value = self.visit(node.value)
-        self.environment.assign(node.name.name, value)
+        if isinstance(node.name, PropertyAccess):
+            base_instance = self.visit(node.name.base)
+            if isinstance(base_instance, SugarInstance):
+                property_name = node.name.property_name.name
+                # Check if the property already exists in the instance's environment
+                try:
+                    base_instance.environment.get(property_name)
+                    # If it exists, assign to it
+                    base_instance.environment.assign(property_name, value)
+                except NameError:
+                    # If it doesn't exist, define it
+                    # Get the property declaration from the class definition
+                    property_decl = base_instance.sugar_class.properties.get(property_name)
+                    if property_decl:
+                        base_instance.environment.define(property_name, value, property_decl.property_type)
+                    else:
+                        raise NameError(f"Undefined property '{property_name}' on instance of '{base_instance.sugar_class.name}'.")
+            else:
+                raise TypeError(f"Cannot assign to property of non-instance type: {type(base_instance).__name__}")
+        else:
+            self.environment.assign(node.name.name, value)
 
     def visit_ExpressionStatement(self, node: ExpressionStatement):
         return self.visit(node.expression)
@@ -216,9 +250,11 @@ class Interpreter:
 
         functions = self.environment.get(func_name.name)
 
-        if isinstance(functions, list) and not all(
-            [isinstance(x, Function) for x in functions]
-        ):
+        if isinstance(functions, SugarClass):
+            instance = SugarInstance(sugar_class=functions, environment=Environment(self.environment))
+            if functions.constructor:
+                self._execute_function(functions.constructor, [], instance)
+            return instance
             raise TypeError(f"{func_name} is not a function.")
 
         # Evaluate arguments once
@@ -233,25 +269,7 @@ class Interpreter:
                 f"No matching function found for {func_name} with provided arguments."
             )
 
-        # Save the current environment
-        calling_environment = self.environment
-        # Create a new environment for the function call, enclosing the calling environment
-        self.environment = Environment(calling_environment)
-
-        for param, arg_value in zip(func_to_call.params, evaluated_args):
-            self.environment.define(param.name.name, arg_value, param.param_type)
-
-        for statement in func_to_call.body:
-            self.visit(statement)
-            if self.return_value is not None:
-                break
-
-        result = self.return_value
-        self.return_value = None  # Reset for next calls
-        # Restore the original environment after the function call
-        self.environment = calling_environment
-
-        return result
+        return self._execute_function(func_to_call, evaluated_args)
 
     def visit_ReturnStatement(self, node: ReturnStatement):
         self.return_value = self.visit(node.value)
@@ -275,23 +293,62 @@ class Interpreter:
         return self.visit_UnaryOperation(node)
 
     def _get_correct_function(self, funcs: list[Function], evaluated_args: list):
-        for func in funcs:
-            if len(evaluated_args) == len(func.params):
-                types_match = True
-                for i, param in enumerate(func.params):
-                    # Use the type checker to compare the evaluated argument with the parameter type
-                    if not self.environment.type_checker.is_assignable(
-                        evaluated_args[i], param.param_type
-                    ):
-                        types_match = False
-                        break
-                if types_match:
-                    return func
-        return None
+        if isinstance(funcs, list):
+            for func in funcs:
+                if len(evaluated_args) == len(func.params):
+                    types_match = True
+                    for i, param in enumerate(func.params):
+                        # Use the type checker to compare the evaluated argument with the parameter type
+                        if not self.environment.type_checker.is_assignable(
+                            evaluated_args[i], param.param_type
+                        ):
+                            types_match = False
+                            break
+                    if types_match:
+                        return func
+            return None
+        elif isinstance(funcs, SugarClass):
+            # This case is for class instantiation, handled in visit_FunctionCall
+            return funcs
+        else:
+            raise TypeError(f"Expected a function or a class, but got {type(funcs).__name__}")
+
+    def _execute_function(self, func: Function, args: list, instance=None):
+        # Save the current environment
+        calling_environment = self.environment
+        # Create a new environment for the function call, enclosing the calling environment
+        self.environment = Environment(calling_environment)
+        if instance:
+            self.environment.define("this", instance, None) # Type will be checked later
+
+        for param, arg_value in zip(func.params, args):
+            self.environment.define(param.name.name, arg_value, param.param_type)
+
+        for statement in func.body:
+            self.visit(statement)
+            if self.return_value is not None:
+                break
+
+        result = self.return_value
+        self.return_value = None  # Reset for next calls
+        # Restore the original environment after the function call
+        self.environment = calling_environment
+
+        return result
 
     def visit_MethodCall(self, node: MethodCall):
         base = self.visit(node.base)
         method_name = node.function_name.name
+
+        if isinstance(base, SugarInstance):
+            if method_name in base.sugar_class.methods:
+                method = base.sugar_class.methods[method_name]
+                evaluated_args = (
+                    [self.visit(arg) for arg in node.arguments] if node.arguments else []
+                )
+                return self._execute_function(method, evaluated_args, base)
+            else:
+                raise AttributeError(f"Method '{method_name}' not found on instance of {base.sugar_class.name}")
 
         assumed_type = self.environment.type_checker.get_runtime_type(base)
 
@@ -349,6 +406,25 @@ class Interpreter:
             raise NotImplementedError(
                 f"Method '{method_name}' is not implemented for this type."
             )
+
+    
+
+    
+
+    def visit_PropertyAccess(self, node: PropertyAccess):
+        base = self.visit(node.base)
+        if isinstance(base, SugarInstance):
+            return base.environment.get(node.property_name.name).value
+        else:
+            raise TypeError(f"Cannot access property on non-instance type: {type(base).__name__}")
+
+    def visit_ThisAssignment(self, node: ThisAssignment):
+        this_instance = self.environment.get("this")
+        if not isinstance(this_instance, SugarInstance):
+            raise TypeError("'this' is not defined in the current scope or is not an instance.")
+
+        value = self.visit(node.value)
+        this_instance.environment.assign(node.property_name.name, value)
 
     def visit_LambdaExpression(self, node: LambdaExpression):
 
@@ -436,3 +512,20 @@ class Interpreter:
     def visit_TypeDeclaration(self, node: TypeDeclaration):
         custom_type = CustomType(declaration=node)
         self.environment.define(node.name.name, custom_type, None)
+
+    def visit_ClassDeclaration(self, node: ClassDeclaration):
+        methods = {}
+        properties = {}
+        constructor = None
+
+        for member in node.body:
+            if isinstance(member, MethodDeclaration):
+                func = Function(member.parameters, member.body, member.return_type)
+                methods[member.name.name] = func
+            elif isinstance(member, ConstructorDeclaration):
+                constructor = Function(member.parameters, member.body, None)
+            elif isinstance(member, PropertyDeclaration):
+                properties[member.name.name] = member
+
+        sugar_class = SugarClass(node.name.name, methods, properties, constructor)
+        self.environment.define(node.name.name, sugar_class, None)

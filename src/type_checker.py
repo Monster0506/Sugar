@@ -1,9 +1,18 @@
-from src.ast_nodes import ArrayType, CustomType, MapType, TupleType, Type
+from src.ast_nodes import (
+    ArrayType,
+    CustomType,
+    MapType,
+    SugarClass,
+    SugarInstance,
+    TupleType,
+    Type,
+)
 
 
 class TypeChecker:
     def __init__(self, environment=None):
         self.environment = environment
+
     def assert_type(self, value, expected_type):
 
         if isinstance(expected_type, ArrayType):
@@ -13,6 +22,15 @@ class TypeChecker:
         elif isinstance(expected_type, TupleType):
             return self._assert_tuple(value, expected_type)
         elif isinstance(expected_type, Type):
+            # Check if it's a SugarClass type
+            if (
+                self.environment
+                and expected_type.name in self.environment.values
+                and isinstance(self.environment.values[expected_type.name], SugarClass)
+            ):
+                return self._assert_sugar_class(
+                    value, self.environment.values[expected_type.name]
+                )
             return self._assert_simple(value, expected_type)
         else:
             raise TypeError(f"Unknown type annotation: {expected_type}")
@@ -75,6 +93,29 @@ class TypeChecker:
 
         return True
 
+    def _assert_sugar_class(self, value, expected_class: SugarClass):
+        if not isinstance(value, SugarInstance):
+            raise TypeError(
+                f"Expected an instance of {expected_class.name}, but got {type(value).__name__}"
+            )
+
+        if value.sugar_class.name != expected_class.name:
+            raise TypeError(
+                f"Expected an instance of {expected_class.name}, but got {value.sugar_class.name}"
+            )
+
+        # Check properties
+        for prop_name, prop_decl in expected_class.properties.items():
+            try:
+                prop_value = value.environment.get(prop_name).value
+                self.assert_type(prop_value, prop_decl.property_type)
+            except NameError:
+                raise TypeError(
+                    f"Missing property '{prop_name}' in instance of {expected_class.name}"
+                )
+
+        return True
+
     def _assert_custom_type(self, value, expected_type: Type):
         if not self.environment:
             raise TypeError("Environment not set for type checker.")
@@ -84,16 +125,22 @@ class TypeChecker:
             raise TypeError(f"Unknown type: {expected_type.name}")
 
         if not isinstance(value, dict):
-            raise TypeError(f"Expected an object of type {expected_type.name}, but got {type(value).__name__}")
+            raise TypeError(
+                f"Expected an object of type {expected_type.name}, but got {type(value).__name__}"
+            )
 
         type_fields = type_def.declaration.type_body
         if len(value) != len(type_fields):
-            raise TypeError(f"Incorrect number of fields for type {expected_type.name}. Expected {len(type_fields)}, got {len(value)}")
+            raise TypeError(
+                f"Incorrect number of fields for type {expected_type.name}. Expected {len(type_fields)}, got {len(value)}"
+            )
 
         for field_def in type_fields:
             field_name = field_def.name.name
             if field_name not in value:
-                raise TypeError(f"Missing field '{field_name}' in object of type {expected_type.name}")
+                raise TypeError(
+                    f"Missing field '{field_name}' in object of type {expected_type.name}"
+                )
             self.assert_type(value[field_name], field_def.field_type)
 
         return True
@@ -148,34 +195,32 @@ class TypeChecker:
             else:
                 raise TypeError("All list values must be of same type")
         elif isinstance(value, dict):
-            # For maps, infer key and value types
             if not value:
                 return MapType(
                     name="{}", key_type=Type("dynamic"), value_type=Type("dynamic")
                 )
 
-            # Take the first key-value pair as a hint, or iterate for a common type
             first_key, first_value = next(iter(value.items()))
             key_type = self.get_runtime_type(first_key)
             value_type = self.get_runtime_type(first_value)
 
-            # You might want to do a more robust common type inference here for complex scenarios
             return MapType(
                 name=f"{{{key_type.name},{value_type.name}}}",
                 key_type=key_type,
                 value_type=value_type,
             )
-        # elif isinstance(value, tuple):
-        #     # For tuples, infer types for each element
-        #     element_types = [self.get_runtime_type(item) for item in value]
-        #     return TupleType(
-        #         name=f"({', '.join(t.name for t in element_types)})",
-        #         types=element_types,
-        #     )
+        elif isinstance(value, tuple):
+            element_types = [self.get_runtime_type(item) for item in value]
+            return TupleType(
+                name=f"({', '.join(t.name for t in element_types)})",
+                types=element_types,
+            )
         elif value is None:
-            return Type("null")  # Assuming you have a 'null' or 'None' type
-        elif callable(value):  # For functions, lambdas, etc.
+            return Type("null")
+        elif callable(value):
             return Type("function")
+        elif isinstance(value, SugarInstance):
+            return Type(value.sugar_class.name)
         else:
 
             raise TypeError("Could not infer runtime type")

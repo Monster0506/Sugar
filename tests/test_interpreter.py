@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from src.ast_nodes import Program
+from src.ast_nodes import Program, PropertyDeclaration, SugarClass, SugarInstance
 from src.interpreter import Function, Interpreter, Variable
 from src.parser import Parser
 
@@ -13,13 +13,31 @@ interpreting_tests_path = (example_path / "interpreting_tests").resolve()
 
 
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
-    results = []
     for k, v in expected.items():
         item = interpreter.environment.get(k)
-        isvar = isinstance(item, Variable)
-        correct_value = item.value == v
-        results.append(isvar and correct_value)
-    return all(results)
+        if isinstance(item, Variable):
+            if isinstance(item.value, SugarInstance):
+                if isinstance(v, dict):
+                    instance_env = item.value.environment
+                    for prop_k, prop_v in v.items():
+                        try:
+                            instance_prop = instance_env.get(prop_k)
+                            if (
+                                not isinstance(instance_prop, Variable)
+                                or instance_prop.value != prop_v
+                            ):
+                                return False
+                        except NameError:
+                            return False
+                    return True
+                else:
+                    return False
+            else:
+                if item.value != v:
+                    return False
+        else:
+            return False
+    return True
 
 
 def test_variable_declaration():
@@ -661,4 +679,33 @@ def test_type_declaration():
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"p": {"name": "Alice", "age": 30}}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_class_declaration():
+    with open(f"{interpreting_tests_path}/39_class_decl.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+
+    c_var = interpreter.environment.get("c")
+    c_instance = c_var.value
+
+    assert isinstance(c_instance.sugar_class, SugarClass)
+    assert c_instance.sugar_class.name == "Counter"
+
+    assert "value" in c_instance.sugar_class.properties
+    value_prop_decl = c_instance.sugar_class.properties["value"]
+    assert isinstance(value_prop_decl, PropertyDeclaration)
+    assert value_prop_decl.name.name == "value"
+    assert value_prop_decl.property_type.name == "int"
+
+    assert c_instance.sugar_class.constructor is not None
+    assert isinstance(c_instance.sugar_class.constructor, Function)
+    assert len(c_instance.sugar_class.constructor.params) == 0
+
+    expected = {"c": {"value": 0}}
     assert check_variable_helper(interpreter, expected)

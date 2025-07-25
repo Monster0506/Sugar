@@ -5,6 +5,8 @@ These classes are used by the transformer to build a structured representation
 of the parsed code, which can then be used by an interpreter or compiler.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -504,3 +506,17 @@ class End(Node):
 @dataclass
 class CustomType(Node):
     declaration: TypeDeclaration
+
+
+@dataclass
+class SugarClass(Node):
+    name: str
+    methods: dict
+    properties: dict[str, PropertyDeclaration]
+    constructor: 'Function' | None
+
+
+@dataclass
+class SugarInstance(Node):
+    sugar_class: SugarClass
+    environment: 'Environment'
