@@ -22,7 +22,7 @@ array_operations = {
     "FILTER": (lambda arr, func: list(filter(func, arr))),
     "MAP": (lambda arr, func: list(map(func, arr))),
     "INDEX_OF": (lambda arr, val: arr.index(val) if val in arr else -1),
-    "ANY": (lambda arr, val: any(x == val for x in arr)),
+    "ANY": (lambda arr, func: any(func(x) for x in arr)),
     "ALL": (lambda arr, func: all(func(x) for x in arr)),
     "SET": (_set_and_return_array),
     "CONTAINS": (lambda arr, val: val in arr),
@@ -81,26 +81,15 @@ str_operations = {
 }
 
 map_operations = {
-    "GET": (
-        lambda d, key: d.get(key)
-    ),  # Using .get() is safer as it won't raise KeyError
-    "SET": (_set_and_return_dict),  # Set a key-value pair
-    # Dictionary-specific operations:
-    "KEYS": (lambda d: list(d.keys())),  # Get all keys as a list
-    "VALUES": (lambda d: list(d.values())),  # Get all values as a list
-    "ITEMS": (lambda d: list(d.items())),  # Get all key-value pairs as a list of tuples
-    "HAS_KEY": (lambda d, key: key in d),  # Check if a key exists
-    "REMOVE_KEY": (
-        lambda d, key: d.pop(key, None)
-    ),  # Remove a key and return its value, or None if not found
-    "LENGTH": (lambda d: len(d)),  # Get the number of key-value pairs
-    "UPDATE": (
-        lambda d1, d2: d1.update(d2) or d1
-    ),  # Merge d2 into d1 (modifies d1), then return d1
-    "CLEAR": (
-        lambda d: d.clear() or d
-    ),  # Clear all items from the dictionary and return it
-    "GET_DEFAULT": (
-        lambda d, key, default: d.get(key, default)
-    ),  # Get value for key or a default
+    "GET": (lambda d, key: d.get(key)),
+    "SET": (_set_and_return_dict),
+    "KEYS": (lambda d: list(d.keys())),
+    "VALUES": (lambda d: list(d.values())),
+    "ITEMS": (lambda d: list(d.items())),
+    "HAS_KEY": (lambda d, key: key in d),
+    "REMOVE_KEY": (lambda d, key: d.pop(key, None)),
+    "LENGTH": (lambda d: len(d)),
+    "UPDATE": (lambda d1, d2: d1.update(d2) or d1),
+    "CLEAR": (lambda d: d.clear() or d),
+    "GET_DEFAULT": (lambda d, key, default: d.get(key, default)),
 }

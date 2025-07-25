@@ -543,3 +543,27 @@ def test_map_operations():
         "default_x": 0,
     }
     assert check_variable_helper(interpreter, expected)
+
+
+def test_any_and_all_for_arrays():
+    with open(f"{interpreting_tests_path}/29_array_any_all.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"has_two": True, "all_pos": True}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_map_setting():
+    with open(f"{interpreting_tests_path}/28_map_set.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"m": {"a": 1, "b": 2}}
+    assert check_variable_helper(interpreter, expected)
