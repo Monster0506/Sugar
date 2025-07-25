@@ -5,3 +5,6 @@ FUNC test(x #int) #int
     end
     RETURN 0
 end 
+
+
+DEF r #int = test(3)

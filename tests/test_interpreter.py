@@ -491,7 +491,7 @@ def test_void_function():
     assert len(interpreter.environment.get("print_hello")[0].params) == 0
 
 
-def test_char_function():
+def test_character_function():
     with open(f"{interpreting_tests_path}/27_func_char.sugar", "r") as f:
         code = f.read()
     parser = Parser()
@@ -554,4 +554,40 @@ def test_any_and_all_for_arrays():
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"has_two": True, "all_pos": True}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_nested_scopes_for_functions():
+    with open(f"{interpreting_tests_path}/30_func_nested_scope.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"r": 4}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_function_parameter_shadowing():
+    with open(f"{interpreting_tests_path}/31_func_param_shadow.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"r": 5}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_array_insert_operation():
+    with open(f"{interpreting_tests_path}/32_array_insert.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"arr": [1, 99, 2, 3]}
     assert check_variable_helper(interpreter, expected)

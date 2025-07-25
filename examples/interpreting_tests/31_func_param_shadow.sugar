@@ -2,3 +2,5 @@ FUNC foo(x #int) #int
     DEF x #int = 5
     RETURN x
 end 
+
+DEF r #int = foo(10)
