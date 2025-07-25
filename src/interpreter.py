@@ -73,7 +73,6 @@ class Interpreter:
 
     def visit(self, node):
         method_name = f"visit_{type(node).__name__}"
-        print(f"visiting method_name {method_name} with node {node}")
 
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
@@ -348,7 +347,6 @@ class Interpreter:
             )
 
     def visit_LambdaExpression(self, node: LambdaExpression):
-        print(f"arrived at LambdaExpression with node {node}")
 
         def lambda_func(*args):
             calling_environment = self.environment
@@ -358,12 +356,10 @@ class Interpreter:
                 node.parameters if node.parameters else [], args
             ):
                 self.environment.define(param.name.name, arg_value, param.param_type)
-            print(param, arg_value)
 
             result = self.visit(node.body)
 
             self.environment = calling_environment
-            print(f"lambda_func result for {list(args)}: {result}")
             return result
 
         return lambda_func
