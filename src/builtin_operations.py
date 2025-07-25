@@ -7,6 +7,11 @@ def _set_and_return_array(arr: list[Any], i: int, v: Any) -> list[Any]:
     return arr
 
 
+def _set_and_return_dict(d, key, value):
+    d[key] = value
+    return d
+
+
 array_operations = {
     "ADD": (lambda arr, val: arr.append(val)),
     "LENGTH": (lambda arr: len(arr)),
@@ -75,4 +80,27 @@ str_operations = {
     "LOWER": (lambda s: s.lower()),
 }
 
-map_operations = {"GET": (lambda arr, x: arr[x]), "SET": (_set_and_return_array)}
+map_operations = {
+    "GET": (
+        lambda d, key: d.get(key)
+    ),  # Using .get() is safer as it won't raise KeyError
+    "SET": (_set_and_return_dict),  # Set a key-value pair
+    # Dictionary-specific operations:
+    "KEYS": (lambda d: list(d.keys())),  # Get all keys as a list
+    "VALUES": (lambda d: list(d.values())),  # Get all values as a list
+    "ITEMS": (lambda d: list(d.items())),  # Get all key-value pairs as a list of tuples
+    "HAS_KEY": (lambda d, key: key in d),  # Check if a key exists
+    "REMOVE_KEY": (
+        lambda d, key: d.pop(key, None)
+    ),  # Remove a key and return its value, or None if not found
+    "LENGTH": (lambda d: len(d)),  # Get the number of key-value pairs
+    "UPDATE": (
+        lambda d1, d2: d1.update(d2) or d1
+    ),  # Merge d2 into d1 (modifies d1), then return d1
+    "CLEAR": (
+        lambda d: d.clear() or d
+    ),  # Clear all items from the dictionary and return it
+    "GET_DEFAULT": (
+        lambda d, key, default: d.get(key, default)
+    ),  # Get value for key or a default
+}

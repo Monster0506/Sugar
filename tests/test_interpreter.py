@@ -505,7 +505,7 @@ def test_char_function():
     assert check_variable_helper(interpreter, expected)
 
 
-def test_():
+def test_map_setting():
     with open(f"{interpreting_tests_path}/28_map_set.sugar", "r") as f:
         code = f.read()
     parser = Parser()
@@ -514,4 +514,32 @@ def test_():
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"m": {"a": 1, "b": 2}}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_map_operations():
+    with open(f"{interpreting_tests_path}/65_map_operations.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "m": {
+            "b": 2,
+            "c": 3,
+            "d": 4,
+            "e": 5,
+            "f": 6,
+        },
+        "to_update": {},
+        "b": 2,
+        "has_c": True,
+        "keys": ["a", "b", "c"],
+        "values": [1, 2, 3],
+        "length": 3,
+        "removed_a": 1,
+        "default_x": 0,
+    }
     assert check_variable_helper(interpreter, expected)

@@ -1,0 +1,18 @@
+DEF m #{#str, #int} = {"a" -> 1, "b"->2, "c"->3}
+DEF b #int = m:GET:("b")
+DEF has_c #bool = m:HAS_KEY:("c")
+DEF keys #[#str] = m:KEYS:()
+DEF values #[#int] = m:VALUES:()
+DEF length #int = m:LENGTH:()
+
+m:SET:("d", 4)
+DEF removed_a #int = m:REMOVE_KEY:("a")
+DEF to_update #{#str, #int} = {"e"->5, "f"->6}
+m:UPDATE:(to_update)
+
+to_update:CLEAR:()
+
+DEF default_x #int = to_update:GET_DEFAULT:("x", 0)
+
+
+

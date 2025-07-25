@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pytest import param
 
 from src.ast_nodes import *
-from src.builtin_operations import array_operations, str_operations
+from src.builtin_operations import array_operations, map_operations, str_operations
 from src.type_checker import TypeChecker
 
 
@@ -291,21 +291,27 @@ class Interpreter:
 
         assumed_type = self.environment.type_checker.get_runtime_type(base)
 
-        # TODO: check with tuples
-        # this is working for simple,maps,arrays, should figure out how to use this. isinstance(assumed_type, arrayType) etc
-        # TODO: Implement this
-        # print(assumed_type)
-        can_use_array = self.environment.type_checker.is_assignable(
+        can_use_array = isinstance(
+            assumed_type, ArrayType
+        ) or self.environment.type_checker.is_assignable(
             base, ArrayType(name="[dynamic]", base_type=None)
         )
-        can_use_str = self.environment.type_checker.is_assignable(base, Type("str"))
 
-        print(
-            f"test_evaluate type from runtime {self.environment.type_checker.get_runtime_type(base)}"
+        can_use_str = (
+            isinstance(assumed_type, Type) and assumed_type.name == "str"
+        ) or self.environment.type_checker.is_assignable(base, Type("str"))
+
+        can_use_map = isinstance(
+            assumed_type, MapType
+        ) or self.environment.type_checker.is_assignable(
+            base,
+            MapType(
+                name="{dynamic, dynamic}",
+                key_type=Type("dynamic"),
+                value_type=Type("dynamic"),
+            ),
         )
-        # can_use_map = self.environment.type_checker.is_assignable(
-        #     base
-        # )
+
         if can_use_str and method_name in str_operations.keys():
             operation = str_operations[method_name]
             evaluated_args = (
@@ -327,6 +333,14 @@ class Interpreter:
             else:
                 result = operation(base, *evaluated_args)
                 return result
+        if can_use_map and method_name in map_operations.keys():
+            operation = map_operations[method_name]
+            evaluated_args = (
+                [self.visit(arg) for arg in node.arguments] if node.arguments else []
+            )
+
+            new_value = operation(base, *evaluated_args)
+            return new_value
         else:
             raise NotImplementedError(
                 f"Method '{method_name}' is not implemented for this type."
