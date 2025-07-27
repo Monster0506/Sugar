@@ -158,8 +158,7 @@ class TypeChecker:
             return False
 
     def __repr__(self) -> str:
-        attrs: str = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({attrs})"
+        return f"{self.__class__.__name__}()"
 
     def get_runtime_type(self, value) -> Type:
         """
@@ -221,6 +220,8 @@ class TypeChecker:
             return Type("function")
         elif isinstance(value, SugarInstance):
             return Type(value.sugar_class.name)
+        elif isinstance(value, SugarClass):
+            return Type(value.name)
         else:
 
-            raise TypeError("Could not infer runtime type")
+            raise TypeError(f"Could not infer runtime type for {value}")
