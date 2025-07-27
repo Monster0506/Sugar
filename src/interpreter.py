@@ -96,7 +96,18 @@ class Interpreter:
     def visit_VariableDeclaration(self, node: VariableDeclaration):
         value = self.visit(node.value)
         var_type = node.var_type
-        self.environment.define(node.name.name, value, var_type)
+        if isinstance(node.name, Identifier):
+            self.environment.define(node.name.name, value, var_type)
+        elif isinstance(node.name, PropertyAccess):
+            base = self.visit(node.name.base)
+            if isinstance(base, SugarInstance):
+                prop_name = node.name.property_name.name
+                base.environment.define(prop_name, value, var_type)
+            else:
+                raise TypeError("Cannot declare a property on a non-instance.")
+        elif isinstance(node.name, PropertyDeclaration):
+            self.visit(node.name)
+            # self.environment.define(node.name, value, var_type)
 
     def visit_ArrayLiteral(self, node: ArrayLiteral):
         values = (
@@ -310,9 +321,7 @@ class Interpreter:
             )
 
     def _execute_function(self, func: Function, args: list, instance=None):
-        # Save the current environment
         calling_environment = self.environment
-        # Create a new environment for the function call, enclosing the calling environment
         self.environment = Environment(calling_environment)
         if instance:
             self.environment.define(
