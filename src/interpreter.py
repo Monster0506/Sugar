@@ -1,6 +1,7 @@
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarInstance
 from src.builtin_operations import array_operations, map_operations, str_operations
+from src.stdlib import library
 from src.type_checker import TypeChecker
 
 
@@ -11,6 +12,8 @@ class Environment:
         self.type_checker = TypeChecker(self)
 
     def define(self, name, value, var_type: Type):
+        if name in library:
+            raise TypeError(f"Cannot define the built-in module {name}")
         if isinstance(value, Function):
 
             if name in self.values.keys() and self.values[name]:
@@ -29,6 +32,8 @@ class Environment:
             self.values[name] = Variable(value, var_type)
 
     def assign(self, name, value):
+        if name in library:
+            raise TypeError(f"Cannot reassign the built-in module {name}")
 
         if name in self.values:
             if isinstance(self.values[name], Variable):
@@ -43,6 +48,8 @@ class Environment:
         raise NameError(f"Undefined variable '{name}'.")
 
     def get(self, name):
+        if name in library:
+            return library.get(name)
 
         if name in self.values:
             return self.values[name]
@@ -330,19 +337,21 @@ class Interpreter:
         base = self.visit(node.base)
         method_name = node.function_name.name
 
+        evaluated_args = (
+            [self.visit(arg) for arg in node.arguments] if node.arguments else []
+        )
         if isinstance(base, SugarInstance):
             if method_name in base.sugar_class.methods:
                 method = base.sugar_class.methods[method_name]
-                evaluated_args = (
-                    [self.visit(arg) for arg in node.arguments]
-                    if node.arguments
-                    else []
-                )
                 return self._execute_function(method, evaluated_args, base)
             else:
                 raise AttributeError(
                     f"Method '{method_name}' not found on instance of {base.sugar_class.name}"
                 )
+
+        if isinstance(base, dict):
+            if isinstance(base[list(base.keys())[0]], StdLibCall):
+                return self._stdlib_call(base, method_name, evaluated_args)
 
         assumed_type = self.environment.type_checker.get_runtime_type(base)
 
@@ -369,18 +378,12 @@ class Interpreter:
 
         if can_use_str and method_name in str_operations.keys():
             operation = str_operations[method_name]
-            evaluated_args = (
-                [self.visit(arg) for arg in node.arguments] if node.arguments else []
-            )
 
             new_value = operation(base, *evaluated_args)
             return new_value
 
         elif can_use_array and method_name in array_operations.keys():
             operation = array_operations[method_name]
-            evaluated_args = (
-                [self.visit(arg) for arg in node.arguments] if node.arguments else []
-            )
 
             if method_name in ["ADD", "INSERT", "REMOVE", "REVERSE"]:
                 operation(base, *evaluated_args)
@@ -390,22 +393,12 @@ class Interpreter:
                 return result
         elif can_use_map and method_name in map_operations.keys():
             operation = map_operations[method_name]
-            evaluated_args = (
-                [self.visit(arg) for arg in node.arguments] if node.arguments else []
-            )
 
             new_value = operation(base, *evaluated_args)
             return new_value
         elif isinstance(base, SugarClass):
             if method_name in base.methods:
-                return self._execute_function(
-                    base.methods[method_name],
-                    (
-                        [self.visit(arg) for arg in node.arguments]
-                        if node.arguments
-                        else []
-                    ),
-                )
+                return self._execute_function(base.methods[method_name], evaluated_args)
         else:
             raise NotImplementedError(
                 f"Method '{method_name}' is not implemented for this type {assumed_type}"
@@ -415,6 +408,10 @@ class Interpreter:
         base = self.visit(node.base)
         if isinstance(base, SugarInstance):
             return base.environment.get(node.property_name.name).value
+        elif isinstance(base, dict) and isinstance(
+            base.get(node.property_name.name, 0), StdLibCall
+        ):
+            return self._stdlib_call(base, node.property_name.name, [])
         else:
             raise TypeError(
                 f"Cannot access property on non-instance type: {type(base).__name__}"
@@ -566,3 +563,6 @@ class Interpreter:
 
     def visit_InterfaceDeclaration(self, node: InterfaceDeclaration):
         self.environment.define(node.name.name, node, None)
+
+    def _stdlib_call(self, base, method_name, args):
+        return base[method_name](*args)

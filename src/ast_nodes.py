@@ -8,7 +8,7 @@ of the parsed code, which can then be used by an interpreter or compiler.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 
 # Base class for all AST nodes
@@ -535,3 +535,11 @@ class SugarClass(Node):
 class SugarInstance(Node):
     sugar_class: SugarClass
     environment: "Environment"
+
+
+@dataclass(frozen=True)
+class StdLibCall:
+    func: Callable[..., Any]
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self.func(*args, **kwargs)
