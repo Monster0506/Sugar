@@ -17,6 +17,21 @@ class Node:
     pass
 
 
+@dataclass
+class Variable:
+    value: Any
+    var_type: Type
+
+
+@dataclass
+class Function:
+    params: list
+    body: list
+    return_type: Type
+    is_static: bool = False
+    is_override: bool = False
+
+
 # Expressions
 @dataclass
 class Expression(Node):
@@ -370,7 +385,7 @@ class PropertyDeclaration(ClassMember):
 class MethodDeclaration(ClassMember):
     name: Identifier
     parameters: list[Parameter]
-    return_type: Type | None
+    return_type: Type
     body: list[Statement]
 
 
@@ -513,10 +528,10 @@ class SugarClass(Node):
     name: str
     methods: dict
     properties: dict[str, PropertyDeclaration]
-    constructor: 'Function' | None
+    constructor: Function | None
 
 
 @dataclass
 class SugarInstance(Node):
     sugar_class: SugarClass
-    environment: 'Environment'
+    environment: "Environment"

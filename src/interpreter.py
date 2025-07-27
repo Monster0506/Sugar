@@ -1,24 +1,7 @@
-from dataclasses import dataclass
-from typing import Any
-
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarInstance
 from src.builtin_operations import array_operations, map_operations, str_operations
 from src.type_checker import TypeChecker
-
-
-@dataclass
-class Variable:
-    value: Any
-    var_type: Type
-
-
-@dataclass
-class Function:
-    params: list
-    body: list
-    return_type: Type
-    is_static: bool = False
 
 
 class Environment:
@@ -405,7 +388,7 @@ class Interpreter:
             else:
                 result = operation(base, *evaluated_args)
                 return result
-        if can_use_map and method_name in map_operations.keys():
+        elif can_use_map and method_name in map_operations.keys():
             operation = map_operations[method_name]
             evaluated_args = (
                 [self.visit(arg) for arg in node.arguments] if node.arguments else []
@@ -413,6 +396,16 @@ class Interpreter:
 
             new_value = operation(base, *evaluated_args)
             return new_value
+        elif isinstance(base, SugarClass):
+            if method_name in base.methods:
+                return self._execute_function(
+                    base.methods[method_name],
+                    (
+                        [self.visit(arg) for arg in node.arguments]
+                        if node.arguments
+                        else []
+                    ),
+                )
         else:
             raise NotImplementedError(
                 f"Method '{method_name}' is not implemented for this type {assumed_type}"
@@ -543,7 +536,13 @@ class Interpreter:
 
         for member in node.body:
             if isinstance(member, MethodDeclaration):
-                func = Function(member.parameters, member.body, member.return_type)
+                func = Function(
+                    member.parameters,
+                    member.body,
+                    member.return_type,
+                    member.is_static,
+                    member.is_override,
+                )
                 methods[member.name.name] = func
             elif isinstance(member, ConstructorDeclaration):
                 constructor = Function(member.parameters, member.body, None)
