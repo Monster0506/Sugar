@@ -163,9 +163,9 @@ class SugarTransformer(Transformer):
             )
         )[0]
         property_access = list(filter(lambda x: isinstance(x, PropertyAccess), rest))
-        if property_access:
-            property_access = property_access[0]
-            name = Identifier(name=property_access.property_name.name)
+        # if property_access:
+        #     property_access = property_access[0]
+        #     name = Identifier(name=property_access.property_name.name)
 
         logging.debug(
             f"variable_declaration: name={name}, var_type={var_type}, value={value}"
