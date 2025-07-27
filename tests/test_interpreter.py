@@ -10,6 +10,7 @@ from src.parser import Parser
 
 example_path = Path("examples").resolve()
 interpreting_tests_path = (example_path / "interpreting_tests").resolve()
+type_errors_path = (example_path / "type_errors").resolve()
 
 
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
@@ -89,7 +90,7 @@ def test_array_declaration():
 
 
 def test_type_mismatch():
-    with open("examples\\type_errors\\01_type_mismatch.sugar", "r") as f:
+    with open(f"{type_errors_path}/01_type_mismatch.sugar", "r") as f:
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
@@ -100,7 +101,7 @@ def test_type_mismatch():
 
 
 def test_array_type_mismatch():
-    with open("examples\\type_errors\\02_array_type_mismatch.sugar", "r") as f:
+    with open(f"{type_errors_path}/02_array_type_mismatch.sugar", "r") as f:
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
@@ -111,7 +112,7 @@ def test_array_type_mismatch():
 
 
 def test_map_type_mismatch():
-    with open("examples\\type_errors\\03_map_type_mismatch.sugar", "r") as f:
+    with open(f"{type_errors_path}/03_map_type_mismatch.sugar", "r") as f:
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
@@ -122,7 +123,7 @@ def test_map_type_mismatch():
 
 
 def test_tuple_type_mismatch():
-    with open("examples\\type_errors\\04_tuple_type_mismatch.sugar", "r") as f:
+    with open(f"{type_errors_path}/04_tuple_type_mismatch.sugar", "r") as f:
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
@@ -793,6 +794,7 @@ def test_stdlib_io():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
+    # interpreter.interpret(ast)
     # This test requires user input, so we can't fully automate it.
     # We'll just check that it doesn't crash.
     pass
@@ -981,3 +983,13 @@ def test_map_operations():
     }
     assert check_variable_helper(interpreter, expected)
 
+
+def test_interface_class_mismatch():
+    with open(f"{type_errors_path}/05_no_interface_match.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(TypeError):
+        interpreter.interpret(ast)
