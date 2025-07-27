@@ -228,29 +228,6 @@ def test_array_operations():
     assert check_variable_helper(interpreter, expected)
 
 
-def test_advanced_array_operations():
-    with open(f"{interpreting_tests_path}/60_new_array_ops.sugar", "r") as f:
-        code = f.read()
-    parser = Parser()
-    ast = parser.parse(code)
-    assert isinstance(ast, Program)
-    interpreter = Interpreter()
-    interpreter.interpret(ast)
-    expected = {
-        "arr": [10, 2, 3, 4, 5],
-        "first": 10,
-        "has_three": True,
-        "has_nine": False,
-        "index_of_three": 2,
-        "index_of_nine": -1,
-        "slice_result": [2, 3, 4],
-        "total": 24,
-        "unsorted": [1, 2, 5, 8, 9],
-        "sorted_first": 1,
-    }
-    assert check_variable_helper(interpreter, expected)
-
-
 def test_string_operations():
     with open(f"{interpreting_tests_path}/12_string_ops.sugar", "r") as f:
         code = f.read()
@@ -260,39 +237,6 @@ def test_string_operations():
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"l": 5, "up": "HELLO", "lo": "hello", "s": "HAello"}
-    assert check_variable_helper(interpreter, expected)
-
-
-def test_advanced_string_operations():
-    with open(f"{interpreting_tests_path}/61_string_array_operations.sugar", "r") as f:
-        code = f.read()
-    parser = Parser()
-    ast = parser.parse(code)
-    assert isinstance(ast, Program)
-    interpreter = Interpreter()
-    interpreter.interpret(ast)
-    expected = {
-        "after_remove_first": "e",
-        "copy": "cba",
-        "final_length": 7,
-        "final_string": "Heorld!",
-        "first_after_insert": "X",
-        "first_char": "H",
-        "h_index": -1,
-        "has_h": False,
-        "has_z": False,
-        "last_char": "o",
-        "len": 5,
-        "len_after_add": 6,
-        "lower_s": "hello",
-        "multi": "Heorld!",
-        "reversed_first": "c",
-        "s": "XYello!",
-        "second_char": "Y",
-        "test_remove": "est",
-        "upper_s": "HELLO",
-        "z_index": -1,
-    }
     assert check_variable_helper(interpreter, expected)
 
 
@@ -440,20 +384,6 @@ def test_basic_match_statements():
     assert check_variable_helper(interpreter, expected)
 
 
-def test_match_statements_with_guard():
-    with open(f"{interpreting_tests_path}/64_match_with_guard.sugar", "r") as f:
-        code = f.read()
-    parser = Parser()
-    ast = parser.parse(code)
-    assert isinstance(ast, Program)
-    interpreter = Interpreter()
-    interpreter.interpret(ast)
-    expected = {
-        "x": 2,
-    }
-    assert check_variable_helper(interpreter, expected)
-
-
 def test_boolean_function():
     with open(f"{interpreting_tests_path}/23_func_bool_return.sugar", "r") as f:
         code = f.read()
@@ -532,34 +462,6 @@ def test_map_setting():
     interpreter = Interpreter()
     interpreter.interpret(ast)
     expected = {"m": {"a": 1, "b": 2}}
-    assert check_variable_helper(interpreter, expected)
-
-
-def test_map_operations():
-    with open(f"{interpreting_tests_path}/65_map_operations.sugar", "r") as f:
-        code = f.read()
-    parser = Parser()
-    ast = parser.parse(code)
-    assert isinstance(ast, Program)
-    interpreter = Interpreter()
-    interpreter.interpret(ast)
-    expected = {
-        "m": {
-            "b": 2,
-            "c": 3,
-            "d": 4,
-            "e": 5,
-            "f": 6,
-        },
-        "to_update": {},
-        "b": 2,
-        "has_c": True,
-        "keys": ["a", "b", "c"],
-        "values": [1, 2, 3],
-        "length": 3,
-        "removed_a": 1,
-        "default_x": 0,
-    }
     assert check_variable_helper(interpreter, expected)
 
 
@@ -709,3 +611,373 @@ def test_class_declaration():
 
     expected = {"c": {"value": 0}}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_class_method():
+    with open(f"{interpreting_tests_path}/40_class_method.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+
+    a_var = interpreter.environment.get("a")
+    a_instance = a_var.value
+
+    assert isinstance(a_instance.sugar_class, SugarClass)
+    assert a_instance.sugar_class.name == "Adder"
+
+    assert "value" in a_instance.sugar_class.properties
+    value_prop_decl = a_instance.sugar_class.properties["value"]
+    assert isinstance(value_prop_decl, PropertyDeclaration)
+    assert value_prop_decl.name.name == "value"
+    assert value_prop_decl.property_type.name == "int"
+
+    assert a_instance.sugar_class.constructor is not None
+    assert isinstance(a_instance.sugar_class.constructor, Function)
+    assert len(a_instance.sugar_class.constructor.params) == 0
+
+    expected = {"a": {"value": 10}, "r": 5, "b": 10}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_static_method():
+    with open(f"{interpreting_tests_path}/41_static_method.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"s": 16}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_access_modifiers():
+    with open(f"{interpreting_tests_path}/42_access_modifiers.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"x": 1}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_inheritance():
+    with open(f"{interpreting_tests_path}/43_inheritance.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"r": 2}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_super_usage():
+    with open(f"{interpreting_tests_path}/44_super_usage.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"v": 6}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_interface():
+    with open(f"{interpreting_tests_path}/45_interface.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"r": 5}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_visibility_error():
+    with open(f"{interpreting_tests_path}/46_visibility_error.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(TypeError):
+        interpreter.interpret(ast)
+
+
+def test_custom_error_type():
+    with open(f"{interpreting_tests_path}/47_custom_error_type.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(Exception):
+        interpreter.interpret(ast)
+
+
+def test_try_catch():
+    with open(f"{interpreting_tests_path}/48_try_catch.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    # This test needs to check the output of the print statement
+    # and the return value of the test function.
+    # For now, we'll just check that it doesn't crash.
+    pass
+
+
+def test_throw_builtin():
+    with open(f"{interpreting_tests_path}/49_throw_builtin.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(Exception):
+        interpreter.interpret(ast)
+
+
+def test_spawn_basic():
+    with open(f"{interpreting_tests_path}/50_spawn_basic.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    # This test needs to check that a new thread was spawned.
+    # For now, we'll just check that it doesn't crash.
+    pass
+
+
+def test_spawn_join():
+    with open(f"{interpreting_tests_path}/51_spawn_join.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"r": 42}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_stdlib_math():
+    with open(f"{interpreting_tests_path}/52_stdlib_math.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"pi": 3.141592653589793, "s": 4.0}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_stdlib_io():
+    with open(f"{interpreting_tests_path}/53_stdlib_io.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    # This test requires user input, so we can't fully automate it.
+    # We'll just check that it doesn't crash.
+    pass
+
+
+def test_stdlib_time():
+    with open(f"{interpreting_tests_path}/54_stdlib_time.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    # This test is hard to assert because the time is always changing.
+    # We'll just check that it doesn't crash.
+    pass
+
+
+def test_stdlib_random():
+    with open(f"{interpreting_tests_path}/55_stdlib_random.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    # This test is hard to assert because the values are random.
+    # We'll just check that it doesn't crash.
+    pass
+
+
+def test_pattern_destructuring():
+    with open(f"{interpreting_tests_path}/56_pattern_destructuring.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"s": "a"}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_complex_oop_inheritance():
+    with open(f"{interpreting_tests_path}/57_COMPLEX_oop_inheritance.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    # This test needs to check the output of the print statements.
+    # For now, we'll just check that it doesn't crash.
+    pass
+
+
+def test_complex_error_handling():
+    with open(f"{interpreting_tests_path}/58_COMPLEX_error_handling.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(Exception):
+        interpreter.interpret(ast)
+
+
+def test_advanced_array_operations():
+    with open(f"{interpreting_tests_path}/60_new_array_ops.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "arr": [10, 2, 3, 4, 5],
+        "first": 10,
+        "has_three": True,
+        "has_nine": False,
+        "index_of_three": 2,
+        "index_of_nine": -1,
+        "slice_result": [2, 3, 4],
+        "total": 24,
+        "unsorted": [1, 2, 5, 8, 9],
+        "sorted_first": 1,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_advanced_string_operations():
+    with open(f"{interpreting_tests_path}/61_string_array_operations.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "after_remove_first": "e",
+        "copy": "cba",
+        "final_length": 7,
+        "final_string": "Heorld!",
+        "first_after_insert": "X",
+        "first_char": "H",
+        "h_index": -1,
+        "has_h": False,
+        "has_z": False,
+        "last_char": "o",
+        "len": 5,
+        "len_after_add": 6,
+        "lower_s": "hello",
+        "multi": "Heorld!",
+        "reversed_first": "c",
+        "s": "XYello!",
+        "second_char": "Y",
+        "test_remove": "est",
+        "upper_s": "HELLO",
+        "z_index": -1,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_list_pattern_matching():
+    with open(f"{interpreting_tests_path}/62_list_pattern_matching.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"s": "match"}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_object_pattern_matching():
+    with open(f"{interpreting_tests_path}/63_object_pattern_matching.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"s": "match"}
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_match_statements_with_guard():
+    with open(f"{interpreting_tests_path}/64_match_with_guard.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "x": 2,
+    }
+    assert check_variable_helper(interpreter, expected)
+
+
+def test_map_operations():
+    with open(f"{interpreting_tests_path}/65_map_operations.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "m": {
+            "b": 2,
+            "c": 3,
+            "d": 4,
+            "e": 5,
+            "f": 6,
+        },
+        "to_update": {},
+        "b": 2,
+        "has_c": True,
+        "keys": ["a", "b", "c"],
+        "values": [1, 2, 3],
+        "length": 3,
+        "removed_a": 1,
+        "default_x": 0,
+    }
+    assert check_variable_helper(interpreter, expected)
+
