@@ -18,6 +18,7 @@ class Function:
     params: list
     body: list
     return_type: Type
+    is_static: bool = False
 
 
 class Environment:
@@ -36,6 +37,8 @@ class Environment:
         elif isinstance(value, CustomType):
             self.values[name] = value
         elif isinstance(value, SugarClass):
+            self.values[name] = value
+        elif isinstance(value, InterfaceDeclaration):
             self.values[name] = value
         else:
             if var_type is not None:
@@ -548,4 +551,19 @@ class Interpreter:
                 properties[member.name.name] = member
 
         sugar_class = SugarClass(node.name.name, methods, properties, constructor)
+
+        if node.implements_clause:
+            for interface_name in node.implements_clause:
+                interface = self.environment.get(interface_name.name)
+                if not isinstance(interface, InterfaceDeclaration):
+                    raise TypeError(f"{interface_name.name} is not an interface.")
+                for method in interface.body:
+                    if method.name.name not in sugar_class.methods:
+                        raise TypeError(
+                            f"Class {sugar_class.name} does not implement method {method.name.name} from interface {interface.name.name}"
+                        )
+
         self.environment.define(node.name.name, sugar_class, None)
+
+    def visit_InterfaceDeclaration(self, node: InterfaceDeclaration):
+        self.environment.define(node.name.name, node, None)
