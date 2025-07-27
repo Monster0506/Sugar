@@ -519,12 +519,13 @@ class SugarTransformer(Transformer):
         implements_clause = []
         class_body = []
         for item in rest:
-            if isinstance(item[0], Token) and item[0].value == "IMPLEMENTS":
-                implements_clause.append(item[1])
-            elif isinstance(item[0], Token) and item[0].value == "EXTENDS":
-                extends_clause.append(item[1])
-            else:
-                class_body = item
+            if isinstance(item, list):
+                if isinstance(item[0], Token) and item[0].value == "IMPLEMENTS":
+                    implements_clause.append(item[1])
+                elif isinstance(item[0], Token) and item[0].value == "EXTENDS":
+                    extends_clause.append(item[1])
+                else:
+                    class_body = item
 
         return ClassDeclaration(
             name=name,
