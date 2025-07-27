@@ -65,8 +65,7 @@ class Environment:
         raise NameError(f"Undefined variable '{name}'.")
 
     def __repr__(self) -> str:
-        attrs: str = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({attrs})"
+        return f"{self.__class__.__name__}(values={self.values!r}, enclosing={self.enclosing!r})"
 
 
 class Interpreter:
