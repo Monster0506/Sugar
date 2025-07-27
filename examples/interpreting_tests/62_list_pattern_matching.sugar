@@ -1,7 +1,8 @@
 DEF l #[ #int ] = [1, 2, 3]
+DEF s #str = ""
 MATCH l
     CASE [1, 2, 3] do
-        DEF s #str = "match"
+        s := "match"
     DEFAULT do
-        DEF s #str = "no match"
+        s := "no match"
 end
