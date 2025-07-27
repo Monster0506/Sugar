@@ -350,7 +350,9 @@ class Interpreter:
                 )
 
         if isinstance(base, dict):
-            if isinstance(base[list(base.keys())[0]], StdLibCall):
+            if len(base.keys()) > 0 and isinstance(
+                base[list(base.keys())[0]], StdLibCall
+            ):
                 return self._stdlib_call(base, method_name, evaluated_args)
 
         assumed_type = self.environment.type_checker.get_runtime_type(base)
