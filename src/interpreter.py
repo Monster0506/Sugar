@@ -324,9 +324,7 @@ class Interpreter:
         calling_environment = self.environment
         self.environment = Environment(calling_environment)
         if instance:
-            self.environment.define(
-                "THIS", instance, None
-            )  # Type will be checked later
+            self.environment.define("THIS", instance, None)
 
         for param, arg_value in zip(func.params, args):
             self.environment.define(param.name.name, arg_value, param.param_type)
@@ -337,8 +335,7 @@ class Interpreter:
                 break
 
         result = self.return_value
-        self.return_value = None  # Reset for next calls
-        # Restore the original environment after the function call
+        self.return_value = None
         self.environment = calling_environment
 
         return result
@@ -511,6 +508,18 @@ class Interpreter:
 
     def visit_IdentifierPattern(self, node: IdentifierPattern):
         return self.visit(node.name)
+
+    def visit_TuplePattern(self, node: TuplePattern):
+        values = []
+        for pattern in node.patterns:
+            values.append(self.visit(pattern))
+        return tuple(values)
+
+    def visit_ArrayPattern(self, node: ArrayPattern):
+        values = []
+        for pattern in node.patterns if node.patterns else []:
+            values.append(self.visit(pattern))
+        return values
 
     def visit_ObjectLiteral(self, node: ObjectLiteral):
         obj = {}
