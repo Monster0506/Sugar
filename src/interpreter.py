@@ -516,6 +516,14 @@ class Interpreter:
             values.append(self.visit(pattern))
         return values
 
+    def visit_MapPattern(self, node: MapPattern):
+        values = {}
+        for pattern in node.entries if node.entries else []:
+            key = self.visit(pattern.key)
+            value = self.visit(pattern.value)
+            values[key] = value
+        return values
+
     def visit_ObjectLiteral(self, node: ObjectLiteral):
         obj = {}
         for entry in node.entries:
