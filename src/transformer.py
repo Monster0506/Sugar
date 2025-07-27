@@ -481,19 +481,16 @@ class SugarTransformer(Transformer):
         logging.debug(f"type_declaration: args={args}")
         _type, name, *rest = args
 
-        extends_clause = None
+        extends_clause = []
         type_body = []
 
         # The last element is always END
-        if len(rest) > 1:
-            # Check if the first element in rest is the extends_clause
-            if isinstance(rest[0], list) and all(
-                isinstance(i, Identifier) for i in rest[0]
-            ):
-                extends_clause = rest[0]
-                type_body = rest[1]
+        for i in range(len(rest) - 1):
+            item = rest[i]
+            if isinstance(item[0], Token) and item[0].value == "EXTENDS":
+                extends_clause.append(item[1])
             else:
-                type_body = rest[0]
+                type_body.extend(item)
 
         return TypeDeclaration(
             name=name, type_body=type_body, extends_clause=extends_clause
@@ -509,26 +506,24 @@ class SugarTransformer(Transformer):
 
     def extends_clause(self, _extends, *identifiers):
         logging.debug(f"extends_clause: identifiers={identifiers}")
-        return list(identifiers)
+        return [_extends] + list(identifiers)
 
     def implements_clause(self, _implements, *identifiers):
         logging.debug(f"implements_clause: identifiers={identifiers}")
-        return list(identifiers)
+        return [_implements] + list(identifiers)
 
     def class_declaration(self, *args):
         logging.debug(f"class_declaration: args={args}")
         _class, name, *rest = args
-        extends_clause = None
-        implements_clause = None
+        extends_clause = []
+        implements_clause = []
         class_body = []
-
         for item in rest:
-            if isinstance(item, list) and all(isinstance(i, Identifier) for i in item):
-                if extends_clause is None:
-                    extends_clause = item
-                else:
-                    implements_clause = item
-            elif isinstance(item, list):
+            if isinstance(item[0], Token) and item[0].value == "IMPLEMENTS":
+                implements_clause.append(item[1])
+            elif isinstance(item[0], Token) and item[0].value == "EXTENDS":
+                extends_clause.append(item[1])
+            else:
                 class_body = item
 
         return ClassDeclaration(
