@@ -470,59 +470,101 @@ class Interpreter:
 
         return anon_func
 
-    def visit_MatchStatement(self, node: MatchStatement):
-        expression = self.visit(node.expression)
-        matched = None
-        original_environment = self.environment
-        for case_clause in node.case_clauses:
-            self.environment = Environment(original_environment)
-            if isinstance(case_clause.pattern, IdentifierPattern):
-                self.environment.define(
-                    case_clause.pattern.name.name,
-                    expression,
-                    self.environment.type_checker.get_runtime_type(expression),
-                )
-                pattern = self.visit(case_clause.pattern)
-            else:
-                pattern = self.visit(case_clause.pattern)
-            guard = self.visit(case_clause.guard) if case_clause.guard else True
-            if expression == pattern and guard:
-                matched = case_clause
-                break
-        if not matched:
-            if node.default_clause:
-                for statement in node.default_clause.body:
-                    self.visit(statement)
+    def _match(self, value, pattern, env: Environment):
+        if isinstance(pattern, LiteralPattern):
+            return self._match_literal_pattern(value, pattern)
+        elif isinstance(pattern, TypedIdentifierPattern):
+            return self._match_typed_identifier_pattern(value, pattern, env)
+        elif isinstance(pattern, TuplePattern):
+            return self._match_tuple_pattern(value, pattern, env)
+        elif isinstance(pattern, ArrayPattern):
+            return self._match_array_pattern(value, pattern, env)
+        elif isinstance(pattern, MapPattern):
+            return self._match_map_pattern(value, pattern, env)
+        elif isinstance(pattern, IdentifierPattern):
+            return self._match_identifier_pattern(value, pattern, env)
         else:
-            for statement in matched.body:
-                self.visit(statement)
-        self.environment = original_environment
+            # Fallback for simple comparison for other pattern types if any
+            return value == self.visit(pattern)
+
+    def _match_literal_pattern(self, value, pattern: LiteralPattern):
+        return value == self.visit(pattern.literal)
 
     def visit_LiteralPattern(self, node: LiteralPattern):
         return self.visit(node.literal)
 
-    def visit_IdentifierPattern(self, node: IdentifierPattern):
-        return self.visit(node.name)
+    def _match_typed_identifier_pattern(
+        self, value, pattern: TypedIdentifierPattern, env: Environment
+    ):
+        if self.environment.type_checker.is_assignable(value, pattern.var_type):
+            env.define(pattern.name.name, value, pattern.var_type)
+            return True
+        return False
 
-    def visit_TuplePattern(self, node: TuplePattern):
-        values = []
-        for pattern in node.patterns:
-            values.append(self.visit(pattern))
-        return tuple(values)
+    def _match_tuple_pattern(self, value, pattern: TuplePattern, env: Environment):
+        if not isinstance(value, tuple) or len(value) != len(pattern.patterns):
+            return False
+        for val, p in zip(value, pattern.patterns):
+            if not self._match(val, p, env):
+                return False
+        return True
 
-    def visit_ArrayPattern(self, node: ArrayPattern):
-        values = []
-        for pattern in node.patterns if node.patterns else []:
-            values.append(self.visit(pattern))
-        return values
+    def _match_array_pattern(self, value, pattern: ArrayPattern, env: Environment):
+        if not isinstance(value, list) or len(value) != len(pattern.patterns):
+            return False
+        for val, p in zip(value, pattern.patterns):
+            if not self._match(val, p, env):
+                return False
+        return True
 
-    def visit_MapPattern(self, node: MapPattern):
-        values = {}
-        for pattern in node.entries if node.entries else []:
-            key = self.visit(pattern.key)
-            value = self.visit(pattern.value)
-            values[key] = value
-        return values
+    def _match_map_pattern(self, value, pattern: MapPattern, env: Environment):
+        if not isinstance(value, dict) or len(value) != len(pattern.entries):
+            return False
+        for entry in pattern.entries:
+            k = self.visit(entry.key)
+            if k not in value:
+                return False
+            if not self._match(value[k], entry.value, env):
+                return False
+        return True
+
+    def _match_identifier_pattern(
+        self, value, pattern: IdentifierPattern, env: Environment
+    ):
+        # This is for wildcard-like behavior, or binding without type check
+        env.define(
+            pattern.name.name,
+            value,
+            self.environment.type_checker.get_runtime_type(value),
+        )
+        return True
+
+    def visit_MatchStatement(self, node: MatchStatement):
+        expression = self.visit(node.expression)
+        matched = False
+        original_environment = self.environment
+
+        for case_clause in node.case_clauses:
+            case_environment = Environment(original_environment)
+            if self._match(expression, case_clause.pattern, case_environment):
+                guard = True
+                if case_clause.guard:
+                    # Temporarily use the case environment to evaluate the guard
+                    self.environment = case_environment
+                    guard = self.visit(case_clause.guard)
+                    self.environment = original_environment  # Restore
+
+                if guard:
+                    self.environment = case_environment
+                    for statement in case_clause.body:
+                        self.visit(statement)
+                    self.environment = original_environment
+                    matched = True
+                    break
+
+        if not matched and node.default_clause:
+            for statement in node.default_clause.body:
+                self.visit(statement)
 
     def visit_ObjectLiteral(self, node: ObjectLiteral):
         obj = {}

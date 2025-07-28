@@ -1,0 +1,9 @@
+
+DEF s #str = ""
+DEF o #(  #int, #str ) = (1,"a")
+MATCH o
+    CASE (1,"a") do
+        s := "match"
+    DEFAULT do
+        s := "no match"
+end

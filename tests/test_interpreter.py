@@ -862,6 +862,18 @@ def test_complex_error_handling():
         interpreter.interpret(ast)
 
 
+def test_tuple_pattern_matching():
+    with open(f"{interpreting_tests_path}/59_tuple_pattern_matching.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"s": "match"}
+    assert check_variable_helper(interpreter, expected)
+
+
 def test_advanced_array_operations():
     with open(f"{interpreting_tests_path}/60_new_array_ops.sugar", "r") as f:
         code = f.read()
