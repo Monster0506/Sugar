@@ -1,6 +1,26 @@
 import datetime
 import time
-from math import pi, sqrt
+from math import (
+    acos,
+    asin,
+    atan,
+    ceil,
+    cos,
+    degrees,
+    e,
+    exp,
+    factorial,
+    floor,
+    gcd,
+    lcm,
+    log,
+    log10,
+    pi,
+    radians,
+    sin,
+    sqrt,
+    tan,
+)
 from random import randint, random
 
 from src.ast_nodes import StdLibCall
@@ -12,6 +32,28 @@ library = {
     "Math": {
         "PI": StdLibCall(lambda: pi),
         "SQRT": StdLibCall(lambda x: sqrt(x)),
+        "E": StdLibCall(lambda: e),
+        "FLOOR": StdLibCall(lambda x: floor(x)),
+        "CEIL": StdLibCall(lambda x: ceil(x)),
+        "ROUND": StdLibCall(lambda x: round(x)),
+        "POW": StdLibCall(lambda x, y: pow(x, y)),
+        "ABS": StdLibCall(lambda x: abs(x)),
+        "MIN": StdLibCall(lambda *x: min(*x)),
+        "MAX": StdLibCall(lambda *x: max(*x)),
+        "SIN": StdLibCall(lambda x: sin(x)),
+        "COS": StdLibCall(lambda x: cos(x)),
+        "TAN": StdLibCall(lambda x: tan(x)),
+        "ASIN": StdLibCall(lambda x: asin(x)),
+        "ACOS": StdLibCall(lambda x: acos(x)),
+        "ATAN": StdLibCall(lambda x: atan(x)),
+        "LOG": StdLibCall(lambda x, y: log(x, y)),
+        "LOG10": StdLibCall(lambda x: log10(x)),
+        "EXP": StdLibCall(lambda x: exp(x)),
+        "FACTORIAL": StdLibCall(lambda x: factorial(x)),
+        "GCD": StdLibCall(lambda *args: gcd(*args)),
+        "LCM": StdLibCall(lambda *args: lcm(*args)),
+        "DEGREES": StdLibCall(lambda x: degrees(x)),
+        "RADIANS": StdLibCall(lambda x: radians(x)),
     },
     "Random": {
         "INT": StdLibCall(lambda x, y: randint(x, y)),
