@@ -75,6 +75,9 @@ library = {
         "PRINT": StdLibCall(lambda *args: print(*args)),
         "INPUT": StdLibCall(lambda args: input(args)),
     },
+    "SYSTEM": {
+        "EXIT": StdLibCall(lambda args: exit(args)),
+    },
 }
 
 
@@ -162,6 +165,7 @@ libraries = {
         "capitalize"
         "title"
     },
+    THIS WILL BE HARD
     "Type": {
         "is_int"
         "is_float"
@@ -190,8 +194,8 @@ libraries = {
         "concat"
         "unique"
     },
-    "Time": {"now" "sleep" "format" "parse"},
     "File": {"read" "write" "exists" "delete" "rename" "size"},
-    "System": {"args" "exit" "env" "exec"},
+    # These will be tricky
+    "System": {"args" "env" "exec"},
 }
 """
