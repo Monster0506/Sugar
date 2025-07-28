@@ -21,7 +21,7 @@ from math import (
     sqrt,
     tan,
 )
-from random import randint, random
+from random import choice, randint, random, sample, shuffle
 
 from src.ast_nodes import StdLibCall
 
@@ -58,6 +58,9 @@ library = {
     "Random": {
         "INT": StdLibCall(lambda x, y: randint(x, y)),
         "FLOAT": StdLibCall(lambda: random()),
+        "CHOICE": StdLibCall(lambda x: choice(x)),
+        "SHUFFLE": StdLibCall(lambda x: _shuffle(x)),
+        "SAMPLE": StdLibCall(lambda x, k: sample(x, k)),
     },
     "Time": {
         "NOW_STR": StdLibCall(lambda: _get_current_time_str()),
@@ -131,6 +134,11 @@ def _get_time_components_now():
     }
 
 
+def _shuffle(x):
+    shuffle(x)
+    return x
+
+
 # TODO:
 
 """
@@ -154,34 +162,6 @@ libraries = {
         "capitalize"
         "title"
     },
-    "Math": {
-        "sqrt"
-        "pow"
-        "abs"
-        "floor"
-        "ceil"
-        "round"
-        "min"
-        "max"
-        "sin"
-        "cos"
-        "tan"
-        "asin"
-        "acos"
-        "atan"
-        "log"
-        "log10"
-        "exp"
-        "pi"
-        "e"
-        "factorial"
-        "gcd"
-        "lcm"
-        "is_prime"
-        "degrees"
-        "radians"
-    },
-    "Random": {"rnd" "choice" "shuffle" "sample"},
     "Type": {
         "is_int"
         "is_float"
