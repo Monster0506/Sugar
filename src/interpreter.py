@@ -288,6 +288,12 @@ class Interpreter:
         if node.operator == "+":
             return +value
 
+    def visit_UnaryMinusExpression(self, node: UnaryMinusExpression):
+        return self.visit_UnaryOperation(node)
+
+    def visit_UnaryPlusExpression(self, node: UnaryPlusExpression):
+        return self.visit_UnaryOperation(node)
+
     def visit_NotExpression(self, node: NotExpression):
         return self.visit_UnaryOperation(node)
 

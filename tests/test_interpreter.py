@@ -783,7 +783,37 @@ def test_stdlib_math():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    expected = {"pi": 3.141592653589793, "s": 4.0}
+    expected = {
+        "pi_val": 3.141592653589793,
+        "e_val": 2.718281828459045,
+        "s_val": 4.0,
+        "f_val": 5,
+        "c_val": 6,
+        "r_val": 6,
+        "r_val2": 5,
+        "p_val": 8.0,
+        "a_val": 10.5,
+        "min_val": 2.0,
+        "min_single": 7.0,
+        "max_val": 20.0,
+        "max_single": 15.0,
+        "sin_val": 1.0,
+        "cos_val": -1.0,
+        "tan_val": 0.9999999999999999,
+        "asin_val": 1.5707963267948966,
+        "acos_val": 1.5707963267948966,
+        "atan_val": 0.7853981633974483,
+        "log_val": 2.0,
+        "log10_val": 3.0,
+        "exp_val": 2.718281828459045,
+        "fact_val": 120,
+        "gcd_val": 6,
+        "gcd_multi": 6,
+        "lcm_val": 12,
+        "lcm_multi": 12,
+        "deg_val": 180.0,
+        "rad_val": 3.141592653589793,
+    }
     assert check_variable_helper(interpreter, expected)
 
 

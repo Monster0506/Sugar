@@ -1,4 +1,5 @@
 import datetime
+import os
 import time
 from math import (
     acos,
@@ -75,8 +76,34 @@ library = {
         "PRINT": StdLibCall(lambda *args: print(*args)),
         "INPUT": StdLibCall(lambda args: input(args)),
     },
-    "SYSTEM": {
+    "System": {
         "EXIT": StdLibCall(lambda args: exit(args)),
+    },
+    "File": {
+        "READ": StdLibCall(
+            lambda filepath, encoding="utf-8": _file_read(filepath, encoding)
+        ),
+        "WRITE": StdLibCall(
+            lambda filepath, content, append=False, encoding="utf-8": _file_write(
+                filepath, content, append, encoding
+            )
+        ),
+        "EXISTS": StdLibCall(lambda filepath: _file_exists(filepath)),
+        "DELETE": StdLibCall(lambda filepath: _file_delete(filepath)),
+        "RENAME": StdLibCall(
+            lambda old_path, new_path: _file_rename(old_path, new_path)
+        ),
+        "SIZE": StdLibCall(lambda filepath: _file_size(filepath)),
+        "IS_FILE": StdLibCall(lambda filepath: _file_is_file(filepath)),
+        "IS_DIRECTORY": StdLibCall(lambda filepath: _file_is_dir(filepath)),
+        "LIST_DIRECTORY": StdLibCall(lambda path=".": _file_list_dir(path)),
+        "MAKE_DIRECTORY": StdLibCall(
+            lambda path, parents=False, exist_ok=False: _file_make_dir(
+                path, parents, exist_ok
+            )
+        ),
+        "REMOVE_DIRECTORY": StdLibCall(lambda path: _file_remove_dir(path)),
+        "DELETE_TREE": StdLibCall(lambda path: _file_delete_tree(path)),
     },
 }
 
@@ -137,6 +164,139 @@ def _get_time_components_now():
     }
 
 
+def _file_read(filepath: str, encoding: str = "utf-8"):
+    """Reads the content of a file."""
+    try:
+        with open(filepath, "r", encoding=encoding) as f:
+            return f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {filepath}")
+    except Exception as e:
+        raise IOError(f"Error reading file '{filepath}': {e}")
+
+
+def _file_write(
+    filepath: str, content: str, append: bool = False, encoding: str = "utf-8"
+):
+    """Writes content to a file. Overwrites by default, appends if append is True."""
+    mode = "a" if append else "w"
+    try:
+        with open(filepath, mode, encoding=encoding) as f:
+            f.write(content)
+        return True  # Indicate success
+    except Exception as e:
+        raise IOError(f"Error writing to file '{filepath}': {e}")
+
+
+def _file_exists(filepath: str):
+    """Checks if a file or directory exists."""
+    return os.path.exists(filepath)
+
+
+def _file_delete(filepath: str):
+    """Deletes a file."""
+    try:
+        os.remove(filepath)
+        return True  # Indicate success
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {filepath}")
+    except IsADirectoryError:
+        raise IsADirectoryError(
+            f"Cannot delete directory using file delete: {filepath}"
+        )
+    except Exception as e:
+        raise OSError(f"Error deleting file '{filepath}': {e}")
+
+
+def _file_rename(old_path: str, new_path: str):
+    """Renames or moves a file."""
+    try:
+        os.rename(old_path, new_path)
+        return True  # Indicate success
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Source file not found: {old_path}")
+    except FileExistsError:
+        raise FileExistsError(f"Destination file already exists: {new_path}")
+    except Exception as e:
+        raise OSError(f"Error renaming file from '{old_path}' to '{new_path}': {e}")
+
+
+def _file_size(filepath: str):
+    """Returns the size of a file in bytes."""
+    try:
+        return os.path.getsize(filepath)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {filepath}")
+    except Exception as e:
+        raise OSError(f"Error getting size of file '{filepath}': {e}")
+
+
+def _file_is_file(filepath: str):
+    """Checks if the given path is a regular file."""
+    return os.path.isfile(filepath)
+
+
+def _file_is_dir(filepath: str):
+    """Checks if the given path is a directory."""
+    return os.path.isdir(filepath)
+
+
+def _file_list_dir(path: str = "."):
+    """Lists contents of a directory."""
+    try:
+        return os.listdir(path)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Directory not found: {path}")
+    except Exception as e:
+        raise OSError(f"Error listing directory '{path}': {e}")
+
+
+def _file_make_dir(path: str, parents: bool = False, exist_ok: bool = False):
+    """Creates a directory."""
+    try:
+        if parents:
+            os.makedirs(path, exist_ok=exist_ok)
+        else:
+            os.mkdir(path)
+        return True
+    except FileExistsError:
+        if not exist_ok:
+            raise FileExistsError(f"Directory already exists: {path}")
+        return True  # if exist_ok, it's fine
+    except Exception as e:
+        raise OSError(f"Error creating directory '{path}': {e}")
+
+
+def _file_remove_dir(path: str):
+    """Removes an empty directory."""
+    try:
+        os.rmdir(path)
+        return True
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Directory not found: {path}")
+    except OSError as e:
+        if "Directory not empty" in str(e):  # Specific check for non-empty dir
+            raise OSError(
+                f"Directory not empty: {path}. Use File.DELETE_TREE for non-empty directories."
+            )
+        raise OSError(f"Error removing directory '{path}': {e}")
+    except Exception as e:
+        raise OSError(f"Error removing directory '{path}': {e}")
+
+
+def _file_delete_tree(path: str):
+    """Recursively deletes a directory tree (use with caution!)."""
+    import shutil
+
+    try:
+        shutil.rmtree(path)
+        return True
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Path not found: {path}")
+    except Exception as e:
+        raise OSError(f"Error deleting directory tree '{path}': {e}")
+
+
 def _shuffle(x):
     shuffle(x)
     return x
@@ -194,7 +354,6 @@ libraries = {
         "concat"
         "unique"
     },
-    "File": {"read" "write" "exists" "delete" "rename" "size"},
     # These will be tricky
     "System": {"args" "env" "exec"},
 }

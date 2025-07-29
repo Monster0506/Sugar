@@ -1,2 +1,29 @@
-DEF pi #float = Math.PI
-DEF s #float = Math:SQRT:(16.0) 
+DEF pi_val #float = Math.PI
+DEF e_val #float = Math.E
+DEF s_val #float = Math:SQRT:(16.0)
+DEF f_val #int = Math:FLOOR:(5.7)
+DEF c_val #int = Math:CEIL:(5.3)
+DEF r_val #int = Math:ROUND:(5.5)
+DEF r_val2 #int = Math:ROUND:(5.4)
+DEF p_val #float = Math:POW:(2.0, 3.0)
+DEF a_val #float = Math:ABS:(-10.5)
+DEF min_val #float = Math:MIN:([10.0, 5.0, 20.0, 2.0])
+DEF min_single #float = Math:MIN:([7.0])
+DEF max_val #float = Math:MAX:([10.0, 5.0, 20.0, 2.0])
+DEF max_single #float = Math:MAX:([15.0])
+DEF sin_val #float = Math:SIN:(Math.PI / 2.0) // sin(90 deg)
+DEF cos_val #float = Math:COS:(Math.PI) // cos(180 deg)
+DEF tan_val #float = Math:TAN:(Math.PI / 4.0) // tan(45 deg)
+DEF asin_val #float = Math:ASIN:(1.0) // asin(1) = PI/2
+DEF acos_val #float = Math:ACOS:(0.0) // acos(0) = PI/2
+DEF atan_val #float = Math:ATAN:(1.0) // atan(1) = PI/4
+DEF log_val #float = Math:LOG:(100.0, 10.0) // log base 10 of 100
+DEF log10_val #float = Math:LOG10:(1000.0)
+DEF exp_val #float = Math:EXP:(1.0) // e^1
+DEF fact_val #int = Math:FACTORIAL:(5)
+DEF gcd_val #int = Math:GCD:(48, 18)
+DEF gcd_multi #int = Math:GCD:(12, 18, 24)
+DEF lcm_val #int = Math:LCM:(4, 6)
+DEF lcm_multi #int = Math:LCM:(2, 3, 4)
+DEF deg_val #float = Math:DEGREES:(Math.PI) // 180 degrees
+DEF rad_val #float = Math:RADIANS:(180.0) // PI radians
