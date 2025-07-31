@@ -471,20 +471,21 @@ class Interpreter:
         base = self.visit(node.base)
         if isinstance(base, SugarInstance):
             prop_name = node.property_name.name
-            prop_decl = base.sugar_class.find_property(prop_name)
+            if isinstance(base.sugar_class, SugarClass):
+                prop_decl = base.sugar_class.find_property(prop_name)
 
-            if (
-                prop_decl
-                and prop_decl.access_modifier
-                and prop_decl.access_modifier.modifier == "PRIVATE"
-            ):
                 if (
-                    self.current_class is None
-                    or self.current_class.name != base.sugar_class.name
+                    prop_decl
+                    and prop_decl.access_modifier
+                    and prop_decl.access_modifier.modifier == "PRIVATE"
                 ):
-                    raise TypeError(
-                        f"Cannot access private property '{prop_name}' from outside its class."
-                    )
+                    if (
+                        self.current_class is None
+                        or self.current_class.name != base.sugar_class.name
+                    ):
+                        raise TypeError(
+                            f"Cannot access private property '{prop_name}' from outside its class."
+                        )
 
             return base.environment.get(prop_name).value
         elif isinstance(base, dict) and isinstance(
@@ -782,122 +783,116 @@ class Interpreter:
             )
         raise Exception(exception)
 
+    def _resolve_exception_base_name(self, exception_type: Type) -> str | None:
+        """
+        Resolves the true base exception name for a given declared exception type.
+        This handles both direct base errors and custom types that extend base errors.
+        """
+        if not isinstance(exception_type, Type):
+            return None
+
+        clause_type_name = exception_type.name
+
+        # Check if it's a known base error or a SugarError instance
+        sugar_error_or_name = base_errors.get(clause_type_name)
+        if sugar_error_or_name:
+            if isinstance(sugar_error_or_name, SugarError):
+                return sugar_error_or_name.base_class_name
+            else:  # Assume it's already the name string
+                return sugar_error_or_name
+
+        # If not a direct base error, check if it's a custom type that extends a base error
+        thingy = self.environment.get(clause_type_name)
+        if isinstance(thingy, CustomType):
+            if (
+                thingy.declaration
+                and thingy.declaration.extends_clause
+                and thingy.declaration.extends_clause[0]
+            ):
+                extends_name = thingy.declaration.extends_clause[0].name
+                sugar_error_or_name = base_errors.get(extends_name)
+                if sugar_error_or_name:
+                    if isinstance(sugar_error_or_name, SugarError):
+                        return sugar_error_or_name.base_class_name
+                    else:
+                        return sugar_error_or_name
+        return None
+
     def visit_TryStatement(self, node: TryStatement):
-        print(node)
+        original_environment = self.environment
+
         try:
-            statements = node.body
-            for statement in statements:
+            for statement in node.body:
                 self.visit(statement)
         except Exception as caught:
             caught_exception_name = type(caught).__name__
-            print(f"Caught exception: {caught_exception_name}")
 
+            match_found_and_handled = False
             for catch_clause in node.catch_clauses:
-                print(
-                    f"Checking catch clause for type: {catch_clause.exception_type.name}"
+                resolved_base_error_name = self._resolve_exception_base_name(
+                    catch_clause.exception_type
                 )
 
-                realError_for_clause_name = (
-                    None  # This will store the string name for comparison
+                is_direct_match = (
+                    caught_exception_name == catch_clause.exception_type.name
+                )
+                is_resolved_base_match = (
+                    resolved_base_error_name
+                    and caught_exception_name == resolved_base_error_name
                 )
 
-                if isinstance(catch_clause.exception_type, Type):
-                    clause_type_name = catch_clause.exception_type.name
-
-                    if clause_type_name in base_errors:
-                        sugar_error_instance = base_errors.get(clause_type_name)
-                        if isinstance(sugar_error_instance, SugarError):
-                            realError_for_clause_name = (
-                                sugar_error_instance.base_class_name
-                            )
-                            print(
-                                f"Resolved to base_error: {realError_for_clause_name}"
-                            )
-                        else:  # If base_errors directly stores names (Option 1)
-                            realError_for_clause_name = (
-                                sugar_error_instance  # It's already the name string
-                            )
-                            print(
-                                f"Resolved to base_error (direct name): {realError_for_clause_name}"
-                            )
-                    else:
-                        thingy = self.environment.get(clause_type_name)
-                        if isinstance(thingy, CustomType):
-                            extends_name = (
-                                thingy.declaration.extends_clause[0].name
-                                if thingy.declaration
-                                and thingy.declaration.extends_clause
-                                else None
-                            )
-                            if extends_name and extends_name in base_errors:
-                                print("we got here")
-                                sugar_error_instance = base_errors.get(extends_name)
-                                if isinstance(sugar_error_instance, SugarError):
-                                    realError_for_clause_name = (
-                                        sugar_error_instance.base_class_name
-                                    )
-                                    print(
-                                        f"Resolved to extended base_error: {realError_for_clause_name}"
-                                    )
-                                else:  # If base_errors directly stores names (Option 1)
-                                    realError_for_clause_name = sugar_error_instance
-                                    print(
-                                        f"Resolved to extended base_error (direct name): {realError_for_clause_name}"
-                                    )
-
-                match_found = False
-                if catch_clause.exception_type:
-                    # 1. Check if the caught exception directly matches the declared type name
-                    if caught_exception_name == catch_clause.exception_type.name:
-                        print(f"Direct match found with {caught_exception_name}")
-                        match_found = True
-                    # 2. Check if the caught exception matches the resolved base error name
-                    elif (
-                        realError_for_clause_name
-                        and caught_exception_name == realError_for_clause_name
-                    ):
-                        print(
-                            f"Match found with resolved base error {realError_for_clause_name}"
-                        )
-                        match_found = True
-
-                print("====")
-                print(f"realError_for_clause_name: {realError_for_clause_name}")
-                print(f"caught_exception_name: {caught_exception_name}")
-                print("====")
-
-                if match_found:
-                    print(
-                        f"Catching with clause for {catch_clause.exception_type.name}"
-                    )
+                if is_direct_match or is_resolved_base_match:
                     if catch_clause.exception_name:
-                        original_environment = self.environment
-                        self.environment = Environment(self.environment)
-                        print("yo")
-                        self.environment.define(
-                            catch_clause.exception_name.name,
-                            caught,
-                            catch_clause.exception_type,
+                        self.environment = Environment(original_environment)
+
+                        custom_error_type = self.environment.get(
+                            catch_clause.exception_type.name
                         )
+
+                        if isinstance(custom_error_type, CustomType):
+                            error_instance = SugarInstance(
+                                sugar_class=custom_error_type,
+                                environment=Environment(self.environment),
+                            )
+                            message = caught.args[0] if caught.args else ""
+
+                            message_field_name = next(
+                                (
+                                    field.name.name
+                                    for field in custom_error_type.declaration.type_body
+                                    if field.field_type.name == "str"
+                                ),
+                                None,
+                            )
+                            if message_field_name:
+                                error_instance.environment.define(
+                                    message_field_name, message, Type(name="str")
+                                )
+
+                            self.environment.define(
+                                catch_clause.exception_name.name,
+                                error_instance,
+                                catch_clause.exception_type,
+                            )
+                        else:
+                            self.environment.define(
+                                catch_clause.exception_name.name,
+                                caught,
+                                catch_clause.exception_type,
+                            )
+
                     for statement in catch_clause.body:
                         self.visit(statement)
-                    self.environment = original_environment
-                    break
-                else:
-                    print(
-                        f"No match for clause {catch_clause.exception_type.name}. Continuing to next clause."
-                    )
-                    # Do not `raise` here; continue to the next catch clause.
 
-            else:  # This else block executes if the loop completes without a 'break'
-                print(
-                    "No matching catch clause found for the caught exception. Re-raising."
-                )
+                    self.environment = original_environment
+                    match_found_and_handled = True
+                    break
+
+            if not match_found_and_handled:
                 raise caught
 
         finally:
             if node.finally_clause:
-                print("Executing finally block.")
                 for statement in node.finally_clause.body:
                     self.visit(statement)
 

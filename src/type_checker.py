@@ -124,24 +124,36 @@ class TypeChecker:
         if not isinstance(type_def, CustomType):
             raise TypeError(f"Unknown type: {expected_type.name}")
 
-        if not isinstance(value, dict):
+        if isinstance(value, SugarInstance):
+            # If the value is a SugarInstance, check its class name
+            if value.sugar_class.declaration.name.name != expected_type.name:
+                raise TypeError(
+                    f"Expected an object of type {expected_type.name}, but got {value.sugar_class.name}"
+                )
+            # And then use its environment for the field checks
+            value_dict = {
+                k: v.value for k, v in value.environment.values.items() if k != "THIS"
+            }
+        elif isinstance(value, dict):
+            value_dict = value
+        else:
             raise TypeError(
                 f"Expected an object of type {expected_type.name}, but got {type(value).__name__}"
             )
 
         type_fields = type_def.declaration.type_body
-        if len(value) != len(type_fields):
+        if len(value_dict) != len(type_fields):
             raise TypeError(
-                f"Incorrect number of fields for type {expected_type.name}. Expected {len(type_fields)}, got {len(value)}"
+                f"Incorrect number of fields for type {expected_type.name}. Expected {len(type_fields)}, got {len(value_dict)}"
             )
 
         for field_def in type_fields:
             field_name = field_def.name.name
-            if field_name not in value:
+            if field_name not in value_dict:
                 raise TypeError(
                     f"Missing field '{field_name}' in object of type {expected_type.name}"
                 )
-            self.assert_type(value[field_name], field_def.field_type)
+            self.assert_type(value_dict[field_name], field_def.field_type)
 
         return True
 

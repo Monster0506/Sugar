@@ -1,3 +1,4 @@
+DEF y #str = ""
 TYPE MyError EXTENDS Error
     message #str
 end
@@ -7,13 +8,22 @@ FUNC risky(x #int) #int
     end
     RETURN x
 end
-FUNC test() #str
+FUNC test() #void
+    TRY
         TRY
             risky(-1)
         CATCH e #MyError do
             IO:PRINT:("Caught: " + e.message)
+            y := "done"
             THROW e
         FINALLY do
             IO:PRINT:("Inner finally")
+        end
+    CATCH e #MyError do
+        IO:PRINT:("Outer: " + e.message)
+    FINALLY do
+        IO:PRINT:("Outer finally")
+        THROW MyError("fail in finally")
     end
 end 
+test()
