@@ -9,9 +9,15 @@ def _set_and_return_array(arr: list[Any], i: int, v: Any) -> list[Any]:
     return arr
 
 
-def _set_and_return_dict(d, key, value):
+def _set_and_return_dict(d: dict[Any, Any], key: Any, value: Any):
     d[key] = value
     return d
+
+
+def _safe_get(d: dict[Any, Any], key: Any):
+    if key in d:
+        return d.get(key)
+    raise KeyError(f"{key} missing from {d}")
 
 
 def convert_type(value, expected_type):
@@ -96,13 +102,10 @@ str_operations = {
     "SORT": (_StringOperations._sort),
     "UPPER": (lambda s: s.upper()),
     "LOWER": (lambda s: s.lower()),
+    "ALNUM": (lambda s: s.isalnum()),
+    "ALPHA": (lambda s: s.isalpha()),
+    "DIGIT": (lambda s: s.isdigit()),
 }
-
-
-def _safe_get(d, key):
-    if key in d:
-        return d.get(key)
-    raise KeyError(f"{key} missing from {d}")
 
 
 map_operations = {
@@ -141,4 +144,9 @@ base_errors = {
     "IOError": SugarError(IOError),
     "FileNotFound": SugarError(FileNotFoundError),
     "PermissionDenied": SugarError(PermissionError),
+}
+
+
+standard_functions = {
+    "RANGE": (lambda x, y=None: range(x, y) if y is not None else range(x)),
 }

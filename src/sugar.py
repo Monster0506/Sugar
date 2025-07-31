@@ -1,4 +1,6 @@
 import argparse
+
+from src.interpreter import Interpreter
 from src.parser import parse_to_ast
 
 
@@ -12,7 +14,8 @@ def main():
 
     try:
         ast = parse_to_ast(code)
-        print(ast)
+        interpreter = Interpreter()
+        interpreter.interpret(ast)
     except Exception as e:
         print(e)
 

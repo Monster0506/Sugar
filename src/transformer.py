@@ -677,10 +677,11 @@ class SugarTransformer(Transformer):
         elements = list(self._filter_tokens_out(elements))
         return TupleLiteral(elements=list(elements) or [])
 
-    def lambda_expression(self, _func, _lpar, params, _rpar, _arrow, body):
-        logging.debug(f"lambda_expression: params={params}, body={body}")
-        params = list(filter(lambda x: isinstance(x, Parameter), params))
-        return LambdaExpression(parameters=params or [], body=body)
+    def lambda_expression(self, _func, _lpar, *rest):
+        parameters = list(filter(lambda x: isinstance(x, Parameter), rest[0]))
+        body = rest[-1]
+        logging.debug(f"lambda_expression: params={parameters}, body={body}")
+        return LambdaExpression(parameters=parameters or [], body=body)
 
     def anonymous_function(self, _func, _lpar, *everythingelse):
         logging.debug(f"anonymous_function: everythingelse={everythingelse}")

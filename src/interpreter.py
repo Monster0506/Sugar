@@ -5,6 +5,7 @@ from src.builtins import (
     array_operations,
     base_errors,
     map_operations,
+    standard_functions,
     str_operations,
 )
 from src.stdlib import library
@@ -271,11 +272,14 @@ class Interpreter:
         if not node.base:
             func_name = node.function_name
 
-        functions = self.environment.get(func_name.name)
-
         evaluated_args = (
             [self.visit(arg) for arg in node.arguments] if node.arguments else []
         )
+        if func_name.name in standard_functions:
+            result = standard_functions.get(func_name.name)(*evaluated_args)
+            return result
+
+        functions = self.environment.get(func_name.name)
 
         if isinstance(functions, SugarClass):
             instance = SugarInstance(
@@ -426,6 +430,9 @@ class Interpreter:
 
         can_use_str = (
             isinstance(assumed_type, Type) and assumed_type.name == "str"
+        ) or self.environment.type_checker.is_assignable(base, Type("str"))
+        can_use_str = (
+            isinstance(assumed_type, Type) and assumed_type.name == "char"
         ) or self.environment.type_checker.is_assignable(base, Type("str"))
 
         can_use_map = isinstance(
