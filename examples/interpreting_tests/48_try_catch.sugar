@@ -19,3 +19,6 @@ FUNC test() #str
         IO:PRINT:("done")
     end
 end 
+
+
+DEF x #str = test()

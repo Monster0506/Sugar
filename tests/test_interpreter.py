@@ -755,10 +755,8 @@ def test_try_catch():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    # TODO:
-    # This test needs to check the output of the print statement
-    # and the return value of the test function.
-    # For now, we'll just check that it doesn't crash.
+    expected = {"x": "fail", "y": "done"}
+    assert check_variable_helper(interpreter, expected)
     pass
 
 
@@ -848,8 +846,8 @@ def test_stdlib_io():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
+    interpreter.interpret(ast)
     # TODO:
-    # interpreter.interpret(ast)
     # This test requires user input, so we can't fully automate it.
     # We'll just check that it doesn't crash.
     pass
