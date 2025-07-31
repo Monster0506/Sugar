@@ -3,8 +3,8 @@ FUNC greet(name #str, greeting #str) #str
     RETURN response
 end
 
-FUNC greet(name #str, bad #str) #str  // should error with same parameter types
-    DEF response #str = bad + " " + name
+FUNC greet(name #str, goodbye #str) #str  // should error with same parameter types
+    DEF response #str = goodbye + " " + name
     RETURN response
 end
 
