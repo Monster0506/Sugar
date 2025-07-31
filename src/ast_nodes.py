@@ -125,101 +125,82 @@ class Program(Node):
 @dataclass
 class BinaryOperation(Expression):
     left: Expression
-    operator: str  # e.g., "||", "&&", "==", "!=", ">", "<", "+", "-", "*", "/", "%"
+    operator: str
     right: Expression
 
 
 @dataclass
 class OrExpression(BinaryOperation):
-    # operator will be "||"
     pass
 
 
 @dataclass
 class AndExpression(BinaryOperation):
-    # operator will be "&&"
     pass
 
 
 @dataclass
 class EqualityExpression(BinaryOperation):
-    # operator will be "==" or "!="
     pass
 
 
 @dataclass
 class RelationalExpression(BinaryOperation):
-    # operator will be ">", "<", ">=", "<="
     pass
 
 
 @dataclass
 class AdditiveExpression(BinaryOperation):
-    # operator will be "+" or "-"
     pass
 
 
 @dataclass
 class MultiplicativeExpression(BinaryOperation):
-    # operator will be "*", "/", or "%"
     pass
 
 
-# Unary Operations
-# These classes represent expressions with a single operand and an operator.
 @dataclass
 class UnaryOperation(Expression):
-    operator: str  # e.g., "!", "-", "+"
+    operator: str
     expression: Expression | None
 
 
 @dataclass
 class NotExpression(UnaryOperation):
-    # operator will be "!"
     pass
 
 
 @dataclass
 class UnaryMinusExpression(UnaryOperation):
-    # operator will be "-"
     pass
 
 
 @dataclass
 class UnaryPlusExpression(UnaryOperation):
-    # operator will be "+"
     pass
 
 
-# Postfix Expressions
 @dataclass
 class MethodCall(Expression):
-    # Represents `postfix_expression :method_name: (arguments?)` or `postfix_expression :method_name:`
-    base: (
-        Expression | None
-    )  # The expression on which the method is called (e.g., an Identifier or PropertyAccess)
+    base: Expression | None
     function_name: Identifier
     arguments: list[Expression] | None = None
 
 
 @dataclass
 class PropertyAccess(Expression):
-    # Represents `postfix_expression . IDENTIFIER`
-    base: Expression  # The expression from which the property is accessed
+    base: Expression
     property_name: Identifier
 
 
 @dataclass
 class ArrayAccess(Expression):
-    # Represents `postfix_expression [ expression ]`
-    base: Expression  # The array/list expression being accessed
-    index: Expression  # The expression used as an index
+    base: Expression
+    index: Expression
 
 
-# Primary Expressions
 @dataclass
 class FunctionCall(MethodCall):
-    # Represents `IDENTIFIER (argument_list?)`
     base = None
     function_name: Identifier
     arguments: list[Expression] | None = None
@@ -227,72 +208,61 @@ class FunctionCall(MethodCall):
 
 @dataclass
 class ParenthesizedExpression(Expression):
-    # Represents `( expression )`
     expression: Expression
 
 
 @dataclass
 class ArrayLiteral(Expression):
-    # Represents `[ argument_list? ]`
     elements: list[Expression] | None = None
 
 
 @dataclass
 class MapEntry(Node):
-    # Helper for map_literal: `expression ARROW_OP expression`
     key: Expression
     value: Expression
 
 
 @dataclass
 class MapLiteral(Expression):
-    # Represents `{ map_entries+ }`
     entries: list[MapEntry]
 
 
 @dataclass
 class DictEntry(Node):
-    # Helper for object_literal: `IDENTIFIER COLON expression`
-    key: Identifier  # Property name in an object literal
+    key: Identifier
     value: Expression
 
 
 @dataclass
 class ObjectLiteral(Expression):
-    # Represents `{ dict_entries+ }` or `{}` (empty_object_literal)
     entries: list[DictEntry]
 
 
 @dataclass
 class TupleLiteral(Expression):
-    # Represents `( expression COMMA expression (COMMA expression)* )`
-    elements: list[Expression]  # Guarantees at least two elements from grammar
+    elements: list[Expression]
 
 
 @dataclass
 class LambdaExpression(Expression):
-    # Represents `FUNC LPAR parameter_list? RPAR ARROW_OP expression`
     parameters: list[Parameter] | None
-    body: Expression  # A single expression as the lambda's body
+    body: Expression
 
 
 @dataclass
 class AnonymousFunction(Expression):
-    # Represents `FUNC LPAR parameter_list? RPAR function_body END`
     parameters: list[Parameter] | None
-    body: list[Statement]  # A block of statements as the function's body
-    type: Type | None = None  # Optional return type
+    body: list[Statement]
+    type: Type | None = None
 
 
 @dataclass
 class ThisExpression(Expression):
-    # Represents the `THIS` keyword
     pass
 
 
 @dataclass
 class SuperCall(Expression):
-    # Represents `SUPER (argument_list?)`
     arguments: list[Expression] | None = None
 
 
@@ -346,7 +316,7 @@ class SpawnStatement(Statement):
 
 @dataclass
 class ImportStatement(Statement):
-    dotted_name: list[str]  # list of identifiers in the dotted name
+    dotted_name: list[str]
 
 
 @dataclass
@@ -358,13 +328,13 @@ class TypeField(Node):
 @dataclass
 class TypeDeclaration(Statement):
     name: Identifier
-    type_body: list["TypeField"]
+    type_body: list[TypeField]
     extends_clause: list[Identifier] | None
 
 
 @dataclass
 class AccessModifier(Node):
-    modifier: str  # "PUBLIC", "PRIVATE", "PROTECTED"
+    modifier: str
 
 
 @dataclass
@@ -500,7 +470,7 @@ class MapEntryPattern(Node):
 
 @dataclass
 class MapPattern(Pattern):
-    entries: list[MapEntryPattern]  # Similar to MapEntry, but with patterns
+    entries: list[MapEntryPattern]
 
 
 @dataclass
@@ -510,7 +480,7 @@ class TuplePattern(Pattern):
 
 @dataclass
 class ObjectPattern(Pattern):
-    entries: list[DictEntryPattern]  # Similar to DictEntry, but with patterns
+    entries: list[DictEntryPattern]
 
 
 @dataclass
@@ -529,6 +499,7 @@ class SugarClass(Node):
     methods: dict
     properties: dict[str, PropertyDeclaration]
     constructor: Function | None
+    superclass: SugarClass | None = None
 
 
 @dataclass

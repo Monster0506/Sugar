@@ -100,7 +100,6 @@ class Interpreter:
                 raise TypeError("Cannot declare a property on a non-instance.")
         elif isinstance(node.name, PropertyDeclaration):
             self.visit(node.name)
-            # self.environment.define(node.name, value, var_type)
 
     def visit_ArrayLiteral(self, node: ArrayLiteral):
         values = (
@@ -131,7 +130,6 @@ class Interpreter:
             base_instance = self.visit(node.name.base)
             if isinstance(base_instance, SugarInstance):
                 property_name = node.name.property_name.name
-                # Check if the property already exists in the instance's environment
                 try:
                     base_instance.environment.get(property_name)
                     base_instance.environment.assign(property_name, value)
@@ -247,25 +245,23 @@ class Interpreter:
 
         functions = self.environment.get(func_name.name)
 
+        evaluated_args = (
+            [self.visit(arg) for arg in node.arguments] if node.arguments else []
+        )
+
         if isinstance(functions, SugarClass):
             instance = SugarInstance(
                 sugar_class=functions, environment=Environment(self.environment)
             )
             if functions.constructor:
-                self._execute_function(functions.constructor, [], instance)
+                self._execute_function(functions.constructor, evaluated_args, instance)
             return instance
-            raise TypeError(f"{func_name} is not a function.")
-
-        # Evaluate arguments once
-        evaluated_args = (
-            [self.visit(arg) for arg in node.arguments] if node.arguments else []
-        )
 
         func_to_call = self._get_correct_function(functions, evaluated_args)
 
         if not func_to_call:
             raise TypeError(
-                f"No matching function found for {func_name} with provided arguments."
+                f"No matching function found for {func_name.name} with provided arguments."
             )
 
         return self._execute_function(func_to_call, evaluated_args)
@@ -303,7 +299,6 @@ class Interpreter:
                 if len(evaluated_args) == len(func.params):
                     types_match = True
                     for i, param in enumerate(func.params):
-                        # Use the type checker to compare the evaluated argument with the parameter type
                         if not self.environment.type_checker.is_assignable(
                             evaluated_args[i], param.param_type
                         ):
@@ -346,6 +341,18 @@ class Interpreter:
         evaluated_args = (
             [self.visit(arg) for arg in node.arguments] if node.arguments else []
         )
+
+        if isinstance(base, tuple) and base[0] == "SUPER_CALL":
+            this_instance = base[1]
+            superclass = this_instance.sugar_class.superclass
+            if superclass and method_name in superclass.methods:
+                method = superclass.methods[method_name]
+                return self._execute_function(method, evaluated_args, this_instance)
+            else:
+                raise AttributeError(
+                    f"Method '{method_name}' not found on superclass of {this_instance.sugar_class.name}"
+                )
+
         if isinstance(base, SugarInstance):
             if method_name in base.sugar_class.methods:
                 method = base.sugar_class.methods[method_name]
@@ -426,7 +433,12 @@ class Interpreter:
             )
 
     def visit_ThisAssignment(self, node: ThisAssignment):
-        this_instance = self.environment.get("THIS")
+        this_variable = self.environment.get("THIS")
+        this_instance = (
+            this_variable.value
+            if isinstance(this_variable, Variable)
+            else this_variable
+        )
         if not isinstance(this_instance, SugarInstance):
             raise TypeError(
                 "'THIS' is not defined in the current scope or is not an instance."
@@ -490,7 +502,6 @@ class Interpreter:
         elif isinstance(pattern, IdentifierPattern):
             return self._match_identifier_pattern(value, pattern, env)
         else:
-            # Fallback for simple comparison for other pattern types if any
             return value == self.visit(pattern)
 
     def _match_literal_pattern(self, value, pattern: LiteralPattern):
@@ -537,7 +548,6 @@ class Interpreter:
     def _match_identifier_pattern(
         self, value, pattern: IdentifierPattern, env: Environment
     ):
-        # This is for wildcard-like behavior, or binding without type check
         env.define(
             pattern.name.name,
             value,
@@ -555,10 +565,9 @@ class Interpreter:
             if self._match(expression, case_clause.pattern, case_environment):
                 guard = True
                 if case_clause.guard:
-                    # Temporarily use the case environment to evaluate the guard
                     self.environment = case_environment
                     guard = self.visit(case_clause.guard)
-                    self.environment = original_environment  # Restore
+                    self.environment = original_environment
 
                 if guard:
                     self.environment = case_environment
@@ -588,6 +597,13 @@ class Interpreter:
         methods = {}
         properties = {}
         constructor = None
+        superclass = None
+
+        if node.extends_clause:
+            superclass_name = node.extends_clause[0].name
+            superclass = self.environment.get(superclass_name)
+            if not isinstance(superclass, SugarClass):
+                raise TypeError(f"{superclass_name} is not a class.")
 
         for member in node.body:
             if isinstance(member, MethodDeclaration):
@@ -604,7 +620,9 @@ class Interpreter:
             elif isinstance(member, PropertyDeclaration):
                 properties[member.name.name] = member
 
-        sugar_class = SugarClass(node.name.name, methods, properties, constructor)
+        sugar_class = SugarClass(
+            node.name.name, methods, properties, constructor, superclass
+        )
 
         if node.implements_clause:
             for interface_name in node.implements_clause:
@@ -621,6 +639,35 @@ class Interpreter:
 
     def visit_InterfaceDeclaration(self, node: InterfaceDeclaration):
         self.environment.define(node.name.name, node, None)
+
+    def visit_SuperCall(self, node: SuperCall):
+        this_variable = self.environment.get("THIS")
+        this_instance = (
+            this_variable.value
+            if isinstance(this_variable, Variable)
+            else this_variable
+        )
+
+        if not isinstance(this_instance, SugarInstance):
+            raise TypeError(
+                "'THIS' is not defined in the current scope or is not an instance."
+            )
+
+        superclass = this_instance.sugar_class.superclass
+        if not superclass:
+            raise TypeError("Class does not have a superclass.")
+
+        if node.arguments is not None:
+            evaluated_args = (
+                [self.visit(arg) for arg in node.arguments] if node.arguments else []
+            )
+            if superclass.constructor:
+                return self._execute_function(
+                    superclass.constructor, evaluated_args, this_instance
+                )
+            return None
+
+        return ("SUPER_CALL", this_instance)
 
     def _stdlib_call(self, base, method_name, args):
         return base[method_name](*args)
