@@ -521,3 +521,13 @@ class StdLibCall:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.func(*args, **kwargs)
+
+
+class SugarError(Exception):
+    def __init__(self, base_class, *args):
+        self.base_class = base_class
+        self.args = args
+        super().__init__(*args)
+
+    def trigger(self):
+        raise self.base_class(*self.args)

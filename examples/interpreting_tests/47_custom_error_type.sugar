@@ -3,4 +3,5 @@ TYPE MyError EXTENDS Error
 end
 FUNC fail() #void
     THROW MyError("fail!")
-end 
+end
+fail()

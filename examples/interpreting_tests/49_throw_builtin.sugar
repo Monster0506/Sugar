@@ -1,3 +1,4 @@
 FUNC fail() #void
     THROW ValueError("bad")
 end 
+fail()

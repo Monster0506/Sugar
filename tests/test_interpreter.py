@@ -770,9 +770,9 @@ def test_throw_builtin():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
-    interpreter.interpret(ast)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError) as e:
         interpreter.interpret(ast)
+        print(e)
 
 
 def test_spawn_basic():

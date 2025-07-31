@@ -1,5 +1,5 @@
 from src.ast_nodes import *
-from src.ast_nodes import SugarClass, SugarInstance
+from src.ast_nodes import SugarClass, SugarError, SugarInstance
 from src.builtin_operations import (
     all_operations,
     array_operations,
@@ -8,6 +8,13 @@ from src.builtin_operations import (
 )
 from src.stdlib import library
 from src.type_checker import TypeChecker
+
+
+errors = {
+    "ValueError": SugarError(ValueError),
+    "Exception": SugarError(Exception),
+    "Error": SugarError(Exception),
+}
 
 
 class Environment:
@@ -55,6 +62,8 @@ class Environment:
     def get(self, name):
         if name in library:
             return library.get(name)
+        if name in errors:
+            return errors.get(name)
 
         if name in self.values:
             return self.values[name]
@@ -263,6 +272,15 @@ class Interpreter:
             if functions.constructor:
                 self._execute_function(functions.constructor, evaluated_args, instance)
             return instance
+        elif isinstance(functions, CustomType):
+            instance = SugarInstance(
+                sugar_class=functions, environment=Environment(self.environment)
+            )
+            for field, arg in zip(functions.declaration.type_body, evaluated_args):
+                instance.environment.define(field.name.name, arg, field.field_type)
+            return instance
+        if isinstance(functions, SugarError):
+            return functions
 
         func_to_call = self._get_correct_function(functions, evaluated_args)
 
@@ -314,7 +332,7 @@ class Interpreter:
                     if types_match:
                         return func
             return None
-        elif isinstance(funcs, SugarClass):
+        elif isinstance(funcs, SugarClass) or isinstance(funcs, CustomType):
             return funcs
         else:
             raise TypeError(
@@ -708,3 +726,14 @@ class Interpreter:
 
     def visit_Type(self, node: Type):
         return node.name
+
+    def visit_ThrowStatement(self, node: ThrowStatement):
+
+        exception = self.visit(node.exception)
+        evaluated_args = (
+            [self.visit(arg) for arg in node.exception.arguments]
+            if node.exception and node.exception.arguments
+            else []
+        )
+        final_sugar_error = SugarError(exception.base_class, *evaluated_args)
+        final_sugar_error.trigger()
