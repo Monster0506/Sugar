@@ -1,20 +1,14 @@
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarError, SugarInstance
-from src.builtin_operations import (
+from src.builtins import (
     all_operations,
     array_operations,
+    base_errors,
     map_operations,
     str_operations,
 )
 from src.stdlib import library
 from src.type_checker import TypeChecker
-
-
-errors = {
-    "ValueError": SugarError(ValueError),
-    "Exception": SugarError(Exception),
-    "Error": SugarError(Exception),
-}
 
 
 class Environment:
@@ -62,8 +56,8 @@ class Environment:
     def get(self, name):
         if name in library:
             return library.get(name)
-        if name in errors:
-            return errors.get(name)
+        if name in base_errors:
+            return base_errors.get(name)
 
         if name in self.values:
             return self.values[name]
@@ -730,10 +724,43 @@ class Interpreter:
     def visit_ThrowStatement(self, node: ThrowStatement):
 
         exception = self.visit(node.exception)
-        evaluated_args = (
-            [self.visit(arg) for arg in node.exception.arguments]
-            if node.exception and node.exception.arguments
-            else []
-        )
-        final_sugar_error = SugarError(exception.base_class, *evaluated_args)
-        final_sugar_error.trigger()
+        if isinstance(exception, SugarError):
+            evaluated_args = (
+                [self.visit(arg) for arg in node.exception.arguments]
+                if node.exception and node.exception.arguments
+                else []
+            )
+            final_sugar_error = SugarError(exception.base_class, evaluated_args)
+            final_sugar_error.trigger()
+        elif isinstance(exception, SugarInstance):
+            if not isinstance(exception.sugar_class, CustomType):
+                raise TypeError("Should be sending a custom error type")
+            custom_error_definition = exception.sugar_class.declaration
+            error_instance_values = exception.environment.values
+            if (
+                not isinstance(custom_error_definition.extends_clause, list)
+                or len(custom_error_definition.extends_clause) != 1
+                or not isinstance(custom_error_definition.extends_clause[0], Identifier)
+            ):
+                raise TypeError(
+                    "Custom errors require at most one inherit from a base exception type"
+                )
+
+            base_exception_name = custom_error_definition.extends_clause[0].name
+            python_base_exception_class = base_errors.get(
+                base_exception_name,
+                SugarError(Exception),
+            )
+
+            constructor_args = [var.value for var in error_instance_values.values()]
+            final_sugar_error = SugarError(
+                python_base_exception_class.base_class, constructor_args
+            )
+            final_sugar_error.trigger()
+
+        else:
+            # Fallback if `self.visit` returns something unexpected
+            raise TypeError(
+                f"Unhandled exception type for throw statement: {type(exception_obj)}"
+            )
+        raise Exception(exception)

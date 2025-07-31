@@ -1,6 +1,8 @@
 import functools
 from typing import Any
 
+from src.ast_nodes import SugarError
+
 
 def _set_and_return_array(arr: list[Any], i: int, v: Any) -> list[Any]:
     arr[i] = v
@@ -121,4 +123,23 @@ map_operations = {
 
 all_operations = {
     "TO": (lambda value, expected_type: convert_type(value, expected_type)),
+}
+
+
+base_errors = {
+    "Error": SugarError(Exception),
+    "BaseError": SugarError(Exception),
+    "GeneralError": SugarError(Exception),
+    "ValueError": SugarError(ValueError),
+    "ArgumentError": SugarError(ValueError),
+    "TypeError": SugarError(TypeError),
+    "KeyError": SugarError(KeyError),
+    "NotFound": SugarError(KeyError),
+    "IndexError": SugarError(IndexError),
+    "AttributeError": SugarError(AttributeError),
+    "NameError": SugarError(NameError),
+    "RuntimeError": SugarError(RuntimeError),
+    "IOError": SugarError(IOError),
+    "FileNotFound": SugarError(FileNotFoundError),
+    "PermissionDenied": SugarError(PermissionError),
 }

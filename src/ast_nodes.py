@@ -374,6 +374,12 @@ class ClassDeclaration(Statement):
 
 
 @dataclass
+class ErrorDeclaration(Statement):
+    name: Identifier
+    extends_clause: list[Identifier] | None
+
+
+@dataclass
 class InterfaceMethodDeclaration(Node):
     name: Identifier
     parameters: list[Parameter]
@@ -524,7 +530,9 @@ class StdLibCall:
 
 
 class SugarError(Exception):
-    def __init__(self, base_class, *args):
+    def __init__(self, base_class, args=None):
+        if args is None:
+            args = []
         self.base_class = base_class
         self.args = args
         super().__init__(*args)
