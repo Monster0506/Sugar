@@ -70,6 +70,7 @@ class Interpreter:
     def __init__(self):
         self.environment = Environment()
         self.return_value = None
+        self.current_class = None
 
     def interpret(self, program: Program):
         for statement in program.statements:
@@ -321,6 +322,10 @@ class Interpreter:
             )
 
     def _execute_function(self, func: Function, args: list, instance=None):
+        previous_class = self.current_class
+        if instance:
+            self.current_class = instance.sugar_class
+
         calling_environment = self.environment
         self.environment = Environment(calling_environment)
         if instance:
@@ -337,6 +342,7 @@ class Interpreter:
         result = self.return_value
         self.return_value = None
         self.environment = calling_environment
+        self.current_class = previous_class
 
         return result
 
@@ -434,7 +440,23 @@ class Interpreter:
     def visit_PropertyAccess(self, node: PropertyAccess):
         base = self.visit(node.base)
         if isinstance(base, SugarInstance):
-            return base.environment.get(node.property_name.name).value
+            prop_name = node.property_name.name
+            prop_decl = base.sugar_class.find_property(prop_name)
+
+            if (
+                prop_decl
+                and prop_decl.access_modifier
+                and prop_decl.access_modifier.modifier == "PRIVATE"
+            ):
+                if (
+                    self.current_class is None
+                    or self.current_class.name != base.sugar_class.name
+                ):
+                    raise TypeError(
+                        f"Cannot access private property '{prop_name}' from outside its class."
+                    )
+
+            return base.environment.get(prop_name).value
         elif isinstance(base, dict) and isinstance(
             base.get(node.property_name.name, 0), StdLibCall
         ):
@@ -683,3 +705,6 @@ class Interpreter:
 
     def _stdlib_call(self, base, method_name, args):
         return base[method_name](*args)
+
+    def visit_Type(self, node: Type):
+        return node.name

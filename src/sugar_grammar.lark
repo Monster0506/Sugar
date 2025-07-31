@@ -214,7 +214,7 @@ tuple_literal: LPAR expression COMMA expression (COMMA expression)* RPAR
 lambda_expression: FUNC LPAR parameter_list? RPAR ARROW_OP expression
 anonymous_function: FUNC LPAR parameter_list? RPAR type function_body END
 
-argument_list: expression (COMMA expression)*
+argument_list: (expression | type) (COMMA expression | type)*
 
 // Types
 type: HASH type_specifier

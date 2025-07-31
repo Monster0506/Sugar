@@ -60,8 +60,8 @@ def test_variable_declaration():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    assert isinstance(interpreter.environment.get("x"), Variable)
-    assert (interpreter.environment.get("x")).value == 4
+    expected = {"x": 4}
+    assert check_variable_helper(interpreter, expected)
 
 
 def test_variable_assignment():
@@ -72,8 +72,8 @@ def test_variable_assignment():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    assert isinstance(interpreter.environment.get("x"), Variable)
-    assert (interpreter.environment.get("x")).value == 7
+    expected = {"x": 7}
+    assert check_variable_helper(interpreter, expected)
 
 
 def test_variable_types():
@@ -154,6 +154,17 @@ def test_map_declaration():
     interpreter.interpret(ast)
     expected = {"m": {"c": 3, "d": 4}}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_function_overloading_duplicate_parameters():
+    with open(f"{type_errors_path}/06_overloading.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    with pytest.raises(TypeError):
+        interpreter.interpret(ast)
 
 
 def test_if_statement():
@@ -732,6 +743,7 @@ def test_custom_error_type():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
+    interpreter.interpret(ast)
     with pytest.raises(Exception):
         interpreter.interpret(ast)
 
@@ -758,6 +770,7 @@ def test_throw_builtin():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
+    interpreter.interpret(ast)
     with pytest.raises(Exception):
         interpreter.interpret(ast)
 
@@ -914,6 +927,7 @@ def test_complex_error_handling():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
+    interpreter.interpret(ast)
     with pytest.raises(Exception):
         interpreter.interpret(ast)
 
