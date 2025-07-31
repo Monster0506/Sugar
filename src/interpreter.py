@@ -23,6 +23,21 @@ class Environment:
         if isinstance(value, Function):
 
             if name in self.values.keys() and self.values[name]:
+                # Check for duplicate function signatures
+                if isinstance(self.values[name], list):
+                    for existing_func in self.values[name]:
+                        if isinstance(existing_func, Function):
+                            if len(existing_func.params) == len(value.params):
+                                is_duplicate = True
+                                for i, new_param in enumerate(value.params):
+                                    if existing_func.params[i].param_type.name != new_param.param_type.name:
+                                        is_duplicate = False
+                                        break
+                                if is_duplicate:
+                                    raise TypeError(
+                                        f"Duplicate function overload for '{name}' with "
+                                        f"parameters ({', '.join([p.param_type.name for p in value.params])})"
+                                    )
                 self.values[name].append(value)
             else:
                 self.values[name] = [value]

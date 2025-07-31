@@ -925,7 +925,6 @@ def test_complex_error_handling():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
-    interpreter.interpret(ast)
     with pytest.raises(Exception):
         interpreter.interpret(ast)
 
