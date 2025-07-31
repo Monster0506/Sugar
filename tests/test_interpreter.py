@@ -16,28 +16,39 @@ type_errors_path = (example_path / "type_errors").resolve()
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
     for k, v in expected.items():
         item = interpreter.environment.get(k)
-        if isinstance(item, Variable):
-            if isinstance(item.value, SugarInstance):
-                if isinstance(v, dict):
-                    instance_env = item.value.environment
-                    for prop_k, prop_v in v.items():
-                        try:
-                            instance_prop = instance_env.get(prop_k)
-                            if (
-                                not isinstance(instance_prop, Variable)
-                                or instance_prop.value != prop_v
-                            ):
-                                return False
-                        except NameError:
-                            return False
-                    return True
-                else:
-                    return False
-            else:
-                if item.value != v:
+        if not isinstance(item, Variable):
+            print(f"Error: Variable '{k}' not found or not a Variable object.")
+            return False
+
+        if isinstance(item.value, SugarInstance):
+            if not isinstance(v, dict):
+                print(
+                    f"Error: Expected dictionary for SugarInstance '{k}', got {type(v).__name__}."
+                )
+                return False
+
+            instance_env = item.value.environment
+            for prop_k, prop_v in v.items():
+                try:
+                    instance_prop_wrapper = instance_env.get(prop_k)
+                    if not isinstance(instance_prop_wrapper, Variable):
+                        print(
+                            f"Error: Property '{prop_k}' of instance '{k}' is not a Variable object."
+                        )
+                        return False
+
+                    if instance_prop_wrapper.value != prop_v:
+                        print(
+                            f"Error: Property '{prop_k}' of instance '{k}' expected {prop_v}, got {instance_prop_wrapper.value}."
+                        )
+                        return False
+                except NameError:
+                    print(f"Error: Property '{prop_k}' not found in instance '{k}'.")
                     return False
         else:
-            return False
+            if item.value != v:
+                print(f"Error: Variable '{k}' expected {v}, got {item.value}.")
+                return False
     return True
 
 
@@ -876,9 +887,19 @@ def test_complex_oop_inheritance():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    # This test needs to check the output of the print statements.
-    # For now, we'll just check that it doesn't crash.
-    pass
+    expected = {
+        "c": {
+            "x": 1,
+            "y": 2,
+            "radius": 3,
+        },
+        "u": {
+            "x": 0,
+            "y": 0,
+            "radius": 1,
+        },
+    }
+    assert check_variable_helper(interpreter, expected)
 
 
 def test_complex_error_handling():
