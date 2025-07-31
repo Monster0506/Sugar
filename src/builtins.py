@@ -100,7 +100,6 @@ str_operations = {
 
 
 def _safe_get(d, key):
-    print(f"safe_get with {key=}, {d=}")
     if key in d:
         return d.get(key)
     raise KeyError(f"{key} missing from {d}")

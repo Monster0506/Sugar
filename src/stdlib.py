@@ -22,7 +22,7 @@ from math import (
     sqrt,
     tan,
 )
-from random import choice, randint, random, sample, shuffle
+from random import choice, randint, random, sample, seed, shuffle
 
 from src.ast_nodes import StdLibCall
 
@@ -62,6 +62,7 @@ library = {
         "CHOICE": StdLibCall(lambda x: choice(x)),
         "SHUFFLE": StdLibCall(lambda x: _shuffle(x)),
         "SAMPLE": StdLibCall(lambda x, k: sample(x, k)),
+        "SEED": StdLibCall(lambda x: seed(x)),
     },
     "Time": {
         "NOW_STR": StdLibCall(lambda: _get_current_time_str()),

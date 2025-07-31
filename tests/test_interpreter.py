@@ -873,10 +873,8 @@ def test_stdlib_random():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    # TODO:
-    # This test is hard to assert because the values are random.
-    # We'll just check that it doesn't crash.
-    pass
+    expected = {"r": 7, "f": 0.7579544029403025}
+    assert check_variable_helper(interpreter, expected)
 
 
 def test_pattern_destructuring():
