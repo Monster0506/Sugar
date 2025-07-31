@@ -8,7 +8,7 @@ FUNC risky() #void
 end
 
 
-
+DEF y #str = ""
 FUNC test() #str
     TRY
         risky()
@@ -16,7 +16,7 @@ FUNC test() #str
     CATCH e #MyError do
         RETURN e.message
     FINALLY do
-        IO:PRINT:("done")
+        y := "done"
     end
 end 
 

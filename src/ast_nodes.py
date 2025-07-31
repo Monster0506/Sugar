@@ -537,5 +537,9 @@ class SugarError(Exception):
         self.args = args
         super().__init__(*args)
 
+    @property
+    def base_class_name(self):
+        return self.base_class.__name__
+
     def trigger(self):
         raise self.base_class(*self.args)
