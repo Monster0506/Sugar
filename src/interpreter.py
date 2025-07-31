@@ -1,6 +1,11 @@
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarInstance
-from src.builtin_operations import array_operations, map_operations, str_operations
+from src.builtin_operations import (
+    all_operations,
+    array_operations,
+    map_operations,
+    str_operations,
+)
 from src.stdlib import library
 from src.type_checker import TypeChecker
 
@@ -130,11 +135,12 @@ class Interpreter:
             base_instance = self.visit(node.name.base)
             if isinstance(base_instance, SugarInstance):
                 property_name = node.name.property_name.name
+                # Check if the property already exists in the instance's environment
                 try:
                     base_instance.environment.get(property_name)
                     base_instance.environment.assign(property_name, value)
                 except NameError:
-                    property_decl = base_instance.sugar_class.properties.get(
+                    property_decl = base_instance.sugar_class.find_property(
                         property_name
                     )
                     if property_decl:
@@ -369,6 +375,12 @@ class Interpreter:
                 return self._stdlib_call(base, method_name, evaluated_args)
 
         assumed_type = self.environment.type_checker.get_runtime_type(base)
+
+        if method_name in all_operations:
+            operation = all_operations[method_name]
+
+            new_value = operation(base, *evaluated_args)
+            return new_value
 
         can_use_array = isinstance(
             assumed_type, ArrayType

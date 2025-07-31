@@ -499,7 +499,14 @@ class SugarClass(Node):
     methods: dict
     properties: dict[str, PropertyDeclaration]
     constructor: Function | None
-    superclass: SugarClass | None = None
+    superclass: "SugarClass | None" = None
+
+    def find_property(self, name: str) -> PropertyDeclaration | None:
+        if name in self.properties:
+            return self.properties[name]
+        if self.superclass:
+            return self.superclass.find_property(name)
+        return None
 
 
 @dataclass

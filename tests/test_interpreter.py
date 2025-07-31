@@ -744,6 +744,7 @@ def test_try_catch():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
+    # TODO:
     # This test needs to check the output of the print statement
     # and the return value of the test function.
     # For now, we'll just check that it doesn't crash.
@@ -769,6 +770,7 @@ def test_spawn_basic():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
+    # TODO:
     # This test needs to check that a new thread was spawned.
     # For now, we'll just check that it doesn't crash.
     pass
@@ -835,6 +837,7 @@ def test_stdlib_io():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
+    # TODO:
     # interpreter.interpret(ast)
     # This test requires user input, so we can't fully automate it.
     # We'll just check that it doesn't crash.
@@ -849,6 +852,7 @@ def test_stdlib_time():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
+    # TODO:
     # This test is hard to assert because the time is always changing.
     # We'll just check that it doesn't crash.
     pass
@@ -862,6 +866,7 @@ def test_stdlib_random():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
+    # TODO:
     # This test is hard to assert because the values are random.
     # We'll just check that it doesn't crash.
     pass
