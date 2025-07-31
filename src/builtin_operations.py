@@ -12,6 +12,22 @@ def _set_and_return_dict(d, key, value):
     return d
 
 
+def convert_type(value, expected_type):
+    type_map = {
+        "int": int,
+        "float": float,
+        "str": str,
+        "bool": bool,
+        "char": str,
+    }
+    if expected_type not in type_map:
+        raise TypeError(
+            f"Attempted to convert {value} to an invalid type {expected_type}"
+        )
+
+    return type_map[expected_type](value)
+
+
 array_operations = {
     "ADD": (lambda arr, val: arr.append(val)),
     "LENGTH": (lambda arr: len(arr)),
@@ -100,4 +116,9 @@ map_operations = {
     "UPDATE": (lambda d1, d2: d1.update(d2) or d1),
     "CLEAR": (lambda d: d.clear() or d),
     "GET_DEFAULT": (lambda d, key, default: d.get(key, default)),
+}
+
+
+all_operations = {
+    "TO": (lambda value, expected_type: convert_type(value, expected_type)),
 }

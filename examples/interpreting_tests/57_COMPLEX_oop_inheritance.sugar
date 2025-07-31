@@ -19,7 +19,7 @@ CLASS Circle EXTENDS Shape
         THIS.radius := r
     end
     OVERRIDE FUNC draw() #void
-        IO:PRINT:("Circle radius " + THIS.radius)
+        IO:PRINT:("Circle radius " + THIS.radius:TO:("str"))
     end
     STATIC FUNC unit() #Circle
         RETURN Circle(0, 0, 1.0)
