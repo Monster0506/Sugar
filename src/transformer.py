@@ -86,7 +86,6 @@ from src.utils import debug_class_wrapper, debug_wrapper
 
 
 @v_args(inline=True)
-# @debug_class_wrapper
 class SugarTransformer(Transformer):
     def program(self, *statements):
         logging.debug(f"program: statements={statements}")
@@ -279,13 +278,20 @@ class SugarTransformer(Transformer):
         )
 
         catch_clauses = list(filter(lambda x: isinstance(x, CatchClause), body))
-        finally_clause = (
-            list(filter(lambda x: isinstance(x, FinallyClause), body))[0] or None
+
+        found_finally_clauses = list(
+            filter(lambda x: isinstance(x, FinallyClause), body)
         )
-        body = list(self._filter_body_for_statements(body))
+        if found_finally_clauses:
+            finally_clause = found_finally_clauses[0]
+        else:
+            finally_clause = None
+
+        processed_body_statements = list(self._filter_body_for_statements(body))
+
         return TryStatement(
-            body=body,
-            catch_clauses=catch_clauses or [],
+            body=processed_body_statements,
+            catch_clauses=catch_clauses,
             finally_clause=finally_clause,
         )
 
