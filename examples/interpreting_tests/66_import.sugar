@@ -1,2 +1,6 @@
-import my_module.m
+import imported_module.m
+import imported_module.Adder
+import imported_module.a
 DEF r #int = m:GET:("a")
+a:add:(5)
+DEF c #int = a.value

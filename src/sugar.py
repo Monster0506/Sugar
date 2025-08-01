@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 from src.interpreter import Interpreter
 from src.parser import parse_to_ast
@@ -14,7 +15,7 @@ def main():
 
     try:
         ast = parse_to_ast(code)
-        interpreter = Interpreter()
+        interpreter = Interpreter(Path(args.file))
         interpreter.interpret(ast)
     except Exception as e:
         print(e)

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarError, SugarInstance
 from src.builtins import (
@@ -8,6 +10,7 @@ from src.builtins import (
     standard_functions,
     str_operations,
 )
+from src.parser import parse_to_ast
 from src.stdlib import library
 from src.type_checker import TypeChecker
 
@@ -84,15 +87,27 @@ class Environment:
             return self.enclosing.get(name)
         raise NameError(f"Undefined variable '{name}'.")
 
+    def merge(self, other, import_name=None):
+        for name, value in other.values.items():
+            if import_name is None or name == import_name:
+                if isinstance(value, Variable):
+                    if name not in self.values:
+                        self.define(name, value.value, value.var_type)
+                        break
+                elif isinstance(value, SugarClass):
+                    if name not in self.values:
+                        self.values[name] = value
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(values={self.values!r}, enclosing={self.enclosing!r})"
 
 
 class Interpreter:
-    def __init__(self):
+    def __init__(self, run_path=None):
         self.environment = Environment()
         self.return_value = None
         self.current_class = None
+        self.run_path = run_path
 
     def interpret(self, program: Program):
         for statement in program.statements:
@@ -907,3 +922,24 @@ class Interpreter:
         evaluated_args = [self.visit(arg) for arg in arguments] if arguments else []
         final_sugar_error = SugarError(exception.base_class, evaluated_args)
         return final_sugar_error
+
+    def visit_ImportStatement(self, node: ImportStatement):
+        paths = node.dotted_name
+        saved_env = self.environment
+        content = ""
+        module_path = f"{paths[0]}.sugar"
+        if isinstance(self.run_path, Path):
+            parent = self.run_path.parent
+            module_path = f"{parent}/{module_path}"
+
+        with open(module_path, "r") as f:
+            content = f.read()
+        parsed = parse_to_ast(content)
+        self.environment = Environment()
+        self.interpret(parsed)
+        parser_environment = self.environment
+        self.environment = saved_env
+        if len(paths) == 1:
+            self.environment.merge(parser_environment)
+        else:
+            self.environment.merge(parser_environment, paths[1])

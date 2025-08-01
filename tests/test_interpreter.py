@@ -1076,7 +1076,8 @@ def test_import_from_module():
     parser = Parser()
     ast = parser.parse(code)
     assert isinstance(ast, Program)
-    interpreter = Interpreter()
+    path = Path(interpreting_tests_path / "66_import.sugar").resolve()
+    interpreter = Interpreter(path)
     interpreter.interpret(ast)
-    expected = {"r": 5}
+    expected = {"r": 5, "c": 6}
     assert check_variable_helper(interpreter, expected)
