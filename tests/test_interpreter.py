@@ -144,16 +144,15 @@ def test_tuple_type_mismatch():
         interpreter.interpret(ast)
 
 
-def test_map_declaration():
-    with open(f"{interpreting_tests_path}/05_map_decl.sugar", "r") as f:
+def test_interface_class_mismatch():
+    with open(f"{type_errors_path}/05_no_interface_match.sugar", "r") as f:
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
-    interpreter.interpret(ast)
-    expected = {"m": {"c": 3, "d": 4}}
-    assert check_variable_helper(interpreter, expected)
+    with pytest.raises(TypeError):
+        interpreter.interpret(ast)
 
 
 def test_function_overloading_duplicate_parameters():
@@ -165,6 +164,18 @@ def test_function_overloading_duplicate_parameters():
     interpreter = Interpreter()
     with pytest.raises(TypeError):
         interpreter.interpret(ast)
+
+
+def test_map_declaration():
+    with open(f"{interpreting_tests_path}/05_map_decl.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"m": {"c": 6, "d": 4, "a": 5}, "v": 6}
+    assert check_variable_helper(interpreter, expected)
 
 
 def test_if_statement():
@@ -1059,12 +1070,13 @@ def test_map_operations():
     assert check_variable_helper(interpreter, expected)
 
 
-def test_interface_class_mismatch():
-    with open(f"{type_errors_path}/05_no_interface_match.sugar", "r") as f:
+def test_import_from_module():
+    with open(f"{interpreting_tests_path}/66_import.sugar", "r") as f:
         code = f.read()
     parser = Parser()
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
-    with pytest.raises(TypeError):
-        interpreter.interpret(ast)
+    interpreter.interpret(ast)
+    expected = {"r": 5}
+    assert check_variable_helper(interpreter, expected)

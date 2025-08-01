@@ -22,8 +22,8 @@ CLASS GradeBook IMPLEMENTS Gradable
     PRIVATE course_name #str
     
     CONSTRUCTOR(course_name #str)
-        THIS:course_name := course_name
-        THIS:students := [_]
+        THIS.course_name := course_name
+        THIS.students := [_]
     end
     
     FUNC add_student(student #Student) #bool

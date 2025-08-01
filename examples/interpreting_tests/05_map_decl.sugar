@@ -1,8 +1,8 @@
 DEF m #{#str, #int} = {"a" -> 1, "b" -> 2}
-//DEF v #int = m :GET: ("a") 
+DEF v #int = m :GET: ("a") 
 
 m := {"c" -> 3, "d" -> 4}
-//m :SET: ("a", 5)
-//m :SET: ("c", 6)
-//v := m :GET: ("a") 
-//v := m :GET: ("c") 
+m :SET: ("a", 5)
+m :SET: ("c", 6)
+v := m :GET: ("a") 
+v := m :GET: ("c") 

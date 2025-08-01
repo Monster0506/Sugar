@@ -25,7 +25,7 @@ end
 FUNC max_of_three(a #int, b #int, c #int) #int
     if $a > b && a > c$ do
         RETURN a
-    else if $b > c$ do
+    elif $b > c$ do
         RETURN b
     else do
         RETURN c

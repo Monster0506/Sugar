@@ -2,10 +2,9 @@
 
 DEF integer_value #int = 42
 DEF float_value #float = 3.14159
-DEF boolean_value #bool = true
+DEF boolean_value #bool = :T:
 DEF character_value #char = 'A'
 DEF string_value #str = "Hello, Sugar!"
-DEF null_value #any = null
 
 // Array types
 DEF int_array #[#int] = [1, 2, 3, 4, 5]
@@ -19,4 +18,4 @@ DEF string_int_map #{#str, #int} = {
 }
 
 // Tuple types
-DEF person_tuple #(#str, #int, #bool) = ("Alice", 30, true) 
+DEF person_tuple #(#str, #int, #bool) = ("Alice", 30, :T:) 

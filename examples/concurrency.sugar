@@ -11,17 +11,11 @@ end
 
 FUNC parallel_processing() #void
     // Spawn multiple concurrent tasks
-    SPAWN FUNC() 
-        worker_task(1)
-    end
+    SPAWN FUNC() -> worker_task(1)
     
-    SPAWN FUNC() 
-        worker_task(2)
-    end
+    SPAWN FUNC() -> worker_task(2)
     
-    SPAWN FUNC() 
-        worker_task(3)
-    end
+    SPAWN FUNC() -> worker_task(3)
     
     IO:PRINT:("All workers spawned")
 end
@@ -37,11 +31,11 @@ end
 
 FUNC concurrent_computation() #void
     // Create tasks and store their handles
-    DEF task1 #Task = SPAWN FUNC() 
+    DEF task1 #Task = SPAWN FUNC() #int
         RETURN task_with_result()
     end
     
-    DEF task2 #Task = SPAWN FUNC() 
+    DEF task2 #Task = SPAWN FUNC() #int
         RETURN task_with_result()
     end
     
@@ -54,7 +48,7 @@ FUNC concurrent_computation() #void
 end
 
 FUNC background_monitor() #void
-    SPAWN FUNC() 
+    SPAWN FUNC() #void
         while $true$ do
             IO:PRINT:("Background monitor running...")
             // Simulate monitoring work

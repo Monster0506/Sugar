@@ -1,0 +1,2 @@
+import my_module.m
+DEF r #int = m:GET:("a")

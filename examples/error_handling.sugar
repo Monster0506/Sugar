@@ -1,10 +1,5 @@
 // Error Handling Example
 
-TYPE ValueError EXTENDS Error
-    value #any
-    message #str
-end
-
 TYPE DivisionByZeroError EXTENDS Error
     dividend #float
     message #str
@@ -20,16 +15,16 @@ end
 FUNC validate_age(age #int) #bool
     if $age < 0$ do
         THROW ValueError(age, "Age cannot be negative")
-    else if $age > 150$ do
+    elif $age > 150$ do
         THROW ValueError(age, "Age seems unrealistic")
     end
     RETURN true
 end
 
-FUNC process_data(data #any) #str
+FUNC process_data(data #str) #str
     TRY
-        if $data == null$ do
-            THROW ValueError(null, "Data cannot be null")
+        if $data == ""$ do
+            THROW ValueError("", "Data cannot be null")
         end
         
         DEF result #str = "Processed: " + data
@@ -40,7 +35,7 @@ FUNC process_data(data #any) #str
     CATCH error #DivisionByZeroError do
         IO:PRINT:("Division error: " + error.message)
         RETURN "Division error"
-    FINALLY
+    FINALLY do
         IO:PRINT:("Cleanup completed")
     end
 end
@@ -56,5 +51,5 @@ end
 
 // Usage
 DEF result1 #str = process_data("valid data")
-DEF result2 #str = process_data(null)
+DEF result2 #str = process_data("")
 DEF is_valid #bool = validate_age(25) 
