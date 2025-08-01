@@ -1,3 +1,4 @@
 DEF now #str = Time:NOW_STR:()
 DEF DEFAULT_TIME_FORMAT #str = Time.DEFAULT_FORMAT
 DEF formatted #str = Time:FORMAT_STR:(now, DEFAULT_TIME_FORMAT, "%Y-%m-%d")
+DEF for_test #str = Time:FORMAT_STR:("2025-08-01", "%Y-%m-%d", "%w/%y/%U")

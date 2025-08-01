@@ -870,9 +870,8 @@ def test_stdlib_time():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    # TODO:
-    # This test is hard to assert because the time is always changing.
-    # We'll just check that it doesn't crash.
+    expected = {"for_test": "5/25/30"}
+    assert check_variable_helper(interpreter, expected)
     pass
 
 
