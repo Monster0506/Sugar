@@ -13,8 +13,10 @@ from src.builtins import (
 from src.parser import parse_to_ast
 from src.stdlib import library
 from src.type_checker import TypeChecker
+from src.utils import debug_class_wrapper
 
 
+@debug_class_wrapper
 class Environment:
     def __init__(self, enclosing=None):
         self.values = {}
@@ -102,6 +104,7 @@ class Environment:
         return f"{self.__class__.__name__}(values={self.values!r}, enclosing={self.enclosing!r})"
 
 
+@debug_class_wrapper
 class Interpreter:
     def __init__(self, run_path=None):
         self.environment = Environment()

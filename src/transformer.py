@@ -82,17 +82,17 @@ from src.ast_nodes import (
     VariableDeclaration,
     WhileStatement,
 )
-from src.utils import debug_class_wrapper, debug_wrapper
+from src.utils import debug_class_wrapper
 
 
 @v_args(inline=True)
+@debug_class_wrapper
 class SugarTransformer(Transformer):
     def program(self, *statements):
-        logging.debug(f"program: statements={statements}")
+
         return Program(statements=list(statements))
 
     def primary_expression(self, *children):
-        logging.debug(f"primary_expression: children={children}")
 
         if len(children) == 1:
             return children[0]
@@ -154,7 +154,7 @@ class SugarTransformer(Transformer):
         return Tree("primary_expression", list(children))
 
     def variable_declaration(self, _def, name, *rest):
-        logging.debug(f"variable_declaration: name={name}, rest={rest}")
+
         var_type = list(filter(lambda x: isinstance(x, Type), rest))[0]
         value = list(
             filter(
@@ -172,11 +172,11 @@ class SugarTransformer(Transformer):
         return VariableDeclaration(name=name, var_type=var_type, value=value)
 
     def variable_assignment(self, name, _equals, value):
-        logging.debug(f"variable_assignment: name={name}, value={value}")
+
         return VariableAssignment(name=name, value=value)
 
     def this_assignment(self, _this, _colon, property_name, assign, value):
-        logging.debug(f"this_assignment: property_name={property_name}, value={value}")
+
         return ThisAssignment(property_name=property_name, value=value)
 
     def function_declaration(self, _func, name, _lparen, *everythingelse):
@@ -197,20 +197,19 @@ class SugarTransformer(Transformer):
         )
 
     def parameter_list(self, *parameters):
-        logging.debug(f"parameter_list: parameters={parameters}")
 
         return list(self._filter_tokens_out(parameters))
 
     def parameter(self, name, param_type):
-        logging.debug(f"parameter: name={name}, param_type={param_type}")
+
         return Parameter(name=name, param_type=param_type)
 
     def function_body(self, *statements):
-        logging.debug(f"function_body: statements={statements}")
+
         return list(statements)
 
     def return_statement(self, _return, value=None):
-        logging.debug(f"return_statement: value={value}")
+
         return ReturnStatement(value=value)
 
     def if_statement(
@@ -245,13 +244,12 @@ class SugarTransformer(Transformer):
 
     def elif_clause(self, _elif, _dollar1, condition, _dollar2, _do, *body):
 
-        logging.debug(f"elif_clause: condition={condition}, body={body}")
         body = self._filter_if_body(body)[0]  # Filter body to get only statements
         return ElifClause(condition=condition, body=body)
 
     def else_clause(self, _else, _do, *body):
         body = self._filter_if_body(body)[0]  # Filter body to get only statements
-        logging.debug(f"else_clause: body={body}")
+
         return ElseClause(body=body)
 
     def for_statement(
@@ -268,7 +266,7 @@ class SugarTransformer(Transformer):
         )
 
     def while_statement(self, _while, _dollar1, condition, _dollar2, _do_kw, *body):
-        logging.debug(f"while_statement: condition={condition}, body={body}")
+
         body = list(self._filter_body_for_statements(body))
         return WhileStatement(condition=condition, body=body)
 
@@ -309,53 +307,53 @@ class SugarTransformer(Transformer):
         return FinallyClause(list(self._filter_body_for_statements(body)))
 
     def type(self, hash_token, type_specifier):
-        logging.debug(f"type: hash_token={hash_token}, type_specifier={type_specifier}")
+
         return type_specifier
 
     def type_specifier(self, specifier):
-        logging.debug(f"type_specifier: specifier={specifier}")
+
         return specifier
 
     def custom_type(self, identifier):
-        logging.debug(f"custom_type: identifier={identifier}")
+
         return Type(name=identifier.name)
 
     def PRIMITIVE_TYPE(self, token):
-        logging.debug(f"PRIMITIVE_TYPE: token={token}")
+
         return Type(name=token.value)
 
     def expression(self, value):
-        logging.debug(f"expression: value={value}")
+
         return value
 
     def literal(self, value):
-        logging.debug(f"literal: value={value}")
+
         return value  # Literals are handled by their respective token types
 
     def BOOLEAN(self, token):
-        logging.debug(f"BOOLEAN: token={token}")
+
         return Literal(value=True if token.value == ":T:" else False)
 
     def IDENTIFIER(self, token):
-        logging.debug(f"IDENTIFIER: token={token}")
+
         if token.value == "END":
             return End
         return Identifier(name=token.value)
 
     def INTEGER(self, token):
-        logging.debug(f"INTEGER: token={token}")
+
         return Literal(value=int(token.value))
 
     def FLOAT(self, token):
-        logging.debug(f"FLOAT: token={token}")
+
         return Literal(value=float(token.value))
 
     def STRING(self, token):
-        logging.debug(f"STRING: token={token}")
+
         return Literal(value=token.value[1:-1])  # Remove quotes
 
     def CHAR(self, token):
-        logging.debug(f"CHAR: token={token}")
+
         return Literal(value=token.value[1:-1])  # Remove quotes
 
     def argument_list(self, *expressions):
@@ -429,12 +427,12 @@ class SugarTransformer(Transformer):
         return current_expr
 
     def property_access(self, _dot, property_name):
-        logging.debug(f"property_access: property_name={property_name}")
+
         base = Identifier("THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION")
         return PropertyAccess(base=base, property_name=property_name)
 
     def array_access(self, _lbracket, expression, _rbracket):
-        logging.debug(f"array_access: expr={expression}")
+
         base = Identifier("THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION")
         return ArrayAccess(base=base, index=expression)
 
@@ -452,12 +450,11 @@ class SugarTransformer(Transformer):
         )
 
     def default_clause(self, _default, _do, *body):
-        logging.debug(f"default_clause: body={body}")
+
         body = list(self._filter_body_for_statements(body))
         return DefaultClause(body=body)
 
     def case_clause(self, _case, pattern, *body):
-        logging.debug(f"case_clause: pattern={pattern}, body={body}")
 
         guard_p = list(filter(lambda x: isinstance(x, Expression), body))
         guard = guard_p[0] if guard_p else None
@@ -470,21 +467,21 @@ class SugarTransformer(Transformer):
         )
 
     def guard(self, _if, _dollar1, condition, _dollar2):
-        logging.debug(f"guard: condition={condition}")
+
         return self.expression(condition)
 
     def spawn_statement(self, _spawn, expression):
-        logging.debug(f"spawn_statement: expression={expression}")
+
         return SpawnStatement(
             expression=expression
         )  # Assuming expression is a valid statement
 
     def import_statement(self, _import, dotted_name):
-        logging.debug(f"import_statement: dotted_name={dotted_name}")
+
         return ImportStatement(dotted_name=dotted_name.split("."))
 
     def type_declaration(self, *args):
-        logging.debug(f"type_declaration: args={args}")
+
         _type, name, *rest = args
 
         extends_clause = []
@@ -503,23 +500,23 @@ class SugarTransformer(Transformer):
         )
 
     def type_body(self, *fields):
-        logging.debug(f"type_body: fields={fields}")
+
         return list(fields)
 
     def type_field(self, name, field_type):
-        logging.debug(f"type_field: name={name}, field_type={field_type}")
+
         return TypeField(name=name, field_type=field_type)
 
     def extends_clause(self, _extends, *identifiers):
-        logging.debug(f"extends_clause: identifiers={identifiers}")
+
         return [_extends] + list(identifiers)
 
     def implements_clause(self, _implements, *identifiers):
-        logging.debug(f"implements_clause: identifiers={identifiers}")
+
         return [_implements] + list(identifiers)
 
     def class_declaration(self, *args):
-        logging.debug(f"class_declaration: args={args}")
+
         _class, name, *rest = args
         extends_clause = []
         implements_clause = []
@@ -541,11 +538,11 @@ class SugarTransformer(Transformer):
         )
 
     def class_body(self, *members):
-        logging.debug(f"class_body: members={members}")
+
         return list(members)
 
     def class_member(self, *parts):
-        logging.debug(f"class_member: parts={parts}")
+
         access_modifier = None
         is_static = False
         is_override = False
@@ -569,7 +566,7 @@ class SugarTransformer(Transformer):
         return declaration
 
     def access_modifier(self, modifier):
-        logging.debug(f"access_modifier: modifier={modifier}")
+
         return AccessModifier(modifier=modifier.value)
 
     def property_declaration(self, name, prop_type, *rest):
@@ -587,7 +584,7 @@ class SugarTransformer(Transformer):
         )
 
     def method_declaration(self, _func, name, _lpar, *rest):
-        logging.debug(f"method_declaration: name={name}, rest={rest}")
+
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
         return_type = list(filter(lambda x: isinstance(x, Type), rest))[0]
         body = rest[-2] if len(rest) > 2 else []
@@ -602,7 +599,7 @@ class SugarTransformer(Transformer):
         )
 
     def constructor_declaration(self, _constructor, _lpar, *rest):
-        logging.debug(f"constructor_declaration: rest={rest}")
+
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
         body = rest[-2] if len(rest) > 2 else []
         return ConstructorDeclaration(
@@ -614,15 +611,15 @@ class SugarTransformer(Transformer):
         )
 
     def interface_declaration(self, _interface, name, body, _end):
-        logging.debug(f"interface_declaration: name={name}, body={body}")
+
         return InterfaceDeclaration(name=name, body=body)
 
     def interface_body(self, *members):
-        logging.debug(f"interface_body: members={members}")
+
         return list(members)
 
     def interface_member(self, _func, name, _lpar, *rest):
-        logging.debug(f"interface_member: name={name}, rest={rest}")
+
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
         return_type_list = list(filter(lambda x: isinstance(x, Type), rest))
         return_type = return_type_list[0] if return_type_list else Type(name="void")
@@ -631,42 +628,42 @@ class SugarTransformer(Transformer):
         )
 
     def expression_statement(self, expression):
-        logging.debug(f"expression_statement: expression={expression}")
+
         return ExpressionStatement(expression=expression)
 
     def array_literal(self, _lbracket, elements, _rbracket):
         elements = list(self._filter_tokens_out(elements))
-        logging.debug(f"array_literal: elements={elements}")
+
         return ArrayLiteral(elements=elements or [])
 
     def map_literal(self, _lbrace, entries, _rbrace):
-        logging.debug(f"map_literal: entries={entries}")
+
         return MapLiteral(entries=entries or [])
 
     def map_entries(self, *entries):
-        logging.debug(f"map_entries: entries={entries}")
+
         entries = list(self._filter_tokens_out(entries))
         return list(entries)
 
     def map_entry(self, key, _arrow, value):
-        logging.debug(f"map_entry: key={key}, value={value}")
+
         return MapEntry(key=key, value=value)
 
     def object_literal(self, _lbrace, entries, _rbrace):
-        logging.debug(f"object_literal: entries={entries}")
+
         return ObjectLiteral(entries=entries or [])
 
     def dict_entries(self, *entries):
-        logging.debug(f"dict_entries: entries={entries}")
+
         entries = list(self._filter_tokens_out(entries))
         return list(entries)
 
     def dict_entry(self, key, _colon, value):
-        logging.debug(f"dict_entry: key={key}, value={value}")
+
         return DictEntry(key=key, value=value)
 
     def empty_object_literal(self, *args):
-        logging.debug("empty_object_literal")
+
         return ObjectLiteral(entries=[])
 
     def empty_list_literal(self, *args):
@@ -679,18 +676,18 @@ class SugarTransformer(Transformer):
         return TupleLiteral(elements=[])
 
     def tuple_literal(self, _lparen, *elements):
-        logging.debug(f"tuple_literal: elements={elements}")
+
         elements = list(self._filter_tokens_out(elements))
         return TupleLiteral(elements=list(elements) or [])
 
     def lambda_expression(self, _func, _lpar, *rest):
         parameters = list(filter(lambda x: isinstance(x, Parameter), rest[0]))
         body = rest[-1]
-        logging.debug(f"lambda_expression: params={parameters}, body={body}")
+
         return LambdaExpression(parameters=parameters or [], body=body)
 
     def anonymous_function(self, _func, _lpar, *everythingelse):
-        logging.debug(f"anonymous_function: everythingelse={everythingelse}")
+
         parameters = list(filter(lambda x: isinstance(x, Parameter), everythingelse[0]))
         return_type = list(filter(lambda x: isinstance(x, Type), everythingelse))[0]
         body = list(self._filter_body_for_statements(everythingelse[-2]))
@@ -710,15 +707,15 @@ class SugarTransformer(Transformer):
         return MethodCall(base=base, function_name=method, arguments=arguments)
 
     def method_name(self, what):
-        logging.debug(f"method_name: what={what}")
+
         return self.expression(what)
 
     def array_type(self, _lbracket, base_type, _rbracket):
-        logging.debug(f"array_type: base_type={base_type}")
+
         return ArrayType(name=f"[{base_type.name}]", base_type=base_type)
 
     def map_type(self, _lbrace, key_type, _comma, value_type, _rbrace):
-        logging.debug(f"map_type: key_type={key_type}, value_type={value_type}")
+
         return MapType(
             name=f"{{{key_type.name},{value_type.name}}}",
             key_type=key_type,
@@ -726,18 +723,18 @@ class SugarTransformer(Transformer):
         )
 
     def tuple_type(self, _lparen, *types):
-        logging.debug(f"tuple_type: types={types}")
+
         type_list = list(self._filter_tokens_out(types))
         return TupleType(
             name=f"({','.join([t.name for t in type_list])})", types=type_list
         )
 
     def qualified_identifier(self, *parts):
-        logging.debug(f"qualified_identifier: parts={parts}")
+
         return QualifiedIdentifier(parts=list(self._filter_tokens_out(parts)))
 
     def pattern(self, *parts):
-        logging.debug(f"pattern: parts={parts}")
+
         if len(parts) == 1:
             if isinstance(parts[0], Literal):
                 return LiteralPattern(literal=parts[0])
@@ -763,7 +760,7 @@ class SugarTransformer(Transformer):
             raise ValueError(f"Unsupported pattern structure: {parts}")
 
     def dotted_name(self, *identifiers):
-        logging.debug(f"dotted_name: identifiers={identifiers}")
+
         filttered = list(filter(lambda x: isinstance(x, Identifier), identifiers))
         return ".".join([identifier.name for identifier in filttered])
 
@@ -774,14 +771,14 @@ class SugarTransformer(Transformer):
         for piece in body:
             if isinstance(piece, Token):
                 if piece.type == "END":
-                    logging.debug("ENDING")
+
                     break
             elif isinstance(piece, ElifClause):
-                logging.debug(f"ELIF_CLAUSE found: {piece}")
+
                 elif_clauses.append(piece)
             elif isinstance(piece, ElseClause):
                 if not else_clase:
-                    logging.debug(f"ELSE_CLAUSE found: {piece}")
+
                     else_clase = piece
                 else:
                     raise ValueError(
@@ -793,51 +790,51 @@ class SugarTransformer(Transformer):
         return main_body, elif_clauses, else_clase
 
     def tuple_pattern(self, _lparen, patterns, _rparen):
-        logging.debug(f"tuple_pattern: patterns={patterns}")
+
         return TuplePattern(patterns=list(self._filter_tokens_out(patterns)) or [])
 
     def object_pattern(self, _lbrace, entries, _rbrace):
-        logging.debug(f"object_pattern: entries={entries}")
+
         return ObjectPattern(entries=entries or [])
 
     def dict_pattern_entries(self, *entries):
-        logging.debug(f"dict_pattern_entries: entries={entries}")
+
         return list(self._filter_tokens_out(entries))
 
     def dict_pattern_entry(self, key, _colon, value):
-        logging.debug(f"dict_pattern_entry: key={key}, value={value}")
+
         return DictEntryPattern(key=key, value=value)
 
     def map_pattern(self, _lbrace, entries, _rbrace):
-        logging.debug(f"map_pattern: entries={entries}")
+
         return MapPattern(entries=entries or [])
 
     def map_pattern_entries(self, *entries):
-        logging.debug(f"map_pattern_entries: entries={entries}")
+
         return list(self._filter_tokens_out(entries))
 
     def map_pattern_entry(self, key, _arrow, value):
-        logging.debug(f"map_pattern_entry: key={key}, value={value}")
+
         return MapEntryPattern(key=key, value=value)
 
     def empty_object_pattern(self, *args):
-        logging.debug("empty_object_pattern")
+
         return ObjectPattern(entries=[])
 
     def empty_map_pattern(self, *args):
-        logging.debug("empty_map_pattern")
+
         return MapPattern(entries=[])
 
     def array_pattern(self, _lbracket, patterns, _rbracket):
-        logging.debug(f"array_pattern: patterns={patterns}")
+
         return ArrayPattern(patterns=patterns or [])
 
     def pattern_list(self, *patterns):
-        logging.debug(f"pattern_list: patterns={patterns}")
+
         return list(self._filter_tokens_out(patterns))
 
     def assignable_target(self, token, property_access=None):
-        logging.debug(f"assignable_target: token={token}")
+
         if not property_access:
             if isinstance(token, Identifier):
                 return token
@@ -849,7 +846,7 @@ class SugarTransformer(Transformer):
         )
 
     def target_expression(self, token, property_access=None):
-        logging.debug(f"target_expression: token={token}")
+
         base = token if isinstance(token, Identifier) else Identifier(name=token.value)
         if not property_access:
             return base
@@ -859,7 +856,6 @@ class SugarTransformer(Transformer):
         )
 
     def super_method_call(self, _super, _colon, name, _colon2, _lparen, *arguments):
-        logging.debug(f"super_method_call: arguments={arguments}, name={name}")
 
         return MethodCall(
             base=SuperCall(),
