@@ -55,6 +55,15 @@ class TypeChecker:
             "char": str,
         }
         if expected_type.name not in type_map:
+            # Check if it's a SugarClass type
+            if (
+                self.environment
+                and expected_type.name in self.environment.values
+                and isinstance(self.environment.values[expected_type.name], SugarClass)
+            ):
+                return self._assert_sugar_class(
+                    value, self.environment.values[expected_type.name]
+                )
             return self._assert_custom_type(value, expected_type)
 
         if not isinstance(value, type_map[expected_type.name]):
@@ -132,6 +141,8 @@ class TypeChecker:
             raise TypeError("Environment not set for type checker.")
 
         type_def = self.environment.get(expected_type.name)
+        if isinstance(type_def, SugarClass):
+            return self._assert_sugar_class(value, type_def)
         if not isinstance(type_def, CustomType):
             raise TypeError(f"Unknown type: {expected_type.name}")
 
