@@ -586,6 +586,19 @@ class Interpreter:
         value = self.visit(node.value)
         this_instance.environment.assign(node.property_name.name, value)
 
+    def visit_ThisExpression(self, node):
+        this_variable = self.environment.get("THIS")
+        this_instance = (
+            this_variable.value
+            if isinstance(this_variable, Variable)
+            else this_variable
+        )
+        if not isinstance(this_instance, SugarInstance):
+            raise TypeError(
+                "'THIS' is not defined in the current scope or is not an instance."
+            )
+        return this_instance
+
     def visit_LambdaExpression(self, node: LambdaExpression):
 
         def lambda_func(*args):
