@@ -1,6 +1,7 @@
 FUNC compute() #int
+    Time:SLEEP:(2)
     IO:PRINT:("Task: Starting computation...")
-    Time:SLEEP:(1)
+    Time:SLEEP:(2)
     IO:PRINT:("Task: Computation finished.")
     RETURN 42
 end

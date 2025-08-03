@@ -1090,3 +1090,15 @@ def test_spawn_error_get():
     interpreter.interpret(ast)
     expected = {"x": "pass"}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_spawn_early_cancellation():
+    with open(f"{interpreting_tests_path}/68_spawn_cancel.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"r": 0}
+    assert check_variable_helper(interpreter, expected)

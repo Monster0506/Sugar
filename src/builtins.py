@@ -1,7 +1,11 @@
 import functools
 from typing import Any
 
-from src.ast_nodes import SugarError
+from src.ast_nodes import CancellationToken, SugarError
+
+
+def new_cancellable_token_sugar_func():
+    return CancellationToken()
 
 
 def _set_and_return_array(arr: list[Any], i: int, v: Any) -> list[Any]:
@@ -149,6 +153,7 @@ base_errors = {
 
 standard_functions = {
     "RANGE": (lambda x, y=None: range(x, y) if y is not None else range(x)),
+    "NewCancellableToken": new_cancellable_token_sugar_func,
 }
 
 
@@ -158,4 +163,10 @@ task_operations = {
     "DONE": (lambda x: x.is_done()),
     "SUCCESS": (lambda x: x.is_success()),
     "ERROR": (lambda x: x.get_error()),
+}
+
+
+token_operations = {
+    "CANCEL": lambda token_obj: token_obj.cancel(),
+    "CANCELLED": lambda token_obj: token_obj.is_cancelled(),
 }

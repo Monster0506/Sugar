@@ -1,10 +1,11 @@
 from src.ast_nodes import (
     ArrayType,
+    CancellationToken,
     CustomType,
     MapType,
     SugarClass,
     SugarInstance,
-    Task,
+    SugarTask,
     TupleType,
     Type,
 )
@@ -38,8 +39,12 @@ class TypeChecker:
 
     def _assert_simple(self, value, expected_type: Type):
         if expected_type.name == "Task":
-            if not isinstance(value, Task):
+            if not isinstance(value, SugarTask):
                 raise TypeError(f"Expected Task, got {type(value).__name__}")
+            return True
+        if expected_type.name == "Token":
+            if not isinstance(value, CancellationToken):
+                raise TypeError(f"Expected Token, got {type(value).__name__}")
             return True
 
         type_map = {

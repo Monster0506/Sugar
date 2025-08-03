@@ -1,0 +1,18 @@
+FUNC long_running_compute(cancellable_token #Token) #int
+    for DEF i #int in RANGE(1,5) do
+        if $cancellable_token:CANCELLED:()$ do
+            IO:PRINT:("Task: Cancellation requested. Exiting early.")
+            RETURN 0 
+        end
+        Time:SLEEP:(3)
+    end
+    RETURN 123
+end
+
+DEF token #Token = NewCancellableToken() 
+DEF t #Task = SPAWN FUNC() #int RETURN long_running_compute(token) end 
+
+token:CANCEL:()
+
+DEF r #int = 5
+r := t:JOIN:()

@@ -548,34 +548,28 @@ class SugarError(Exception):
 import threading
 
 
-class Task:
-    def __init__(self, func, *args):
-        self.func = func
-        self.args = args
+class SugarTask:
+    def __init__(self, func_node, environment, run_path):
+        self.func_node = func_node
+        self.environment = environment
+        self.run_path = run_path
         self._result = None
         self._error = None
         self._done = False
         self._success = False
         self._thread = None
         self._cancellation_requested = threading.Event()  # For cooperative cancellation
-
-        # A lock to protect access to _result, _error, _done, _success if multiple
-        # threads could try to access/modify them concurrently (e.g., in a complex system)
-        # For this simple example, the thread completing its run will set these,
-        # and join will wait, so explicit locking for these specific attributes isn't strictly
-        # necessary for correctness, but good practice for robustness in a real system.
         self._state_lock = threading.Lock()
 
     def _target_run(self):
+        from src.interpreter import Interpreter
+
         """Internal method executed by the thread."""
         try:
-            # We pass the cancellation event to the function if it expects it
-            # This makes the function 'cancellable'
-            if "cancellation_event" in self.func.__code__.co_varnames:
-                print("we are cancellable")
-                self._result = self.func(self._cancellation_requested, *self.args)
-            else:
-                self._result = self.func(*self.args)
+            interpreter = Interpreter(self.run_path)
+            interpreter.environment = self.environment
+            func = interpreter.visit(self.func_node)
+            self._result = func()
             self._success = True
         except Exception as e:
             self._error = e
@@ -633,3 +627,18 @@ class Task:
             with self._state_lock:
                 return self._done  # Check if it completed within the timeout
         return True  # If task was never started, consider it 'done' instantly.
+
+
+class CancellationToken:
+    def __init__(self):
+        self._cancelled = threading.Event()
+
+    # This method will be exposed as 'token:CANCEL:()' in Sugar
+    def cancel(self):
+        self._cancelled.set()
+        # print("DEBUG: CancellationToken set to cancelled.") # For debugging
+
+    # This method will be exposed as 'token:IS_CANCELLED:()' in Sugar
+    def is_cancelled(self):
+        # print(f"DEBUG: CancellationToken is_cancelled called, state: {self._cancelled.is_set()}") # For debugging
+        return self._cancelled.is_set()

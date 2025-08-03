@@ -11,6 +11,7 @@ from src.builtins import (
     standard_functions,
     str_operations,
     task_operations,
+    token_operations,
 )
 from src.parser import parse_to_ast
 from src.stdlib import library
@@ -110,10 +111,10 @@ class Environment:
 class Interpreter:
     def __init__(self, run_path=None):
         self.environment = Environment()
-        self.environment.define("Task", CustomType(None), None)
         for error in base_errors:
             self.environment.define(error, CustomType(declaration=None), SugarError)
         self.environment.define("Task", CustomType(None), None)
+        self.environment.define("Token", CustomType(None), None)
         self.return_value = None
         self.current_class = None
         self.run_path = run_path
@@ -262,15 +263,21 @@ class Interpreter:
         if self.visit(node.condition):
             for statement in node.body:
                 self.visit(statement)
+                if self.return_value is not None:
+                    return
         else:
             for elif_clause in node.elif_clauses:
                 if self.visit(elif_clause.condition):
                     for statement in elif_clause.body:
                         self.visit(statement)
+                        if self.return_value is not None:
+                            break
                     return
             if node.else_clause:
                 for statement in node.else_clause.body:
                     self.visit(statement)
+                    if self.return_value is not None:
+                        break
 
     def visit_ForStatement(self, node: ForStatement):
         collection = self.visit(node.collection)
@@ -282,6 +289,10 @@ class Interpreter:
             )
             for statement in node.body:
                 self.visit(statement)
+                if self.return_value is not None:
+                    break
+            if self.return_value is not None:
+                break
         self.environment = original_environment
 
     def visit_WhileStatement(self, node: WhileStatement):
@@ -427,12 +438,18 @@ class Interpreter:
                     f"Method '{method_name}' not found on superclass of {this_instance.sugar_class.name}"
                 )
 
-        if isinstance(base, Task):
+        if isinstance(base, SugarTask):
             if method_name in task_operations:
                 return task_operations.get(method_name)(base)
             else:
                 raise AttributeError(f"Task object has no attribute '{method_name}'")
-
+        if isinstance(
+            base, CancellationToken
+        ):  # Assuming CancellationToken is your Python class
+            if method_name in token_operations:  # Use your new token_operations dict
+                return token_operations.get(method_name)(base)
+            else:
+                raise AttributeError(f"Token object has no attribute '{method_name}'")
         if isinstance(base, SugarInstance):
             if method_name in base.sugar_class.methods:
                 method = base.sugar_class.methods[method_name]
@@ -963,8 +980,8 @@ class Interpreter:
         return final_sugar_error
 
     def visit_SpawnStatement(self, node: SpawnStatement):
-        func = self.visit(node.expression)
-        task = Task(func, [])
+        func_node = node.expression
+        task = SugarTask(func_node, self.environment, self.run_path)
         task.start()
         return task
 
