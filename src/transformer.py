@@ -179,6 +179,21 @@ class SugarTransformer(Transformer):
 
         return ThisAssignment(property_name=property_name, value=value)
 
+    def this_method_call(self, _this, _colon1, method_name, _colon2, _lparen, *other):
+        logging.debug(f"this_method_call: method_name={method_name}, other={other}")
+
+        arguments = []
+        if other and isinstance(other[0], list):
+            arguments = list(self._filter_tokens_out(other[0]))
+        elif other and isinstance(other[0], Token) and other[0].type == "RPAR":
+            arguments = []
+
+        return MethodCall(
+            base=ThisExpression(),
+            function_name=method_name,
+            arguments=arguments,
+        )
+
     def function_declaration(self, _func, name, _lparen, *everythingelse):
         logging.debug(
             f"function_declaration: name={name}, everythingelse={everythingelse}"
