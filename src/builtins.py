@@ -154,6 +154,7 @@ base_errors = {
 standard_functions = {
     "RANGE": (lambda x, y=None: range(x, y) if y is not None else range(x)),
     "NewCancellableToken": new_cancellable_token_sugar_func,
+    "PRINT": (lambda *args: print(*args)),
 }
 
 
