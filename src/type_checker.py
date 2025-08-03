@@ -48,6 +48,9 @@ class TypeChecker:
             if not isinstance(value, CancellationToken):
                 raise TypeError(f"Expected Token, got {type(value).__name__}")
             return True
+        if expected_type.name in ["any", "dynamic"]:
+            # Accept any value for any/dynamic types
+            return True
 
         type_map = {
             "int": int,
@@ -202,6 +205,10 @@ class TypeChecker:
         return True
 
     def is_assignable(self, value, target_type: Type):
+        # Handle any/dynamic types - they accept any value
+        if isinstance(target_type, Type) and target_type.name in ["any", "dynamic"]:
+            return True
+        
         if isinstance(value, list):
             if isinstance(target_type, ArrayType):
                 return self._assert_array(value, target_type)
