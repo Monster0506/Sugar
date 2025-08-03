@@ -1,3 +1,4 @@
+import threading
 from pathlib import Path
 
 from src.ast_nodes import *
@@ -108,6 +109,7 @@ class Environment:
 class Interpreter:
     def __init__(self, run_path=None):
         self.environment = Environment()
+        self.environment.define("Task", CustomType(None), None)
         self.return_value = None
         self.current_class = None
         self.run_path = run_path
@@ -416,6 +418,12 @@ class Interpreter:
                 raise AttributeError(
                     f"Method '{method_name}' not found on superclass of {this_instance.sugar_class.name}"
                 )
+
+        if isinstance(base, Task):
+            if method_name == "JOIN":
+                return base.join()
+            else:
+                raise AttributeError(f"Task object has no attribute '{method_name}'")
 
         if isinstance(base, SugarInstance):
             if method_name in base.sugar_class.methods:
@@ -925,6 +933,13 @@ class Interpreter:
         evaluated_args = [self.visit(arg) for arg in arguments] if arguments else []
         final_sugar_error = SugarError(exception.base_class, evaluated_args)
         return final_sugar_error
+
+    def visit_SpawnStatement(self, node: SpawnStatement):
+        func = self.visit(node.expression)
+        task = Task(func, [])
+        task.thread = threading.Thread(target=task.run)
+        task.thread.start()
+        return task
 
     def visit_ImportStatement(self, node: ImportStatement):
         paths = node.dotted_name

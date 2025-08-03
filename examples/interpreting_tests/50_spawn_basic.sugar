@@ -1,4 +1,9 @@
+DEF x #int = 0
+
 FUNC work() #void
-    IO:PRINT:("working")
+    x := 1
 end
-SPAWN FUNC() #void work() end 
+
+SPAWN FUNC() #void work() end
+
+Time:SLEEP:(10)

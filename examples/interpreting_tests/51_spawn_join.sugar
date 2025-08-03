@@ -1,5 +1,14 @@
 FUNC compute() #int
+    IO:PRINT:("Task: Starting computation...")
+    Time:SLEEP:(1)
+    IO:PRINT:("Task: Computation finished.")
     RETURN 42
 end
+
+IO:PRINT:("Main: Spawning task...")
 DEF t #Task = SPAWN FUNC() #int RETURN compute() end
-DEF r #int = t:JOIN:() 
+IO:PRINT:("Main: Task spawned. Continuing execution.")
+
+DEF r #int = t:JOIN:()
+IO:PRINT:("Main: Joined task. Result is:")
+IO:PRINT:(r)

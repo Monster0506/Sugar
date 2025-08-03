@@ -4,6 +4,7 @@ from src.ast_nodes import (
     MapType,
     SugarClass,
     SugarInstance,
+    Task,
     TupleType,
     Type,
 )
@@ -36,6 +37,11 @@ class TypeChecker:
             raise TypeError(f"Unknown type annotation: {expected_type}")
 
     def _assert_simple(self, value, expected_type: Type):
+        if expected_type.name == "Task":
+            if not isinstance(value, Task):
+                raise TypeError(f"Expected Task, got {type(value).__name__}")
+            return True
+
         type_map = {
             "int": int,
             "float": float,

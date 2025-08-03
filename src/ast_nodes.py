@@ -543,3 +543,19 @@ class SugarError(Exception):
 
     def trigger(self):
         raise self.base_class(*self.args)
+
+
+class Task:
+    def __init__(self, func, args):
+        self.func = func
+        self.args = args
+        self.result = None
+        self.thread = None
+
+    def run(self):
+        self.result = self.func(*self.args)
+
+    def join(self):
+        if self.thread:
+            self.thread.join()
+        return self.result

@@ -790,10 +790,8 @@ def test_spawn_basic():
     assert isinstance(ast, Program)
     interpreter = Interpreter()
     interpreter.interpret(ast)
-    # TODO:
-    # This test needs to check that a new thread was spawned.
-    # For now, we'll just check that it doesn't crash.
-    pass
+    expected = {"x": 1}
+    assert check_variable_helper(interpreter, expected)
 
 
 def test_spawn_join():
