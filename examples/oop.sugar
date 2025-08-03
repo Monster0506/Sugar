@@ -17,23 +17,23 @@ CLASS Shape IMPLEMENTS Drawable
     PRIVATE color #str
     
     CONSTRUCTOR(x #int, y #int, color #str)
-        THIS:x := x
-        THIS:y := y
-        THIS:color := color
+        THIS.x := x
+        THIS.y := y
+        THIS.color := color
     end
     
     FUNC draw() #void
-        IO:PRINT:("Drawing shape at (" + THIS:x: + ", " + THIS:y: + ")")
+        IO:PRINT:("Drawing shape at (" + THIS.x + ", " + THIS.y + ")")
     end
     
     FUNC resize(width #int, height #int) #bool
-        THIS:x := THIS:x: + width
-        THIS:y := THIS:y: + height
+        THIS.x := THIS.x + width
+        THIS.y := THIS.y + height
         RETURN true
     end
     
     PRIVATE FUNC get_color() #str
-        RETURN THIS:color:
+        RETURN THIS.color
     end
 end
 
@@ -41,12 +41,12 @@ CLASS Circle EXTENDS Shape
     PRIVATE radius #float
     
     CONSTRUCTOR(x #int, y #int, radius #float, color #str)
-        SUPER(x, y, color)
-        THIS:radius := radius
+        SUPER:(x, y, color)
+        THIS.radius := radius
     end
     
     OVERRIDE FUNC draw() #void
-        IO:PRINT:("Drawing circle with radius " + THIS:radius:)
+        IO:PRINT:("Drawing circle with radius " + THIS.radius)
     end
     
     STATIC FUNC create_unit_circle() #Circle
@@ -55,8 +55,6 @@ CLASS Circle EXTENDS Shape
 end
 
 CLASS MathUtility
-    STATIC PI #float = 3.14159
-    STATIC E #float = 2.71828
     
     STATIC FUNC square(x #float) #float
         RETURN x * x
@@ -78,4 +76,5 @@ DEF shape #Shape = Shape(10, 20, "red")
 DEF circle #Circle = Circle(0, 0, 5.0, "blue")
 DEF unit_circle #Circle = Circle:create_unit_circle:()
 
-DEF area #float = MathUtility:PI: * MathUtility:square:(5.0) 
+DEF area #float = Math.PI * MathUtility:square:(5.0) 
+PRINT(area)
