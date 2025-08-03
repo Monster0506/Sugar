@@ -440,14 +440,14 @@ class Interpreter:
 
         if isinstance(base, SugarTask):
             if method_name in task_operations:
-                return task_operations.get(method_name)(base)
+                return task_operations.get(method_name)(base, *evaluated_args)
             else:
                 raise AttributeError(f"Task object has no attribute '{method_name}'")
         if isinstance(
             base, CancellationToken
         ):  # Assuming CancellationToken is your Python class
             if method_name in token_operations:  # Use your new token_operations dict
-                return token_operations.get(method_name)(base)
+                return token_operations.get(method_name)(base, *evaluated_args)
             else:
                 raise AttributeError(f"Token object has no attribute '{method_name}'")
         if isinstance(base, SugarInstance):
