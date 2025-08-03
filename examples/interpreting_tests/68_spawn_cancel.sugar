@@ -4,7 +4,7 @@ FUNC long_running_compute(cancellable_token #Token) #int
             IO:PRINT:("Task: Cancellation requested. Exiting early.")
             RETURN 0 
         end
-        Time:SLEEP:(3)
+        Time:SLEEP:(3000)
     end
     RETURN 123
 end

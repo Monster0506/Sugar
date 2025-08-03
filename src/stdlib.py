@@ -70,7 +70,7 @@ library = {
         "TIMESTAMP": StdLibCall(lambda: _get_current_timestamp()),
         "FORMAT_STR": StdLibCall(lambda ts, cf, tf: _format_time_str(ts, cf, tf)),
         "PARSE_TO_MAP": StdLibCall(lambda ts, f: _parse_time_to_map(ts, f)),
-        "SLEEP": StdLibCall(lambda seconds: time.sleep(seconds)),
+        "SLEEP": StdLibCall(lambda seconds: time.sleep(seconds / 1000)),
         "DEFAULT_FORMAT": StdLibCall(lambda: DEFAULT_DATETIME_FORMAT),
     },
     "IO": {

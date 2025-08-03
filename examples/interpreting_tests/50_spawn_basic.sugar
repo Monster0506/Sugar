@@ -6,4 +6,4 @@ end
 
 SPAWN FUNC() #void work() end
 
-Time:SLEEP:(1)
+Time:SLEEP:(1000)
