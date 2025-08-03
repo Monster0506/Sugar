@@ -1,0 +1,32 @@
+FUNC long_running_task(sleep_time #int) #int
+    IO:PRINT:("Task: Starting long computation (sleeping for " + sleep_time:TO:(#str) + "s)...")
+    Time:SLEEP:(sleep_time) 
+    IO:PRINT:("Task: Long computation finished.")
+    RETURN 100
+end
+
+IO:PRINT:("Main: Spawning task 1 (should complete within timeout)...")
+DEF task1 #Task = SPAWN FUNC() #int RETURN long_running_task(500) end
+DEF joined_within_timeout1 #bool = task1:TIMEOUT_JOIN:(1000) 
+
+IO:PRINT:("Main: Task 1 timeout_join result: " + joined_within_timeout1:TO:(#str)) 
+DEF result1 #int = task1:JOIN:()
+IO:PRINT:("Main: Task 1 result: " + result1:TO:(#str)) // Should be 100
+
+// --- Test Case 2: Task does NOT complete within timeout ---
+IO:PRINT:("Main: Spawning task 2 (should NOT complete within timeout)...")
+DEF task2 #Task = SPAWN FUNC() #int RETURN long_running_task(2000) end 
+DEF joined_within_timeout2 #bool = task2:TIMEOUT_JOIN:(500) 
+
+IO:PRINT:("Main: Task 2 timeout_join result: " + joined_within_timeout2:TO:(#str))
+DEF is_task2_done_after_timeout #bool = task2:DONE:()
+IO:PRINT:("Main: Task 2 is_done after timeout: " + is_task2_done_after_timeout:TO:(#str))
+
+DEF result2 #int = task2:JOIN:()
+IO:PRINT:("Main: Task 2 final result: " + result2:TO:(#str))
+
+DEF scenario1_success #bool = joined_within_timeout1
+DEF scenario1_result #int = result1
+DEF scenario2_success #bool = joined_within_timeout2
+DEF scenario2_is_done #bool = is_task2_done_after_timeout
+DEF scenario2_result #int = result2

@@ -1102,3 +1102,21 @@ def test_spawn_early_cancellation():
     interpreter.interpret(ast)
     expected = {"r": 0}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_spawn_join_timeout():
+    with open(f"{interpreting_tests_path}/69_spawn_join_timeout.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {
+        "scenario1_success": True,
+        "scenario1_result": 100,
+        "scenario2_success": False,
+        "scenario2_result": 100,
+        "scenario2_is_done": False,
+    }
+    assert check_variable_helper(interpreter, expected)
