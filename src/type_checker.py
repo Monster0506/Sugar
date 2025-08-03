@@ -146,15 +146,15 @@ class TypeChecker:
             raise TypeError("Environment not set for type checker.")
 
         type_def = self.environment.get(expected_type.name)
-        
+
         # If not found in environment, check base_errors directly
         if (type_def is None or type_def == "") and expected_type.name in base_errors:
             type_def = base_errors[expected_type.name]
-        
+
         if isinstance(type_def, SugarClass):
             return self._assert_sugar_class(value, type_def)
         if isinstance(type_def, SugarError):
-            if isinstance(value, Exception) or hasattr(value, 'base_class'):
+            if isinstance(value, Exception) or hasattr(value, "base_class"):
                 return True
             raise TypeError(
                 f"Expected an error type {expected_type.name}, got {type(value).__name__}"
@@ -165,7 +165,7 @@ class TypeChecker:
         # Handle base error types (those with declaration=None)
         if type_def.declaration is None:
             # For base error types, we just check if the value is a compatible error type
-            if isinstance(value, Exception) or hasattr(value, 'base_class'):
+            if isinstance(value, Exception) or hasattr(value, "base_class"):
                 return True
             raise TypeError(
                 f"Expected an error type {expected_type.name}, got {type(value).__name__}"
@@ -208,12 +208,12 @@ class TypeChecker:
         # Handle any/dynamic types - they accept any value
         if isinstance(target_type, Type) and target_type.name in ["any", "dynamic"]:
             return True
-        
+
         if isinstance(value, list):
             if isinstance(target_type, ArrayType):
                 return self._assert_array(value, target_type)
             else:
-                return False  # A list cannot be assigned to a non-array type like str
+                return False
         try:
             self.assert_type(value, target_type)
             return True
