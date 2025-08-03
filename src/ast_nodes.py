@@ -545,17 +545,91 @@ class SugarError(Exception):
         raise self.base_class(*self.args)
 
 
+import threading
+
+
 class Task:
-    def __init__(self, func, args):
+    def __init__(self, func, *args):
         self.func = func
         self.args = args
-        self.result = None
-        self.thread = None
+        self._result = None
+        self._error = None
+        self._done = False
+        self._success = False
+        self._thread = None
+        self._cancellation_requested = threading.Event()  # For cooperative cancellation
 
-    def run(self):
-        self.result = self.func(*self.args)
+        # A lock to protect access to _result, _error, _done, _success if multiple
+        # threads could try to access/modify them concurrently (e.g., in a complex system)
+        # For this simple example, the thread completing its run will set these,
+        # and join will wait, so explicit locking for these specific attributes isn't strictly
+        # necessary for correctness, but good practice for robustness in a real system.
+        self._state_lock = threading.Lock()
+
+    def _target_run(self):
+        """Internal method executed by the thread."""
+        try:
+            # We pass the cancellation event to the function if it expects it
+            # This makes the function 'cancellable'
+            if "cancellation_event" in self.func.__code__.co_varnames:
+                print("we are cancellable")
+                self._result = self.func(self._cancellation_requested, *self.args)
+            else:
+                self._result = self.func(*self.args)
+            self._success = True
+        except Exception as e:
+            self._error = e
+            self._success = False
+        finally:
+            with self._state_lock:
+                self._done = True
+
+    def start(self):
+        if self._thread is not None:
+            raise RuntimeError("Task already started.")
+        self._thread = threading.Thread(target=self._target_run)
+        self._thread.start()
 
     def join(self):
-        if self.thread:
-            self.thread.join()
-        return self.result
+        """Waits for the task to complete and returns its result."""
+        if self._thread:
+            self._thread.join()
+
+        with self._state_lock:
+            if not self._done:
+                raise RuntimeError("Task not finished when join() completed.")
+            if not self._success:
+                raise self._error
+            return self._result
+
+    def is_done(self):
+        """Checks if the task has completed its execution."""
+        with self._state_lock:
+            return self._done
+
+    def is_success(self):
+        """Checks if the task completed successfully (without an error).
+        Only meaningful if is_done() is True."""
+        with self._state_lock:
+            return self._done and self._success
+
+    def get_error(self):
+        """Retrieves the exception object if the task failed.
+        Only meaningful if is_done() is True and is_success() is False."""
+        with self._state_lock:
+            return self._error
+
+    def cancel(self):
+        """Requests the task to cancel its execution.
+        The task's function must be designed to check for this."""
+        self._cancellation_requested.set()
+
+    def timeout_join(self, timeout_ms):
+        """Waits for the task to complete for a specified duration.
+        Returns True if the task completed, False otherwise."""
+        if self._thread:
+            # threading.Thread.join() takes timeout in seconds
+            self._thread.join(timeout_ms / 1000.0)
+            with self._state_lock:
+                return self._done  # Check if it completed within the timeout
+        return True  # If task was never started, consider it 'done' instantly.

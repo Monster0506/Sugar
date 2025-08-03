@@ -1,0 +1,26 @@
+DEF x #str = "fail"
+TYPE MyError EXTENDS Error
+    message #str
+end
+
+DEF t #Task = SPAWN FUNC() #int
+    IO:PRINT:("Task: May fail...")
+    if $1<2$ do
+        THROW MyError("Failed because of bad condition!")
+    end
+    RETURN 42
+end
+
+TRY
+    t:JOIN:() 
+CATCH e #MyError do
+
+    if $t:DONE:()$ do
+        if $t:SUCCESS:()$ do
+            IO:PRINT:("Task completed successfully. Result: " + t:JOIN:())
+        else do
+            IO:PRINT:("Task failed! Error: " + t:ERROR:())
+            x := "pass"
+        end
+    end
+end

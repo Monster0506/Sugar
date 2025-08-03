@@ -1078,3 +1078,15 @@ def test_import_from_module():
     interpreter.interpret(ast)
     expected = {"r": 5, "c": 6}
     assert check_variable_helper(interpreter, expected)
+
+
+def test_spawn_error_get():
+    with open(f"{interpreting_tests_path}/67_spawn_error.sugar", "r") as f:
+        code = f.read()
+    parser = Parser()
+    ast = parser.parse(code)
+    assert isinstance(ast, Program)
+    interpreter = Interpreter()
+    interpreter.interpret(ast)
+    expected = {"x": "pass"}
+    assert check_variable_helper(interpreter, expected)

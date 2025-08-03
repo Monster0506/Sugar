@@ -10,6 +10,7 @@ from src.builtins import (
     map_operations,
     standard_functions,
     str_operations,
+    task_operations,
 )
 from src.parser import parse_to_ast
 from src.stdlib import library
@@ -109,6 +110,9 @@ class Environment:
 class Interpreter:
     def __init__(self, run_path=None):
         self.environment = Environment()
+        self.environment.define("Task", CustomType(None), None)
+        for error in base_errors:
+            self.environment.define(error, CustomType(declaration=None), SugarError)
         self.environment.define("Task", CustomType(None), None)
         self.return_value = None
         self.current_class = None
@@ -210,6 +214,10 @@ class Interpreter:
     def visit_BinaryOperation(self, node: BinaryOperation):
         left = self.visit(node.left)
         right = self.visit(node.right)
+        if isinstance(left, Exception):
+            left = left.args[0]
+        if isinstance(right, Exception):
+            right = right.args[0]
 
         if node.operator == "+":
             return left + right
@@ -420,8 +428,8 @@ class Interpreter:
                 )
 
         if isinstance(base, Task):
-            if method_name == "JOIN":
-                return base.join()
+            if method_name in task_operations:
+                return task_operations.get(method_name)(base)
             else:
                 raise AttributeError(f"Task object has no attribute '{method_name}'")
 
@@ -525,6 +533,24 @@ class Interpreter:
             base.get(node.property_name.name, 0), StdLibCall
         ):
             return self._stdlib_call(base, node.property_name.name, [])
+        elif isinstance(base, Exception):
+            property_name = node.property_name.name
+            if hasattr(base, property_name):
+                # Access the attribute directly
+                if property_name == "args" and isinstance(
+                    getattr(base, property_name), tuple
+                ):
+                    if getattr(base, property_name):  # Check if the tuple is not empty
+                        result = getattr(base, property_name)[0]
+                    else:
+                        result = None  # Or handle empty args as appropriate
+                else:
+                    result = getattr(base, property_name)
+                return result
+            else:
+                raise ValueError(
+                    f"Error: Exception object does not have a '{property_name}' attribute."
+                )
         else:
             raise TypeError(
                 f"Cannot access property on non-instance type: {type(base).__name__}"
@@ -809,6 +835,8 @@ class Interpreter:
             )
             final_sugar_error.trigger()
 
+        elif isinstance(exception, Exception):
+            raise exception
         else:
             # Fallback if `self.visit` returns something unexpected
             raise TypeError(
@@ -937,8 +965,7 @@ class Interpreter:
     def visit_SpawnStatement(self, node: SpawnStatement):
         func = self.visit(node.expression)
         task = Task(func, [])
-        task.thread = threading.Thread(target=task.run)
-        task.thread.start()
+        task.start()
         return task
 
     def visit_ImportStatement(self, node: ImportStatement):

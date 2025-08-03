@@ -150,3 +150,12 @@ base_errors = {
 standard_functions = {
     "RANGE": (lambda x, y=None: range(x, y) if y is not None else range(x)),
 }
+
+
+task_operations = {
+    "JOIN": (lambda x: x.join()),
+    "TIMEOUT_JOIN": (lambda x, y: x.timeout_join(y)),
+    "DONE": (lambda x: x.is_done()),
+    "SUCCESS": (lambda x: x.is_success()),
+    "ERROR": (lambda x: x.get_error()),
+}
