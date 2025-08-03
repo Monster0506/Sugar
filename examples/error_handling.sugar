@@ -18,24 +18,25 @@ FUNC validate_age(age #int) #bool
     elif $age > 150$ do
         THROW ValueError(age, "Age seems unrealistic")
     end
-    RETURN true
+    RETURN :T:
 end
 
 FUNC process_data(data #str) #str
     TRY
         if $data == ""$ do
-            THROW ValueError("", "Data cannot be null")
+            THROW ValueError("Data cannot be null")
         end
         
         DEF result #str = "Processed: " + data
         RETURN result
     CATCH error #ValueError do
-        IO:PRINT:("Value error: " + error.message)
+        IO:PRINT:("Value error: " + error.args)
         RETURN "Error occurred"
     CATCH error #DivisionByZeroError do
-        IO:PRINT:("Division error: " + error.message)
+        IO:PRINT:("Division error: " + error.args)
         RETURN "Division error"
-    FINALLY do
+    FINALLY
+ do
         IO:PRINT:("Cleanup completed")
     end
 end
@@ -45,7 +46,7 @@ FUNC risky_operation() #void
         DEF result #float = safe_divide(10.0, 0.0)
         IO:PRINT:("Result: " + result)
     CATCH error #DivisionByZeroError do
-        IO:PRINT:("Caught division error: " + error.message)
+        IO:PRINT:("Caught division error: " + error.args)
     end
 end
 
