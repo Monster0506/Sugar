@@ -4,11 +4,13 @@ FUNC describe_value(value #any) #str
     MATCH value
         CASE 0 do
             RETURN "zero"
-        CASE n IF $n < 0$ do
+        CASE #int n if $n < 0$ do
             RETURN "negative number"
+        CASE #int n do
+            RETURN "positive number"
         CASE #str s do
             RETURN "string: " + s
-        CASE #[#int] arr IF $arr :LENGTH:() > 3$ do
+        CASE #[#int] arr if $arr :LENGTH:() > 3$ do
             RETURN "long array"
         CASE #[#int] arr do
             RETURN "short array"
@@ -25,7 +27,7 @@ FUNC process_command(command #any) #str
             RETURN "Stopping application..."
         CASE "restart" do
             RETURN "Restarting application..."
-        CASE #str cmd IF $cmd :LENGTH:() > 10$ do
+        CASE #str cmd if $cmd :LENGTH:() > 10$ do
             RETURN "Long command: " + cmd
         DEFAULT do
             RETURN "Unknown command"
@@ -37,4 +39,11 @@ DEF result1 #str = describe_value(0)
 DEF result2 #str = describe_value(-5)
 DEF result3 #str = describe_value("hello")
 DEF result4 #str = describe_value([1, 2, 3, 4, 5])
-DEF result5 #str = process_command("start") 
+DEF result5 #str = process_command("start")
+
+// Print results
+IO:PRINT:("Result 1: " + result1)
+IO:PRINT:("Result 2: " + result2)
+IO:PRINT:("Result 3: " + result3)
+IO:PRINT:("Result 4: " + result4)
+IO:PRINT:("Result 5: " + result5) 
