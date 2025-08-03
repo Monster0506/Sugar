@@ -1,18 +1,21 @@
 // Palindrome checker demonstrating Sugar features
 
 FUNC is_palindrome(s #str) #bool
-    DEF letters #[#char] = []
+    DEF letters #[#char] = [_]
     
     for DEF c #char in s do
-        DEF is_alnum #bool = c :ALNUM:
+        DEF is_alnum #bool = c :ALNUM:()
         if $is_alnum$ do
-            DEF lower_char #char = c :LOWER:
+            DEF lower_char #char = c :LOWER:()
             letters :ADD: (lower_char)
         end
     end
     
-    DEF reversed_letters #[#char] = letters :REVERSE:
-    RETURN letters == (reversed_letters)
+    // Create a copy of letters and reverse it
+    DEF reversed_letters #[#char] = letters
+    reversed_letters :REVERSE:()
+    
+    RETURN letters == reversed_letters
 end
 
 // Test the function
@@ -20,4 +23,4 @@ DEF test_string #str = "A man, a plan, a canal: Panama"
 DEF result #bool = is_palindrome(test_string)
 
 // Using standard library
-IO:PRINT:("Is palindrome: " + result) 
+IO:PRINT:("Is palindrome: " + result :TO:(#str)) 
