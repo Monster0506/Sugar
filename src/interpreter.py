@@ -480,10 +480,8 @@ class Interpreter:
         )
 
         can_use_str = (
-            isinstance(assumed_type, Type) and assumed_type.name == "str"
-        ) or self.environment.type_checker.is_assignable(base, Type("str"))
-        can_use_str = (
-            isinstance(assumed_type, Type) and assumed_type.name == "char"
+            (isinstance(assumed_type, Type) and assumed_type.name == "char")
+            or (isinstance(assumed_type, Type) and assumed_type.name == "str")
         ) or self.environment.type_checker.is_assignable(base, Type("str"))
 
         can_use_map = isinstance(
