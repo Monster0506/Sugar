@@ -14,7 +14,6 @@ end
 TRY
     t:JOIN:() 
 CATCH e #MyError do
-
     if $t:DONE:()$ do
         if $t:SUCCESS:()$ do
             IO:PRINT:("Task completed successfully. Result: " + t:JOIN:())

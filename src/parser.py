@@ -27,6 +27,7 @@ class Parser:
             raise RuntimeError(f"Error during lexing: {e}")
         return self.lark_parser.parse(code)
 
+
 def parse_to_ast(code: str):
     """Helper function to parse code directly to AST for testing."""
     return Parser().parse(code)

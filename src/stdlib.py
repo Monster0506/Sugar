@@ -26,7 +26,6 @@ from random import choice, randint, random, sample, seed, shuffle
 
 from src.ast_nodes import StdLibCall
 
-
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.microseconds
 
 library = {

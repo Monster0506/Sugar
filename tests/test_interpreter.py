@@ -7,7 +7,6 @@ from src.ast_nodes import Program, PropertyDeclaration, SugarClass, SugarInstanc
 from src.interpreter import Function, Interpreter, Variable
 from src.parser import Parser
 
-
 example_path = Path("examples").resolve()
 interpreting_tests_path = (example_path / "interpreting_tests").resolve()
 type_errors_path = (example_path / "type_errors").resolve()

@@ -13,7 +13,6 @@ IO:PRINT:("Main: Task 1 timeout_join result: " + joined_within_timeout1:TO:(#str
 DEF result1 #int = task1:JOIN:()
 IO:PRINT:("Main: Task 1 result: " + result1:TO:(#str)) // Should be 100
 
-// --- Test Case 2: Task does NOT complete within timeout ---
 IO:PRINT:("Main: Spawning task 2 (should NOT complete within timeout)...")
 DEF task2 #Task = SPAWN FUNC() #int RETURN long_running_task(2000) end 
 DEF joined_within_timeout2 #bool = task2:TIMEOUT_JOIN:(500) 
