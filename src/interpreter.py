@@ -2,7 +2,7 @@ from pathlib import Path
 
 from src.ast_nodes import *
 from src.ast_nodes import SugarClass, SugarError, SugarInstance
-from src.builtins import (
+from src.builtin_functions import (
     all_operations,
     array_operations,
     base_errors,
