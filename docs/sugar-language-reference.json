@@ -1,0 +1,1430 @@
+{
+  "language": "Sugar",
+  "version": "1.0",
+  "description": "Complete reference for the Sugar programming language",
+  "sections": [
+    {
+      "id": "basic-syntax",
+      "title": "Basic Syntax",
+      "description": "Sugar uses a clean, expressive syntax with explicit type annotations and clear block delimiters.",
+      "subsections": [
+        {
+          "id": "comments",
+          "title": "Comments",
+          "description": "Single-line comments start with // and extend to the end of the line.",
+          "examples": [
+            "// This is a single-line comment",
+            "// Comments use double slashes and extend to end of line"
+          ]
+        },
+        {
+          "id": "statements",
+          "title": "Statements",
+          "description": "Sugar programs consist of statements. Each statement performs an action.",
+          "examples": [
+            "DEF message #str = \"Hello, Sugar!\"  // Variable declaration",
+            "IO:PRINT:(message)                   // Function call",
+            "x := 42                             // Assignment"
+          ]
+        },
+        {
+          "id": "blocks",
+          "title": "Blocks",
+          "description": "Code blocks are delimited by do and end keywords.",
+          "examples": [
+            "if $condition$ do\n    // Block content\n    IO:PRINT:(\"Inside block\")\nend"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "data-types",
+      "title": "Data Types",
+      "description": "Sugar has a rich type system with both primitive and complex types.",
+      "subsections": [
+        {
+          "id": "primitive-types",
+          "title": "Primitive Types",
+          "types": [
+            {
+              "name": "#int",
+              "description": "Integer numbers (whole numbers)",
+              "examples": ["DEF x #int = 42", "DEF negative #int = -10"]
+            },
+            {
+              "name": "#float",
+              "description": "Floating-point numbers (decimal numbers)",
+              "examples": ["DEF pi #float = 3.14159", "DEF negative_float #float = -2.5"]
+            },
+            {
+              "name": "#bool",
+              "description": "Boolean values (true or false)",
+              "literals": [":T:", ":F:"],
+              "examples": ["DEF true_val #bool = :T:", "DEF false_val #bool = :F:"]
+            },
+            {
+              "name": "#char",
+              "description": "Single character",
+              "examples": ["DEF letter #char = 'A'", "DEF digit #char = '5'"]
+            },
+            {
+              "name": "#str",
+              "description": "String of characters (text)",
+              "examples": ["DEF greeting #str = \"Hello\"", "DEF empty #str = \"\""]
+            },
+            {
+              "name": "#void",
+              "description": "No return value (used for functions)",
+              "usage": "Function return type only"
+            },
+            {
+              "name": "#any",
+              "description": "Any type (type-safe dynamic typing)",
+              "examples": ["DEF dynamic #any = 42", "dynamic := \"Now a string\""]
+            }
+          ]
+        },
+        {
+          "id": "complex-types",
+          "title": "Complex Types",
+          "types": [
+            {
+              "name": "Arrays",
+              "syntax": "#[#type]",
+              "description": "Ordered collections of elements of the same type",
+              "examples": [
+                "DEF numbers #[#int] = [1, 2, 3, 4, 5]",
+                "DEF names #[#str] = [\"Alice\", \"Bob\", \"Charlie\"]",
+                "DEF empty #[#float] = [_]"
+              ]
+            },
+            {
+              "name": "Maps",
+              "syntax": "#{#key_type, #value_type}",
+              "description": "Key-value pairs with specified types",
+              "examples": [
+                "DEF grades #{#str, #int} = {\"Alice\" -> 95, \"Bob\" -> 87}",
+                "DEF empty #{#int, #str} = {_ -> _}"
+              ]
+            },
+            {
+              "name": "Tuples",
+              "syntax": "#(#type1, #type2, ...)",
+              "description": "Fixed-size collections with mixed types",
+              "examples": [
+                "DEF person #(#str, #int, #bool) = (\"Alice\", 25, :T:)",
+                "DEF coordinates #(#float, #float) = (10.5, 20.3)"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collection-methods",
+      "title": "Collection Methods",
+      "description": "Built-in methods for manipulating arrays, strings, and maps using method call syntax",
+      "subsections": [
+        {
+          "id": "array-methods",
+          "title": "Array Methods",
+          "description": "Methods available on array types #[#type]",
+          "methods": [
+            {
+              "name": ":LENGTH:",
+              "description": "Returns the number of elements in the array",
+              "examples": ["DEF count #int = numbers :LENGTH:()"]
+            },
+            {
+              "name": ":GET:",
+              "description": "Gets the element at the specified index",
+              "syntax": "array :GET: (index)",
+              "examples": ["DEF first #int = numbers :GET: (0)"]
+            },
+            {
+              "name": ":SET:",
+              "description": "Sets the element at the specified index",
+              "syntax": "array :SET: (index, value)",
+              "examples": ["numbers :SET: (0, 42)"]
+            },
+            {
+              "name": ":ADD:",
+              "description": "Adds an element to the end of the array",
+              "examples": ["numbers :ADD: (6)"]
+            },
+            {
+              "name": ":INSERT:",
+              "description": "Inserts an element at the specified index",
+              "syntax": "array :INSERT: (index, value)",
+              "examples": ["numbers :INSERT: (0, 0)"]
+            },
+            {
+              "name": ":REMOVE:",
+              "description": "Removes and returns the element at the specified index",
+              "examples": ["DEF removed #int = numbers :REMOVE: (0)"]
+            },
+            {
+              "name": ":CONTAINS:",
+              "description": "Checks if the array contains the specified value",
+              "examples": ["DEF has_three #bool = numbers :CONTAINS: (3)"]
+            },
+            {
+              "name": ":INDEX_OF:",
+              "description": "Returns the index of the first occurrence of value, or -1 if not found",
+              "examples": ["DEF index #int = numbers :INDEX_OF: (3)"]
+            },
+            {
+              "name": ":SLICE:",
+              "description": "Returns a new array containing elements from start to end index",
+              "syntax": "array :SLICE: (start, end)",
+              "examples": ["DEF subset #[#int] = numbers :SLICE: (1, 4)"]
+            },
+            {
+              "name": ":REVERSE:",
+              "description": "Reverses the array in place",
+              "examples": ["numbers :REVERSE:()"]
+            },
+            {
+              "name": ":SORT:",
+              "description": "Sorts the array in place",
+              "examples": ["numbers :SORT:()"]
+            },
+            {
+              "name": ":SUM:",
+              "description": "Returns the sum of all numeric elements",
+              "examples": ["DEF total #int = numbers :SUM:()"]
+            },
+            {
+              "name": ":MAP:",
+              "description": "Applies a function to each element and returns new array",
+              "examples": ["DEF doubled #[#int] = numbers :MAP: (FUNC (x #int) -> x * 2)"]
+            },
+            {
+              "name": ":FILTER:",
+              "description": "Returns new array with elements that pass the test function",
+              "examples": ["DEF evens #[#int] = numbers :FILTER: (FUNC (x #int) -> x % 2 == 0)"]
+            },
+            {
+              "name": ":REDUCE:",
+              "description": "Reduces the array to a single value using accumulator function",
+              "examples": ["DEF sum #int = numbers :REDUCE: (FUNC (acc #int, x #int) -> acc + x, 0)"]
+            },
+            {
+              "name": ":ANY:",
+              "description": "Returns true if any element passes the test function",
+              "examples": ["DEF has_positive #bool = numbers :ANY: (FUNC (x #int) -> x > 0)"]
+            },
+            {
+              "name": ":ALL:",
+              "description": "Returns true if all elements pass the test function",
+              "examples": ["DEF all_positive #bool = numbers :ALL: (FUNC (x #int) -> x > 0)"]
+            },
+            {
+              "name": ":SLICE:",
+              "description": "Returns a new array containing elements from start to end index",
+              "syntax": "array :SLICE: (start_index, end_index)",
+              "examples": ["DEF subset #[#int] = numbers :SLICE: (1, 4)"]
+            },
+            {
+              "name": ":SUM:",
+              "description": "Returns the sum of all numeric elements in the array",
+              "examples": ["DEF total #int = numbers :SUM:()"]
+            },
+            {
+              "name": ":SORT:",
+              "description": "Sorts the array in place in ascending order",
+              "examples": ["numbers :SORT:()"]
+            },
+            {
+              "name": ":TO:",
+              "description": "Converts the value to the specified type",
+              "syntax": "value :TO: (#type)",
+              "examples": [
+                "DEF num_str #str = 42 :TO: (#str)",
+                "DEF bool_val #bool = 1 :TO: (#bool)",
+                "DEF float_val #float = 5 :TO: (#float)"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "string-methods",
+          "title": "String Methods",
+          "description": "Methods available on string type #str (strings are also arrays of characters)",
+          "methods": [
+            {
+              "name": ":LENGTH:",
+              "description": "Returns the number of characters in the string",
+              "examples": ["DEF len #int = text :LENGTH:()"]
+            },
+            {
+              "name": ":UPPER:",
+              "description": "Returns a new string with all characters in uppercase",
+              "examples": ["DEF upper_text #str = text :UPPER:()"]
+            },
+            {
+              "name": ":LOWER:",
+              "description": "Returns a new string with all characters in lowercase", 
+              "examples": ["DEF lower_text #str = text :LOWER:()"]
+            },
+            {
+              "name": ":GET:",
+              "description": "Gets the character at the specified index",
+              "examples": ["DEF first_char #char = text :GET: (0)"]
+            },
+            {
+              "name": ":SET:",
+              "description": "Sets the character at the specified index",
+              "examples": ["text :SET: (0, 'H')"]
+            },
+            {
+              "name": ":ADD:",
+              "description": "Adds a character to the end of the string",
+              "examples": ["text :ADD: ('!')"]
+            },
+            {
+              "name": ":INSERT:",
+              "description": "Inserts a character at the specified index",
+              "examples": ["text :INSERT: (0, 'H')"]
+            },
+            {
+              "name": ":CONTAINS:",
+              "description": "Checks if the string contains the specified character",
+              "examples": ["DEF has_h #bool = text :CONTAINS: ('H')"]
+            },
+            {
+              "name": ":INDEX_OF:",
+              "description": "Returns the index of the first occurrence of character",
+              "examples": ["DEF h_index #int = text :INDEX_OF: ('H')"]
+            },
+            {
+              "name": ":REVERSE:",
+              "description": "Reverses the string in place",
+              "examples": ["text :REVERSE:()"]
+            },
+            {
+              "name": ":REMOVE:",
+              "description": "Removes the character at the specified index",
+              "examples": ["text :REMOVE: (0)"]
+            },
+            {
+              "name": ":SPLIT:",
+              "description": "Splits the string into an array using a delimiter",
+              "examples": ["DEF words #[#str] = sentence :SPLIT: (' ')"]
+            }
+          ]
+        },
+        {
+          "id": "map-methods",
+          "title": "Map Methods",
+          "description": "Methods available on map types #{#key_type, #value_type}",
+          "methods": [
+            {
+              "name": ":GET:",
+              "description": "Gets the value associated with the specified key",
+              "examples": ["DEF value #int = map :GET: (\"key\")"]
+            },
+            {
+              "name": ":SET:",
+              "description": "Sets the value for the specified key",
+              "examples": ["map :SET: (\"key\", 42)"]
+            },
+            {
+              "name": ":HAS_KEY:",
+              "description": "Checks if the map contains the specified key",
+              "examples": ["DEF has_key #bool = map :HAS_KEY: (\"key\")"]
+            },
+            {
+              "name": ":KEYS:",
+              "description": "Returns an array of all keys in the map",
+              "examples": ["DEF keys #[#str] = map :KEYS:()"]
+            },
+            {
+              "name": ":VALUES:",
+              "description": "Returns an array of all values in the map",
+              "examples": ["DEF values #[#int] = map :VALUES:()"]
+            },
+            {
+              "name": ":LENGTH:",
+              "description": "Returns the number of key-value pairs in the map",
+              "examples": ["DEF count #int = map :LENGTH:()"]
+            },
+            {
+              "name": ":REMOVE_KEY:",
+              "description": "Removes and returns the value for the specified key",
+              "examples": ["DEF removed #int = map :REMOVE_KEY: (\"key\")"]
+            },
+            {
+              "name": ":UPDATE:",
+              "description": "Merges another map into this map",
+              "examples": ["map :UPDATE: (other_map)"]
+            },
+            {
+              "name": ":CLEAR:",
+              "description": "Removes all key-value pairs from the map",
+              "examples": ["map :CLEAR:()"]
+            },
+            {
+              "name": ":GET_DEFAULT:",
+              "description": "Gets the value for a key, or returns default if key doesn't exist",
+              "syntax": "map :GET_DEFAULT: (key, default_value)",
+              "examples": ["DEF value #int = map :GET_DEFAULT: (\"missing\", 0)"]
+            }
+          ]
+        },
+        {
+          "id": "character-methods",
+          "title": "Character Methods",
+          "description": "Methods available on character type #char",
+          "methods": [
+            {
+              "name": ":UPPER:",
+              "description": "Returns the uppercase version of the character",
+              "examples": ["DEF upper_char #char = c :UPPER:()"]
+            },
+            {
+              "name": ":LOWER:",
+              "description": "Returns the lowercase version of the character",
+              "examples": ["DEF lower_char #char = c :LOWER:()"]
+            },
+            {
+              "name": ":ALNUM:",
+              "description": "Returns true if character is alphanumeric",
+              "examples": ["DEF is_alnum #bool = c :ALNUM:()"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "variables",
+      "title": "Variables & Assignment",
+      "description": "Variable declaration and assignment in Sugar",
+      "subsections": [
+        {
+          "id": "variable-declaration",
+          "title": "Variable Declaration with DEF",
+          "description": "All variables must be declared with explicit types",
+          "examples": [
+            "DEF count #int = 0",
+            "DEF message #str = \"Hello, Sugar!\"",
+            "DEF is_valid #bool = :T:",
+            "DEF numbers #[#int] = [1, 2, 3]"
+          ]
+        },
+        {
+          "id": "assignment",
+          "title": "Assignment with :=",
+          "description": "Use := to assign new values to existing variables",
+          "examples": [
+            "count := 10",
+            "message := \"Updated message\"",
+            "numbers := [4, 5, 6]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conditionals",
+      "title": "Conditionals",
+      "description": "Conditional execution with if, elif, and else",
+      "subsections": [
+        {
+          "id": "basic-if",
+          "title": "Basic If Statements",
+          "description": "Conditions must be enclosed in $ symbols",
+          "examples": [
+            "if $x > 5$ do\n    IO:PRINT:(\"x is greater than 5\")\nend",
+            "if $name == \"Alice\"$ do\n    IO:PRINT:(\"Hello Alice!\")\nend"
+          ]
+        },
+        {
+          "id": "if-else",
+          "title": "If-Else Statements",
+          "examples": [
+            "if $age >= 18$ do\n    IO:PRINT:(\"Adult\")\nelse do\n    IO:PRINT:(\"Minor\")\nend"
+          ]
+        },
+        {
+          "id": "elif-chains",
+          "title": "Elif Chains",
+          "examples": [
+            "if $score >= 90$ do\n    IO:PRINT:(\"Grade: A\")\nelif $score >= 80$ do\n    IO:PRINT:(\"Grade: B\")\nelif $score >= 70$ do\n    IO:PRINT:(\"Grade: C\")\nelse do\n    IO:PRINT:(\"Grade: F\")\nend"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loops",
+      "title": "Loops",
+      "description": "Iteration with while and for loops",
+      "subsections": [
+        {
+          "id": "while-loops",
+          "title": "While Loops",
+          "examples": [
+            "DEF count #int = 0\nwhile $count < 5$ do\n    IO:PRINT:(count)\n    count := count + 1\nend"
+          ]
+        },
+        {
+          "id": "for-loops",
+          "title": "For Loops",
+          "description": "Iterate over collections or ranges",
+          "examples": [
+            "for DEF num #int in [1, 2, 3, 4, 5] do\n    IO:PRINT:(num)\nend",
+            "for DEF i #int in RANGE(10) do\n    IO:PRINT:(i)\nend",
+            "for DEF char #char in \"Hello\" do\n    IO:PRINT:(char)\nend"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "concurrency",
+      "title": "Concurrency & Tasks",
+      "description": "Parallel execution using SPAWN and Task management",
+      "subsections": [
+        {
+          "id": "spawn-basics",
+          "title": "Spawning Tasks",
+          "description": "Create and execute functions concurrently using SPAWN",
+          "examples": [
+            "SPAWN FUNC() -> worker_task(1)",
+            "SPAWN FUNC() #void\n    IO:PRINT:(\"Background task\")\nend"
+          ]
+        },
+        {
+          "id": "task-types",
+          "title": "Task Types",
+          "description": "Tasks are handles to concurrently executing functions",
+          "types": [
+            {
+              "name": "#Task",
+              "description": "Handle to a spawned task that can be joined or cancelled",
+              "examples": [
+                "DEF task #Task = SPAWN FUNC() #int\n    RETURN 42\nend"
+              ]
+            },
+            {
+              "name": "#Token",
+              "description": "Cancellation token for cooperative task cancellation",
+              "examples": [
+                "DEF token #Token = NewCancellableToken()",
+                "FUNC long_running(cancellable_token #Token) #int\n    if $cancellable_token :CANCELLED:()$ do\n        RETURN 0\n    end\n    // ... rest of computation\nend"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "task-operations",
+          "title": "Task Operations",
+          "description": "Methods available on Task objects for control and synchronization",
+          "methods": [
+            {
+              "name": ":JOIN:",
+              "description": "Waits for the task to complete and returns its result",
+              "examples": [
+                "DEF task #Task = SPAWN FUNC() #int RETURN 42 end",
+                "DEF result #int = task :JOIN:()"
+              ]
+            },
+            {
+              "name": ":TIMEOUT_JOIN:",
+              "description": "Waits for task completion with timeout (milliseconds), returns true if completed",
+              "syntax": "task :TIMEOUT_JOIN: (timeout_ms)",
+              "examples": [
+                "DEF completed #bool = task :TIMEOUT_JOIN: (1000)",
+                "if $completed$ do\n    DEF result #int = task :JOIN:()\nend"
+              ]
+            },
+            {
+              "name": ":DONE:",
+              "description": "Checks if the task has completed without blocking",
+              "examples": [
+                "DEF is_finished #bool = task :DONE:()",
+                "if $!task :DONE:()$ do\n    IO:PRINT:(\"Still running...\")\nend"
+              ]
+            },
+            {
+              "name": ":CANCEL:",
+              "description": "Attempts to cancel the task execution",
+              "examples": [
+                "task :CANCEL:()",
+                "DEF was_cancelled #bool = task :CANCELLED:()"
+              ]
+            },
+            {
+              "name": ":CANCELLED:",
+              "description": "Returns true if the task was cancelled",
+              "examples": ["DEF cancelled #bool = task :CANCELLED:()"]
+            },
+            {
+              "name": ":SUCCESS:",
+              "description": "Returns true if the task completed successfully (without error)",
+              "examples": [
+                "if $task :SUCCESS:()$ do\n    DEF result #int = task :JOIN:()\nelse do\n    IO:PRINT:(\"Task failed: \" + task :ERROR:())\nend"
+              ]
+            },
+            {
+              "name": ":ERROR:",
+              "description": "Returns the error that occurred in the task (only valid if task failed)",
+              "examples": [
+                "if $!task :SUCCESS:()$ do\n    DEF error_msg #str = task :ERROR:()\n    IO:PRINT:(\"Task failed: \" + error_msg)\nend"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "task-patterns",
+          "title": "Common Concurrency Patterns",
+          "patterns": [
+            {
+              "name": "Parallel Computation",
+              "description": "Run multiple tasks and collect results",
+              "example": "DEF task1 #Task = SPAWN FUNC() #int RETURN compute_heavy() end\nDEF task2 #Task = SPAWN FUNC() #int RETURN compute_heavy() end\nDEF result1 #int = task1 :JOIN:()\nDEF result2 #int = task2 :JOIN:()"
+            },
+            {
+              "name": "Background Processing",
+              "description": "Fire-and-forget background tasks",
+              "example": "SPAWN FUNC() #void\n    while $true$ do\n        monitor_system()\n        Time:SLEEP:(5000)\n    end\nend"
+            },
+            {
+              "name": "Timeout Operations",
+              "description": "Handle long-running tasks with timeouts",
+              "example": "DEF task #Task = SPAWN FUNC() #int RETURN slow_operation() end\nDEF completed #bool = task :TIMEOUT_JOIN: (5000)\nif $!completed$ do\n    task :CANCEL:()\n    IO:PRINT:(\"Operation timed out\")\nend"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "functions",
+      "title": "Function Basics",
+      "description": "Function declaration, parameters, and return values",
+      "subsections": [
+        {
+          "id": "function-declaration",
+          "title": "Function Declaration",
+          "examples": [
+            "FUNC add(a #int, b #int) #int\n    RETURN a + b\nend",
+            "FUNC greet(name #str) #str\n    RETURN \"Hello, \" + name + \"!\"\nend",
+            "FUNC print_message() #void\n    IO:PRINT:(\"No return value\")\nend"
+          ]
+        },
+        {
+          "id": "function-calls",
+          "title": "Function Calls",
+          "examples": [
+            "DEF sum #int = add(5, 3)",
+            "DEF greeting #str = greet(\"Alice\")",
+            "print_message()"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stdlib-io",
+      "title": "IO Module",
+      "description": "Input/Output operations for console interaction",
+      "functions": [
+        {
+          "name": "IO:PRINT:",
+          "description": "Prints values to the console with automatic type conversion",
+          "syntax": "IO:PRINT:(value1, value2, ...)",
+          "examples": [
+            "IO:PRINT:(\"Hello, World!\")",
+            "IO:PRINT:(\"Number:\", 42)",
+            "IO:PRINT:(\"Sum:\", 5 + 3)"
+          ]
+        },
+        {
+          "name": "IO:INPUT:",
+          "description": "Reads a line of input from the user with optional prompt",
+          "syntax": "IO:INPUT:(prompt)",
+          "examples": [
+            "DEF name #str = IO:INPUT:(\"Enter your name: \")",
+            "DEF age_str #str = IO:INPUT:(\"Enter your age: \")"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stdlib-math",
+      "title": "Math Module",
+      "description": "Mathematical functions and constants for numerical computations",
+      "constants": [
+        {
+          "name": "Math.PI",
+          "description": "Mathematical constant π (pi), approximately 3.14159",
+          "examples": ["DEF circumference #float = 2.0 * Math.PI * radius"]
+        },
+        {
+          "name": "Math.E", 
+          "description": "Mathematical constant e (Euler's number), approximately 2.71828",
+          "examples": ["DEF e_squared #float = Math:POW:(Math.E, 2.0)"]
+        }
+      ],
+      "functions": [
+        {
+          "name": "Math:SQRT:",
+          "description": "Returns the square root of x",
+          "examples": ["DEF sqrt_16 #float = Math:SQRT:(16.0)  // 4.0"]
+        },
+        {
+          "name": "Math:POW:",
+          "description": "Returns x raised to the power of y",
+          "examples": ["DEF square #float = Math:POW:(2.0, 3.0)  // 8.0"]
+        },
+        {
+          "name": "Math:ABS:",
+          "description": "Returns the absolute value of x",
+          "examples": ["DEF abs_neg #float = Math:ABS:(-10.5)  // 10.5"]
+        },
+        {
+          "name": "Math:FLOOR:",
+          "description": "Returns the largest integer less than or equal to x",
+          "examples": ["DEF floor_val #int = Math:FLOOR:(5.7)  // 5"]
+        },
+        {
+          "name": "Math:CEIL:",
+          "description": "Returns the smallest integer greater than or equal to x",
+          "examples": ["DEF ceil_val #int = Math:CEIL:(5.3)  // 6"]
+        },
+        {
+          "name": "Math:ROUND:",
+          "description": "Returns x rounded to the nearest integer",
+          "examples": ["DEF round_val #int = Math:ROUND:(5.5)  // 6"]
+        },
+        {
+          "name": "Math:MIN:",
+          "description": "Returns the minimum value from arguments or array",
+          "examples": ["DEF min_val #float = Math:MIN:([10.0, 5.0, 20.0])  // 5.0"]
+        },
+        {
+          "name": "Math:MAX:",
+          "description": "Returns the maximum value from arguments or array",
+          "examples": ["DEF max_val #float = Math:MAX:([10.0, 5.0, 20.0])  // 20.0"]
+        },
+        {
+          "name": "Math:SIN:",
+          "description": "Returns the sine of x (x in radians)",
+          "examples": ["DEF sin_90 #float = Math:SIN:(Math.PI / 2.0)  // 1.0"]
+        },
+        {
+          "name": "Math:COS:",
+          "description": "Returns the cosine of x (x in radians)",
+          "examples": ["DEF cos_180 #float = Math:COS:(Math.PI)  // -1.0"]
+        },
+        {
+          "name": "Math:TAN:",
+          "description": "Returns the tangent of x (x in radians)",
+          "examples": ["DEF tan_45 #float = Math:TAN:(Math.PI / 4.0)  // 1.0"]
+        },
+        {
+          "name": "Math:ASIN:",
+          "description": "Returns the arc sine of x (result in radians)",
+          "examples": ["DEF asin_1 #float = Math:ASIN:(1.0)  // PI/2"]
+        },
+        {
+          "name": "Math:ACOS:",
+          "description": "Returns the arc cosine of x (result in radians)",
+          "examples": ["DEF acos_0 #float = Math:ACOS:(0.0)  // PI/2"]
+        },
+        {
+          "name": "Math:ATAN:",
+          "description": "Returns the arc tangent of x (result in radians)",
+          "examples": ["DEF atan_1 #float = Math:ATAN:(1.0)  // PI/4"]
+        },
+        {
+          "name": "Math:LOG:",
+          "description": "Returns the logarithm of x with specified base",
+          "examples": ["DEF log_100 #float = Math:LOG:(100.0, 10.0)  // 2.0"]
+        },
+        {
+          "name": "Math:LOG10:",
+          "description": "Returns the base-10 logarithm of x",
+          "examples": ["DEF log10_1000 #float = Math:LOG10:(1000.0)  // 3.0"]
+        },
+        {
+          "name": "Math:EXP:",
+          "description": "Returns e raised to the power of x",
+          "examples": ["DEF exp_1 #float = Math:EXP:(1.0)  // e"]
+        },
+        {
+          "name": "Math:FACTORIAL:",
+          "description": "Returns the factorial of x (x!)",
+          "examples": ["DEF fact_5 #int = Math:FACTORIAL:(5)  // 120"]
+        },
+        {
+          "name": "Math:GCD:",
+          "description": "Returns the greatest common divisor of two or more integers",
+          "examples": ["DEF gcd_val #int = Math:GCD:(48, 18)  // 6", "DEF gcd_multi #int = Math:GCD:(12, 18, 24)  // 6"]
+        },
+        {
+          "name": "Math:LCM:",
+          "description": "Returns the least common multiple of two or more integers",
+          "examples": ["DEF lcm_val #int = Math:LCM:(4, 6)  // 12", "DEF lcm_multi #int = Math:LCM:(2, 3, 4)  // 12"]
+        },
+        {
+          "name": "Math:DEGREES:",
+          "description": "Converts radians to degrees",
+          "examples": ["DEF deg_180 #float = Math:DEGREES:(Math.PI)  // 180.0"]
+        },
+        {
+          "name": "Math:RADIANS:",
+          "description": "Converts degrees to radians",
+          "examples": ["DEF rad_pi #float = Math:RADIANS:(180.0)  // PI"]
+        }
+      ]
+    },
+    {
+      "id": "stdlib-time",
+      "title": "Time Module",
+      "description": "Time and date manipulation functions for temporal operations",
+      "constants": [
+        {
+          "name": "Time.DEFAULT_FORMAT",
+          "description": "Default time format string for parsing and formatting",
+          "examples": ["DEF format #str = Time.DEFAULT_FORMAT"]
+        }
+      ],
+      "functions": [
+        {
+          "name": "Time:NOW_STR:",
+          "description": "Returns the current date and time as a string",
+          "examples": ["DEF now #str = Time:NOW_STR:()"]
+        },
+        {
+          "name": "Time:FORMAT_STR:",
+          "description": "Formats a time string from one format to another",
+          "syntax": "Time:FORMAT_STR:(time_string, input_format, output_format)",
+          "examples": [
+            "DEF formatted #str = Time:FORMAT_STR:(now, Time.DEFAULT_FORMAT, \"%Y-%m-%d\")",
+            "DEF date_only #str = Time:FORMAT_STR:(\"2025-08-01\", \"%Y-%m-%d\", \"%w/%y/%U\")"
+          ]
+        },
+        {
+          "name": "Time:SLEEP:",
+          "description": "Pauses execution for specified number of milliseconds",
+          "examples": ["Time:SLEEP:(1000)  // Sleep for 1 second"]
+        }
+      ]
+    },
+    {
+      "id": "stdlib-random",
+      "title": "Random Module", 
+      "description": "Random number generation and selection functions",
+      "functions": [
+        {
+          "name": "Random:SEED:",
+          "description": "Seeds the random number generator for reproducible results",
+          "examples": ["Random:SEED:(42)  // Set seed for testing"]
+        },
+        {
+          "name": "Random:INT:",
+          "description": "Returns a random integer within specified range (inclusive)",
+          "syntax": "Random:INT:(min, max)",
+          "examples": [
+            "DEF dice_roll #int = Random:INT:(1, 6)",
+            "DEF random_percent #int = Random:INT:(0, 100)"
+          ]
+        },
+        {
+          "name": "Random:FLOAT:",
+          "description": "Returns a random float between 0.0 and 1.0",
+          "examples": ["DEF random_val #float = Random:FLOAT:()"]
+        },
+        {
+          "name": "Random:CHOICE:",
+          "description": "Returns a random element from an array",
+          "examples": [
+            "DEF fruits #[#str] = [\"apple\", \"banana\", \"cherry\"]",
+            "DEF random_fruit #str = Random:CHOICE:(fruits)"
+          ]
+        },
+        {
+          "name": "Random:SHUFFLE:",
+          "description": "Returns a new array with elements randomly shuffled",
+          "examples": [
+            "DEF numbers #[#int] = [1, 2, 3, 4, 5]",
+            "DEF shuffled #[#int] = Random:SHUFFLE:(numbers)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "title": "Utilities",
+      "description": "Utility functions",
+      "functions": [
+        {
+          "name": "NewCancellableToken:",
+          "description": "Creates a new cancellation token for cooperative task cancellation",
+          "examples": [
+            "DEF token #Token = NewCancellableToken:()",
+            "FUNC long_running(cancellable_token #Token) #int\n    if $cancellable_token :CANCELLED:()$ do\n        RETURN 0\n    end\n    // ... rest of computation\nend"
+          ]
+        },
+        {
+          "name": "RANGE",
+          "description": "Creates a range of integers for iteration",
+          "syntax": "RANGE(end) or RANGE(start, end)",
+          "examples": [
+            "for DEF i #int in RANGE(5) do\n    IO:PRINT:(i)  // Prints 0, 1, 2, 3, 4\nend",
+            "for DEF i #int in RANGE(1, 6) do\n    IO:PRINT:(i)  // Prints 1, 2, 3, 4, 5\nend"
+          ]
+        },
+        {
+          "name": "PRINT",
+          "description": "An alias for IO:PRINT:",
+          "syntax": "PRINT(value1, value2, ...)",
+          "examples": [
+            "PRINT(\"Hello, World!\")",
+            "PRINT(\"Number:\", 42)",
+            "PRINT(\"Sum:\", 5 + 3)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "module-system",
+      "title": "Module System & Imports",
+      "description": "Code organization and reuse through module imports",
+      "subsections": [
+        {
+          "id": "import-statements",
+          "title": "Import Statements",
+          "description": "Import functions, classes, and variables from other Sugar files",
+          "syntax": "import module_name.symbol_name",
+          "examples": [
+            "import my_module.helper_function",
+            "import math_utils.Calculator",
+            "import data.constants.PI"
+          ]
+        },
+        {
+          "id": "dotted-imports",
+          "title": "Dotted Name Imports",
+          "description": "Import specific symbols using dotted notation",
+          "rules": [
+            "Module names correspond to .sugar file names",
+            "Symbols can be functions, classes, variables, or constants",
+            "Use dotted notation to specify the exact symbol to import",
+            "Imported symbols become available in the current scope"
+          ],
+          "examples": [
+            "// Import specific items from imported_module.sugar",
+            "import imported_module.m          // Import map variable",
+            "import imported_module.Adder     // Import class definition", 
+            "import imported_module.a         // Import instance variable",
+            "",
+            "// Use imported symbols directly",
+            "DEF value #int = m :GET: (\"key\")",
+            "DEF adder #Adder = Adder()",
+            "a :add: (5)"
+          ]
+        },
+        {
+          "id": "module-structure",
+          "title": "Module Structure",
+          "description": "How to structure code for imports",
+          "guidelines": [
+            "Each .sugar file is a module",
+            "Top-level definitions are importable",
+            "Classes, functions, and variables can all be imported",
+            "Module file names should use snake_case"
+          ],
+          "example_module": {
+            "filename": "math_utilities.sugar",
+            "content": "// math_utilities.sugar\nDEF PI #float = 3.14159\n\nCLASS Calculator\n    STATIC FUNC add(a #int, b #int) #int\n        RETURN a + b\n    end\nend\n\nFUNC square(x #float) #float\n    RETURN x * x\nend"
+          },
+          "usage_example": {
+            "content": "// main.sugar\nimport math_utilities.PI\nimport math_utilities.Calculator\nimport math_utilities.square\n\nDEF area #float = PI * square(5.0)\nDEF sum #int = Calculator:add:(10, 20)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "error-types",
+      "title": "Error Types",
+      "description": "Built-in and custom error types for exception handling",
+      "subsections": [
+        {
+          "id": "built-in-errors",
+          "title": "Built-in Error Types",
+          "description": "Standard error types provided by the language",
+          "types": [
+            {
+              "name": "Error",
+              "description": "Base error type that all errors extend",
+              "properties": [
+                {
+                  "name": "message",
+                  "type": "#str",
+                  "description": "Error message describing what went wrong"
+                }
+              ],
+              "examples": [
+                "THROW Error(\"Something went wrong\")",
+                "CATCH e #Error do\n    IO:PRINT:(\"Error: \" + e.message)\nend"
+              ]
+            },
+            {
+              "name": "ValueError",
+              "description": "Raised when a function receives an argument of the correct type but inappropriate value",
+              "examples": [
+                "THROW ValueError(\"Invalid input value\")",
+                "CATCH e #ValueError do\n    IO:PRINT:(\"Value error: \" + e.message)\nend"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "custom-errors",
+          "title": "Custom Error Types",
+          "description": "User-defined error types for specific error conditions",
+          "syntax": "TYPE ErrorName EXTENDS Error\n    additional_properties\nend",
+          "examples": [
+            "TYPE MyError EXTENDS Error\n    message #str\nend",
+            "",
+            "FUNC risky_operation() #void\n    THROW MyError(\"Custom error occurred!\")\nend",
+            "",
+            "TRY\n    risky_operation()\nCATCH e #MyError do\n    IO:PRINT:(\"Caught: \" + e.message)\nend"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "functional-programming",
+      "title": "Functional Programming",
+      "description": "Functional programming features including higher-order functions and pipelines",
+      "subsections": [
+        {
+          "id": "lambda-expressions",
+          "title": "Lambda Expressions",
+          "description": "Anonymous functions for functional programming",
+          "syntax": "FUNC (parameters) -> expression",
+          "examples": [
+            "FUNC (x #int) -> x * 2",
+            "FUNC (a #int, b #int) -> a + b",
+            "FUNC (name #str) -> \"Hello, \" + name"
+          ]
+        },
+        {
+          "id": "anonymous-functions",
+          "title": "Anonymous Functions",
+          "description": "Multi-statement anonymous functions",
+          "syntax": "FUNC (parameters) #return_type ... end",
+          "examples": [
+            "FUNC (x #int) #int\n    DEF result #int = x * x\n    RETURN result\nend"
+          ]
+        },
+        {
+          "id": "pipeline-operations",
+          "title": "Pipeline Operations",
+          "description": "Chain method calls for functional data processing",
+          "examples": [
+            "DEF result #int = numbers\n    :FILTER:(FUNC (x #int) -> x > 2)\n    :MAP:(FUNC (x #int) -> x * 2)\n    :REDUCE:(FUNC (acc #int, x #int) -> acc + x, 0)"
+          ]
+        },
+        {
+          "id": "higher-order-functions",
+          "title": "Higher-Order Functions",
+          "description": "Functions that work with other functions",
+          "common_patterns": [
+            {
+              "name": "Map",
+              "description": "Transform each element of a collection",
+              "examples": [
+                "DEF doubled #[#int] = numbers :MAP: (FUNC (x #int) -> x * 2)",
+                "DEF names #[#str] = people :MAP: (FUNC (p #Person) -> p.name)"
+              ]
+            },
+            {
+              "name": "Filter", 
+              "description": "Select elements that pass a test",
+              "examples": [
+                "DEF evens #[#int] = numbers :FILTER: (FUNC (x #int) -> x % 2 == 0)",
+                "DEF adults #[#Person] = people :FILTER: (FUNC (p #Person) -> p.age >= 18)"
+              ]
+            },
+            {
+              "name": "Reduce",
+              "description": "Combine all elements into a single value",
+              "examples": [
+                "DEF sum #int = numbers :REDUCE: (FUNC (acc #int, x #int) -> acc + x, 0)",
+                "DEF max #int = numbers :REDUCE: (FUNC (acc #int, x #int) -> Math:MAX:([acc, x]), 0)"
+              ]
+            },
+            {
+              "name": "Any/All",
+              "description": "Test conditions across collections",
+              "examples": [
+                "DEF has_positive #bool = numbers :ANY: (FUNC (x #int) -> x > 0)",
+                "DEF all_positive #bool = numbers :ALL: (FUNC (x #int) -> x > 0)"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "functional-composition",
+          "title": "Function Composition",
+          "description": "Combining simple functions to build complex operations",
+          "examples": [
+            "// Multi-step data processing pipeline",
+            "DEF processed_data #[#str] = raw_data",
+            "    :FILTER:(FUNC (item #RawData) -> item.valid)",
+            "    :MAP:(FUNC (item #RawData) -> item.process())",
+            "    :FILTER:(FUNC (result #ProcessedData) -> result.score > 0.8)",
+            "    :MAP:(FUNC (result #ProcessedData) -> result.format())"
+          ]
+        }
+      ]
+    }
+  ],
+  "keywords": {
+    "DEF": {
+      "id": "keyword-def",
+      "category": "Variable Declaration",
+      "syntax": "DEF variable_name #type = value",
+      "description": "Declares a new variable with an explicit type annotation and initial value",
+      "rules": [
+        "Variable names must start with a letter or underscore",
+        "Type annotation is mandatory",
+        "Initial value must match the declared type",
+        "Variables are mutable after declaration (use := for assignment)"
+      ],
+      "examples": [
+        "DEF x #int = 42",
+        "DEF message #str = \"Hello, Sugar!\"",
+        "DEF numbers #[#int] = [1, 2, 3, 4, 5]",
+        "DEF person #{#str, #int} = {\"Alice\" -> 25}"
+      ]
+    },
+    "FUNC": {
+      "id": "keyword-func",
+      "category": "Function Declaration",
+      "syntax": "FUNC function_name(param1 #type1, param2 #type2) #return_type ... end",
+      "description": "Declares a function with parameters and return type",
+      "features": [
+        "Function overloading supported",
+        "Recursive functions allowed",
+        "Can return any type or #void",
+        "Parameters require type annotations"
+      ],
+      "examples": [
+        "FUNC add(a #int, b #int) #int\n    RETURN a + b\nend",
+        "FUNC greet(name #str) #str\n    RETURN \"Hello, \" + name + \"!\"\nend",
+        "FUNC print_message() #void\n    IO:PRINT:(\"No return value\")\nend"
+      ]
+    },
+    "CLASS": {
+      "id": "keyword-class",
+      "category": "Object-Oriented Programming",
+      "syntax": "CLASS name ... end",
+      "description": "Defines a new class with properties and methods",
+      "features": [
+        "Inheritance with EXTENDS",
+        "Interface implementation with IMPLEMENTS", 
+        "Access modifiers: PUBLIC, PRIVATE, PROTECTED",
+        "Static members with STATIC",
+        "Method overriding with OVERRIDE"
+      ],
+      "examples": [
+        "CLASS Person\n    PUBLIC name #str\n    PRIVATE age #int\n    \n    PUBLIC CONSTRUCTOR(name #str, age #int) #void\n        THIS.name := name\n        THIS.age := age\n    end\n    \n    PUBLIC FUNC get_age() #int\n        RETURN THIS.age\n    end\nend"
+      ]
+    },
+    "if": {
+      "id": "keyword-if",
+      "category": "Control Flow",
+      "syntax": "if $condition$ do ... end",
+      "description": "Conditional execution based on boolean expression",
+      "rules": [
+        "Condition must be enclosed in $ symbols",
+        "Condition must evaluate to #bool",
+        "Must be followed by 'do' keyword",
+        "Must be closed with 'end' keyword"
+      ],
+      "examples": [
+        "if $x > 5$ do\n    IO:PRINT:(\"x is greater than 5\")\nend"
+      ]
+    },
+    "for": {
+      "id": "keyword-for",
+      "category": "Loop Control",
+      "syntax": "for DEF variable #type in collection do ... end",
+      "description": "Iterates over collections or ranges",
+      "supported_iterables": [
+        "Arrays: #[#type]",
+        "Strings: #str (iterates over characters)",
+        "Ranges: RANGE(n) or RANGE(start, end)",
+        "Maps: #{#key_type, #value_type} (iterates over keys)"
+      ],
+      "examples": [
+        "for DEF num #int in numbers do\n    IO:PRINT:(num)\nend",
+        "for DEF i #int in RANGE(10) do\n    IO:PRINT:(i)\nend",
+        "for DEF i #int in RANGE(0, 20) do\n    IO:PRINT:(i)\nend"
+      ]
+    },
+    "MATCH": {
+      "id": "keyword-match",
+      "category": "Pattern Matching",
+      "syntax": "MATCH expression ... end", 
+      "description": "Matches an expression against multiple patterns",
+      "pattern_types": [
+        "Literal patterns: 42, \"hello\", :T:",
+        "Variable patterns: #int x, #str name",
+        "Tuple patterns: (1, \"a\"), (#int x, #str y)",
+        "Array patterns: [1, 2, #int x], [#int head, ...tail]",
+        "Object patterns: {name: #str, age: #int}",
+        "Type patterns: #int value, #str text",
+        "Guards: if $condition$"
+      ],
+      "advanced_patterns": [
+        {
+          "type": "Tuple Destructuring",
+          "description": "Match and destructure tuple values",
+          "examples": [
+            "MATCH coordinates\nCASE (0, 0) do\n    IO:PRINT:(\"Origin\")\nCASE (#int x, #int y) do\n    IO:PRINT:(\"Point at \" + x + \", \" + y)\nend"
+          ]
+        },
+        {
+          "type": "Array Pattern Matching",
+          "description": "Match arrays with specific patterns",
+          "examples": [
+            "MATCH numbers\nCASE [] do\n    IO:PRINT:(\"Empty array\")\nCASE [#int first] do\n    IO:PRINT:(\"Single element: \" + first)\nCASE [1, 2, #int rest] do\n    IO:PRINT:(\"Starts with 1, 2\")\nend"
+          ]
+        },
+        {
+          "type": "Object Pattern Matching",
+          "description": "Match object structures",
+          "examples": [
+            "MATCH person\nCASE {name: \"Alice\", age: #int age} do\n    IO:PRINT:(\"Alice is \" + age + \" years old\")\nCASE {name: #str name, age: #int age} if $age >= 18$ do\n    IO:PRINT:(name + \" is an adult\")\nend"
+          ]
+        },
+        {
+          "type": "Guards with Conditions",
+          "description": "Add conditional logic to patterns",
+          "examples": [
+            "MATCH value\nCASE #int n if $n < 0$ do\n    IO:PRINT:(\"Negative number\")\nCASE #int n if $n > 100$ do\n    IO:PRINT:(\"Large number\")\nCASE #[#int] arr if $arr :LENGTH:() > 3$ do\n    IO:PRINT:(\"Long array\")\nend"
+          ]
+        }
+      ],
+      "examples": [
+        "MATCH value\nCASE 0 do\n    IO:PRINT:(\"Zero\")\nCASE #int x if $x > 10$ do\n    IO:PRINT:(\"Large\")\nCASE (1, \"a\") do\n    IO:PRINT:(\"Tuple match\")\nDEFAULT do\n    IO:PRINT:(\"Other\")\nend"
+      ]
+    },
+    "import": {
+      "id": "keyword-import",
+      "category": "Module System",
+      "syntax": "import module_name.symbol_name",
+      "description": "Imports functions, classes, or variables from other Sugar modules",
+      "examples": [
+        "import my_module.helper_function",
+        "import data.User",
+        "import constants.PI"
+      ]
+    },
+    "TYPE": {
+      "id": "keyword-type",
+      "category": "Type System",
+      "syntax": "TYPE name ... end",
+      "description": "Declares a custom type with fields",
+      "examples": [
+        "TYPE Person\n    name #str\n    age #int\n    email #str\nend"
+      ]
+    },
+    "INTERFACE": {
+      "id": "keyword-interface",
+      "category": "Object-Oriented Programming",
+      "syntax": "INTERFACE name ... end",
+      "description": "Defines a contract that classes can implement",
+      "examples": [
+        "INTERFACE Drawable\n    FUNC draw() #void\n    FUNC resize(width #int, height #int) #bool\nend"
+      ]
+    },
+    "EXTENDS": {
+      "id": "keyword-extends",
+      "category": "Object-Oriented Programming",
+      "syntax": "CLASS name EXTENDS parent_class",
+      "description": "Inherits from a parent class",
+      "examples": [
+        "CLASS Circle EXTENDS Shape\n    // Circle-specific members\nend"
+      ]
+    },
+    "IMPLEMENTS": {
+      "id": "keyword-implements",
+      "category": "Object-Oriented Programming",
+      "syntax": "CLASS name IMPLEMENTS interface1, interface2",
+      "description": "Implements one or more interfaces",
+      "examples": [
+        "CLASS Shape IMPLEMENTS Drawable, Resizable\n    // Implementation required\nend"
+      ]
+    },
+    "TRY": {
+      "id": "keyword-try",
+      "category": "Error Handling",
+      "syntax": "TRY ... CATCH ... FINALLY ... end",
+      "description": "Begins an error handling block",
+      "examples": [
+        "TRY\n    risky_operation()\nCATCH error #ValueError do\n    IO:PRINT:(\"Error: \" + error.message)\nend"
+      ]
+    },
+    "CATCH": {
+      "id": "keyword-catch",
+      "category": "Error Handling",
+      "syntax": "CATCH variable #ErrorType do",
+      "description": "Handles specific types of errors",
+      "examples": [
+        "CATCH error #ValueError do\n    IO:PRINT:(\"Value error occurred\")\nend"
+      ]
+    },
+    "FINALLY": {
+      "id": "keyword-finally",
+      "category": "Error Handling",
+      "syntax": "FINALLY do",
+      "description": "Code that runs regardless of whether an error occurred",
+      "examples": [
+        "FINALLY do\n    cleanup_resources()\nend"
+      ]
+    },
+    "THROW": {
+      "id": "keyword-throw",
+      "category": "Error Handling",
+      "syntax": "THROW error_value",
+      "description": "Throws an error to be caught by error handling blocks",
+      "examples": [
+        "THROW ValueError(\"Invalid input\")",
+        "THROW CustomError(42, \"Custom message\")"
+      ]
+    },
+    "SPAWN": {
+      "id": "keyword-spawn",
+      "category": "Concurrency",
+      "syntax": "SPAWN function_expression",
+      "description": "Executes a function concurrently and returns a Task handle",
+      "examples": [
+        "SPAWN FUNC() -> background_work()",
+        "DEF task #Task = SPAWN FUNC() #int RETURN compute() end"
+      ]
+    },
+    "RETURN": {
+      "id": "keyword-return",
+      "category": "Function Control",
+      "syntax": "RETURN expression?",
+      "description": "Returns a value from a function",
+      "examples": [
+        "RETURN 42",
+        "RETURN \"Hello, World!\"",
+        "RETURN  // For void functions"
+      ]
+    },
+    "THIS": {
+      "id": "keyword-this",
+      "category": "Object-Oriented Programming",
+      "syntax": "THIS.property or THIS:method:()",
+      "description": "References the current instance in class methods",
+      "examples": [
+        "THIS.name := \"New Name\"",
+        "RETURN THIS.calculate_area()"
+      ]
+    },
+    "SUPER": {
+      "id": "keyword-super",
+      "category": "Object-Oriented Programming",
+      "syntax": "SUPER:(arguments) or SUPER:method:()",
+      "description": "References the parent class constructor or methods",
+      "examples": [
+        "SUPER:(x, y, color)  // Call parent constructor",
+        "SUPER:draw:()        // Call parent method"
+      ]
+    },
+    "STATIC": {
+      "id": "keyword-static",
+      "category": "Object-Oriented Programming",
+      "syntax": "STATIC FUNC method_name(...)",
+      "description": "Declares a static method that belongs to the class, not instances",
+      "examples": [
+        "STATIC FUNC create_default() #MyClass\n    RETURN MyClass(\"default\")\nend"
+      ]
+    },
+    "PUBLIC": {
+      "id": "keyword-public",
+      "category": "Access Control",
+      "syntax": "PUBLIC property or PUBLIC FUNC",
+      "description": "Makes class members accessible from outside the class",
+      "examples": [
+        "PUBLIC name #str",
+        "PUBLIC FUNC get_name() #str"
+      ]
+    },
+    "PRIVATE": {
+      "id": "keyword-private",
+      "category": "Access Control",
+      "syntax": "PRIVATE property or PRIVATE FUNC",
+      "description": "Makes class members accessible only within the class",
+      "examples": [
+        "PRIVATE internal_data #int",
+        "PRIVATE FUNC validate() #bool"
+      ]
+    },
+    "PROTECTED": {
+      "id": "keyword-protected",
+      "category": "Access Control",
+      "syntax": "PROTECTED property or PROTECTED FUNC",
+      "description": "Makes class members accessible within the class and subclasses",
+      "examples": [
+        "PROTECTED shared_data #str",
+        "PROTECTED FUNC helper_method() #void"
+      ]
+    },
+    "OVERRIDE": {
+      "id": "keyword-override",
+      "category": "Object-Oriented Programming",
+      "syntax": "OVERRIDE FUNC method_name(...)",
+      "description": "Overrides a parent class method in a subclass",
+      "examples": [
+        "OVERRIDE FUNC draw() #void\n    // Custom drawing logic\nend"
+      ]
+    }
+  },
+  "examples": {
+    "complete": [
+      {
+        "title": "Object-Oriented Example",
+        "code": "// Define interfaces\nINTERFACE Drawable\n    FUNC draw() #void\n    FUNC get_bounds() #(#float, #float, #float, #float)\nend\n\n// Base shape class\nCLASS Shape IMPLEMENTS Drawable\n    PROTECTED x #float\n    PROTECTED y #float\n    PROTECTED color #str\n    \n    PUBLIC CONSTRUCTOR(x #float, y #float, color #str) #void\n        THIS.x := x\n        THIS.y := y\n        THIS.color := color\n    end\n    \n    PUBLIC FUNC move(dx #float, dy #float) #void\n        THIS.x := THIS.x + dx\n        THIS.y := THIS.y + dy\n    end\n    \n    PUBLIC FUNC draw() #void\n        IO:PRINT:(\"Drawing shape at (\" + THIS.x:TO:(#str) + \", \" + THIS.y:TO:(#str) + \")\")\n    end\nend"
+      },
+      {
+        "title": "Functional Programming Example",
+        "code": "// Functional programming with higher-order functions\nFUNC process_numbers(numbers #[#int]) #void\n    IO:PRINT:(\"Original numbers: \" + numbers:TO:(#str))\n    \n    // Filter even numbers\n    DEF evens #[#int] = numbers \n        :FILTER:(FUNC (x #int) -> x % 2 == 0)\n    IO:PRINT:(\"Even numbers: \" + evens:TO:(#str))\n    \n    // Square all numbers\n    DEF squares #[#int] = numbers \n        :MAP:(FUNC (x #int) -> x * x)\n    IO:PRINT:(\"Squares: \" + squares:TO:(#str))\n    \n    // Reduce to sum\n    DEF sum #int = numbers \n        :REDUCE:(FUNC (acc #int, x #int) -> acc + x, 0)\n    IO:PRINT:(\"Sum: \" + sum:TO:(#str))\nend"
+      }
+    ]
+  },
+  "best_practices": {
+    "naming": [
+      "Use descriptive variable and function names",
+      "Follow camelCase for variables and functions",
+      "Use PascalCase for classes and types",
+      "Use UPPERCASE for constants"
+    ],
+    "types": [
+      "Always provide explicit type annotations",
+      "Use specific types over #any when possible",
+      "Prefer immutable data structures when appropriate"
+    ],
+    "functions": [
+      "Keep functions small and focused",
+      "Use function overloading for related operations",
+      "Prefer pure functions when possible"
+    ],
+    "error_handling": [
+      "Use specific error types for different error conditions",
+      "Always clean up resources in FINALLY blocks",
+      "Validate input parameters early"
+    ],
+    "concurrency": [
+      "Use cancellation tokens for long-running tasks",
+      "Set appropriate timeouts for task operations",
+      "Handle task failures gracefully"
+    ]
+  }
+}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sugar Language Reference</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-okaidia.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0f172a" />
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <header class="topbar" role="banner">
+    <button id="sidebar-toggle" class="icon-btn" aria-label="Toggle navigation" aria-expanded="false">
+      ☰
+    </button>
+    <div class="brand">
+      <span class="logo">🍬 Sugar</span>
+      <span class="version">v1.0</span>
+    </div>
+    <div class="top-actions">
+      <button id="global-search-btn" class="icon-btn" aria-label="Search (Ctrl+/)">🔍</button>
+      <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">🌓</button>
+      <a href="#" class="pill-btn" id="home-btn">Home</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar" class="sidebar" aria-label="Primary">
+      <div class="sidebar-inner">
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <h3>Language Reference</h3>
+            <button class="collapse-btn" data-collapse="sections" aria-expanded="true">−</button>
+          </div>
+          <ul id="nav-sections" class="nav-list" role="tree"></ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <h3>Keywords</h3>
+            <button class="collapse-btn" data-collapse="keywords" aria-expanded="true">−</button>
+          </div>
+          <div class="sticky-input">
+            <input id="sidebar-filter" type="text" placeholder="Filter keywords…" aria-label="Filter keywords" />
+          </div>
+          <ul id="nav-keywords" class="nav-list" role="tree"></ul>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <h3>Examples</h3>
+            <button class="collapse-btn" data-collapse="examples" aria-expanded="true">−</button>
+          </div>
+          <ul id="nav-examples" class="nav-list" role="tree"></ul>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" role="main">
+
+
+      <div class="content-wrap">
+        <article class="content" id="content"></article>
+        <aside id="toc" class="toc" aria-label="On this page">
+          <h4>On this page</h4>
+          <nav id="toc-list"></nav>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <aside id="code-panel" class="code-panel" aria-hidden="true" aria-label="Code Preview">
+    <div class="code-panel-header">
+      <h3>Code Preview</h3>
+      <button class="close-btn" id="close-code-panel" aria-label="Close panel">✕</button>
+    </div>
+    <div class="code-panel-content">
+      <pre class="line-numbers"><code class="language-sugar" id="code-preview"></code></pre>
+    </div>
+  </aside>
+
+  <dialog id="search-dialog" class="search-dialog">
+    <form method="dialog" class="search-dialog-inner">
+      <input id="search-dialog-input" type="search" placeholder="Type to search…"
+        aria-label="Global search" autocomplete="off" />
+      <div id="search-dialog-results" role="listbox" aria-label="Search results"></div>
+      <div class="search-hints">Use ↑/↓ to navigate, Enter to open, Esc to close</div>
+    </form>
+  </dialog>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-markup.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-javascript.min.js"></script>
+  <script src="sugar-syntax.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
