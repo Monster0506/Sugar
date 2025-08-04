@@ -7,8 +7,12 @@ of the parsed code, which can then be used by an interpreter or compiler.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
+
+if TYPE_CHECKING:
+    from src.interpreter import Environment  # Only imports for type checking
 
 
 # Base class for all AST nodes
@@ -543,9 +547,6 @@ class SugarError(Exception):
 
     def trigger(self):
         raise self.base_class(*self.args)
-
-
-import threading
 
 
 class SugarTask:

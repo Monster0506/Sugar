@@ -10,7 +10,7 @@ from src.ast_nodes import (
     TupleType,
     Type,
 )
-from src.builtins import base_errors
+from src.builtin_functions import base_errors
 
 
 class TypeChecker:

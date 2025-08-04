@@ -1,4 +1,3 @@
-import threading
 from pathlib import Path
 
 from src.ast_nodes import *

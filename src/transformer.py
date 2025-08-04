@@ -161,7 +161,7 @@ class SugarTransformer(Transformer):
                 lambda x: isinstance(x, Expression) or isinstance(x, Statement), rest
             )
         )[0]
-        property_access = list(filter(lambda x: isinstance(x, PropertyAccess), rest))
+        # property_access = list(filter(lambda x: isinstance(x, PropertyAccess), rest))
         # if property_access:
         #     property_access = property_access[0]
         #     name = Identifier(name=property_access.property_name.name)

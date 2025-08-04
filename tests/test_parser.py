@@ -44,7 +44,6 @@ from src.ast_nodes import (
     ReturnStatement,
     SpawnStatement,
     SuperCall,
-    ThisAssignment,
     ThrowStatement,
     TryStatement,
     TupleLiteral,

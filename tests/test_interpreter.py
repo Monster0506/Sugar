@@ -777,7 +777,7 @@ def test_throw_builtin():
     ast = parser.parse(code)
     assert isinstance(ast, Program)
     interpreter = Interpreter()
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError):
         interpreter.interpret(ast)
 
 
@@ -853,7 +853,7 @@ def test_stdlib_io():
     parser = Parser()
     ast = parser.parse(code)
     assert isinstance(ast, Program)
-    interpreter = Interpreter()
+    # interpreter = Interpreter()
     # This test requires user input, so we can't fully automate it.
     # We'll just check that it doesn't crash.
     pass
