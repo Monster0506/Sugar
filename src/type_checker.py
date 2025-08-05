@@ -14,7 +14,7 @@ from src.builtin_functions import base_errors
 from src.utils import debug_class_wrapper
 
 
-@debug_class_wrapper(logger_name="TypeChecker")
+@debug_class_wrapper
 class TypeChecker:
     def __init__(self, environment=None):
         self.environment = environment

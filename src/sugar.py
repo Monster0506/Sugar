@@ -5,6 +5,7 @@ from typing import NoReturn
 
 from lark.exceptions import LarkError
 
+from src.error import ErrorReporter
 from src.interpreter import Interpreter
 from src.parser import parse_to_ast
 
@@ -21,13 +22,14 @@ def run_file(file_path: Path, interpreter: Interpreter) -> None:
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             code = f.read()
+        error_reporter = ErrorReporter(code, str(file_path))
         ast = parse_to_ast(code)
         interpreter.interpret(ast)
     except FileNotFoundError:
         logging.error(f"Error: File not found at '{file_path}'")
         exit(1)
     except LarkError as e:
-        logging.error(f"\nSyntax Error in '{file_path}':\n{e}")
+        error_reporter.report_syntactic(e)
         exit(1)
     except Exception as e:
         logging.error(f"\nRuntime Error in '{file_path}':\n{e}")

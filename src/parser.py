@@ -17,16 +17,16 @@ class Parser:
             grammar,
             start="program",
             parser="lalr",
+            propagate_positions=True,
         )
         self.transformer = SugarTransformer()
 
     def parse(self, code: str):
         """Parses Sugar code and returns the AST."""
         try:
-            tree = self.lark_parser.lex(code)
             tree = self.lark_parser.parse(code)
         except Exception as e:
-            raise RuntimeError(f"Error during lexing: {e}")
+            raise e
         return self.transformer.transform(tree)
 
 
