@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from lark import tree
 
-
 if TYPE_CHECKING:
     from src.interpreter import Environment  # Only imports for type checking
 

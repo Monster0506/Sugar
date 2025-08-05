@@ -4,7 +4,6 @@ from lark import Lark
 
 from src.transformer import SugarTransformer
 
-
 # Construct the absolute path to the grammar file
 GRAMMAR_FILE = os.path.join(os.path.dirname(__file__), "sugar_grammar.lark")
 
