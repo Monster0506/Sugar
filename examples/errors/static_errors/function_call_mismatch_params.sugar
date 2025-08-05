@@ -1,0 +1,5 @@
+FUNC myfunc(x #str) #int
+    RETURN 123
+end
+
+myfunc(10)

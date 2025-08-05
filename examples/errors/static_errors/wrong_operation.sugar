@@ -1,0 +1,1 @@
+DEF another_var #bool = other_var + 1

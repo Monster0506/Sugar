@@ -1,0 +1,5 @@
+FUNC my_func() #str
+    RETURN 123
+end
+
+
