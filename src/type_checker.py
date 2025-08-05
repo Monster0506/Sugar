@@ -11,8 +11,10 @@ from src.ast_nodes import (
     Type,
 )
 from src.builtin_functions import base_errors
+from src.utils import debug_class_wrapper
 
 
+@debug_class_wrapper(logger_name="TypeChecker")
 class TypeChecker:
     def __init__(self, environment=None):
         self.environment = environment
@@ -228,19 +230,26 @@ class TypeChecker:
         Infers the AST Type object from a Python runtime value.
         """
         if isinstance(value, int):
-            return Type("int")
+            return Type(name="int", meta=None)
         elif isinstance(value, float):
-            return Type("float")
+            return Type(name="float", meta=None)
         elif isinstance(value, str):
             if len(value) == 1:
-                return Type("char")
-            return Type("str")
+                return Type(name="char", meta=None)
+            return Type(name="str", meta=None)
         elif isinstance(value, bool):
-            return Type("bool")
+            return Type(name="bool", meta=None)
         elif isinstance(value, list):
             # For lists, try to determine the base type if possible
             if not value:  # Empty list
-                return ArrayType(name="[]", base_type=Type("dynamic"))  # Or Type("any")
+                return ArrayType(
+                    name="[]",
+                    base_type=Type(
+                        name="dynamic",
+                        meta=None,
+                    ),
+                    meta=None,
+                )  # Or Type("any")
 
             # Try to find a common base type for all elements
             first_element_type = self.get_runtime_type(value[0])
@@ -252,14 +261,19 @@ class TypeChecker:
 
             if all_same_type:
                 return ArrayType(
-                    name=f"[{first_element_type.name}]", base_type=first_element_type
+                    name=f"[{first_element_type.name}]",
+                    base_type=first_element_type,
+                    meta=None,
                 )
             else:
                 raise TypeError("All list values must be of same type")
         elif isinstance(value, dict):
             if not value:
                 return MapType(
-                    name="{}", key_type=Type("dynamic"), value_type=Type("dynamic")
+                    meta=None,
+                    name="{}",
+                    key_type=Type(name="dynamic", meta=None),
+                    value_type=Type(name="dynamic", meta=None),
                 )
 
             first_key, first_value = next(iter(value.items()))
@@ -267,6 +281,7 @@ class TypeChecker:
             value_type = self.get_runtime_type(first_value)
 
             return MapType(
+                meta=None,
                 name=f"{{{key_type.name},{value_type.name}}}",
                 key_type=key_type,
                 value_type=value_type,
@@ -274,17 +289,18 @@ class TypeChecker:
         elif isinstance(value, tuple):
             element_types = [self.get_runtime_type(item) for item in value]
             return TupleType(
+                meta=None,
                 name=f"({', '.join(t.name for t in element_types)})",
                 types=element_types,
             )
         elif value is None:
-            return Type("null")
+            return Type(name="null", meta=None)
         elif callable(value):
-            return Type("function")
+            return Type(name="function", meta=None)
         elif isinstance(value, SugarInstance):
-            return Type(value.sugar_class.name)
+            return Type(name=value.sugar_class.name, meta=None)
         elif isinstance(value, SugarClass):
-            return Type(value.name)
+            return Type(name=value.name, meta=None)
         else:
 
             raise TypeError(f"Could not infer runtime type for {value}")

@@ -4,6 +4,7 @@ from lark import Lark
 
 from src.transformer import SugarTransformer
 
+
 # Construct the absolute path to the grammar file
 GRAMMAR_FILE = os.path.join(os.path.dirname(__file__), "sugar_grammar.lark")
 
@@ -16,16 +17,17 @@ class Parser:
             grammar,
             start="program",
             parser="lalr",
-            transformer=SugarTransformer(),
         )
+        self.transformer = SugarTransformer()
 
     def parse(self, code: str):
         """Parses Sugar code and returns the AST."""
         try:
-            self.lark_parser.lex(code)
+            tree = self.lark_parser.lex(code)
+            tree = self.lark_parser.parse(code)
         except Exception as e:
             raise RuntimeError(f"Error during lexing: {e}")
-        return self.lark_parser.parse(code)
+        return self.transformer.transform(tree)
 
 
 def parse_to_ast(code: str):

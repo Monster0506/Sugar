@@ -4,7 +4,7 @@ Transforms the Lark parse tree into a structured AST.
 
 import logging
 
-from lark import Token, Transformer, Tree, v_args
+from lark import Token, Transformer, Tree, tree, v_args
 
 from src.ast_nodes import (
     AccessModifier,
@@ -85,14 +85,15 @@ from src.ast_nodes import (
 from src.utils import debug_class_wrapper
 
 
-@v_args(inline=True)
+@v_args(inline=True, meta=True)
 @debug_class_wrapper
 class SugarTransformer(Transformer):
-    def program(self, *statements):
 
-        return Program(statements=list(statements))
+    def program(self, meta, *statements):
 
-    def primary_expression(self, *children):
+        return Program(statements=list(statements), meta=meta)
+
+    def primary_expression(self, meta, *children):
 
         if len(children) == 1:
             return children[0]
@@ -116,7 +117,7 @@ class SugarTransformer(Transformer):
                 arguments = []  # No arguments
 
             return FunctionCall(
-                function_name=func_name_node, arguments=arguments, base=None
+                function_name=func_name_node, arguments=arguments, base=None, meta=meta
             )
 
         # Case 3: THIS (if not handled by postfix_expression for method calls)
@@ -126,7 +127,7 @@ class SugarTransformer(Transformer):
             and isinstance(children[0], Token)
             and children[0].type == "THIS"
         ):
-            return ThisExpression()
+            return ThisExpression(meta=meta)
 
         if (
             isinstance(children[0], Token)
@@ -140,7 +141,7 @@ class SugarTransformer(Transformer):
             if len(children) == 4 and isinstance(children[2], list):
                 arguments = children[2]
                 arguments = list(self._filter_tokens_out(arguments))
-            return SuperCall(arguments=arguments)
+            return SuperCall(arguments=arguments, meta=meta)
         if (
             isinstance(children[0], Token)
             and len(children) == 5
@@ -148,12 +149,12 @@ class SugarTransformer(Transformer):
         ):
             arguments = children[3]
             arguments = list(self._filter_tokens_out(arguments))
-            return SuperCall(arguments=arguments)
+            return SuperCall(arguments=arguments, meta=meta)
 
         logging.warning(f"Unhandled primary_expression children: {children}")
         return Tree("primary_expression", list(children))
 
-    def variable_declaration(self, _def, name, *rest):
+    def variable_declaration(self, meta, _def, name, *rest):
 
         var_type = list(filter(lambda x: isinstance(x, Type), rest))[0]
         value = list(
@@ -169,17 +170,19 @@ class SugarTransformer(Transformer):
         logging.debug(
             f"variable_declaration: name={name}, var_type={var_type}, value={value}"
         )
-        return VariableDeclaration(name=name, var_type=var_type, value=value)
+        return VariableDeclaration(name=name, var_type=var_type, value=value, meta=meta)
 
-    def variable_assignment(self, name, _equals, value):
+    def variable_assignment(self, meta, name, _equals, value):
 
-        return VariableAssignment(name=name, value=value)
+        return VariableAssignment(name=name, value=value, meta=meta)
 
-    def this_assignment(self, _this, _colon, property_name, assign, value):
+    def this_assignment(self, meta, _this, _colon, property_name, assign, value):
 
-        return ThisAssignment(property_name=property_name, value=value)
+        return ThisAssignment(property_name=property_name, value=value, meta=meta)
 
-    def this_method_call(self, _this, _colon1, method_name, _colon2, _lparen, *other):
+    def this_method_call(
+        self, meta, _this, _colon1, method_name, _colon2, _lparen, *other
+    ):
         logging.debug(f"this_method_call: method_name={method_name}, other={other}")
 
         arguments = []
@@ -189,46 +192,54 @@ class SugarTransformer(Transformer):
             arguments = []
 
         return MethodCall(
-            base=ThisExpression(),
+            base=ThisExpression(meta=meta),
             function_name=method_name,
             arguments=arguments,
+            meta=meta,
         )
 
-    def function_declaration(self, _func, name, _lparen, *everythingelse):
+    def function_declaration(self, meta, _func, name, _lparen, *everythingelse):
         logging.debug(
             f"function_declaration: name={name}, everythingelse={everythingelse}"
         )
 
         parameters = list(filter(lambda x: isinstance(x, Parameter), everythingelse[0]))
         return_type_list = list(filter(lambda x: isinstance(x, Type), everythingelse))
-        return_type = return_type_list[0] if return_type_list else Type(name="void")
+        return_type = (
+            return_type_list[0] if return_type_list else Type(name="void", meta=meta)
+        )
         body = list(self._filter_body_for_statements(everythingelse[-2]))
 
         logging.debug(
             f"  Parsed: parameters={parameters}, return_type={return_type}, body={body}"
         )
         return FunctionDeclaration(
-            name=name, parameters=parameters, return_type=return_type, body=body
+            meta=meta,
+            name=name,
+            parameters=parameters,
+            return_type=return_type,
+            body=body,
         )
 
     def parameter_list(self, *parameters):
 
         return list(self._filter_tokens_out(parameters))
 
-    def parameter(self, name, param_type):
+    def parameter(self, meta, name, param_type):
 
-        return Parameter(name=name, param_type=param_type)
+        return Parameter(name=name, param_type=param_type, meta=meta)
 
     def function_body(self, *statements):
 
         return list(statements)
 
-    def return_statement(self, _return, value=None):
+    def return_statement(self, meta, _return, value=None):
 
-        return ReturnStatement(value=value)
+        return ReturnStatement(value=value, meta=meta)
 
     def if_statement(
         self,
+        meta,
         _if_kw,
         _dollar1,
         condition,
@@ -251,41 +262,49 @@ class SugarTransformer(Transformer):
         elif_clauses.extend(elif_cs)
 
         return IfStatement(
+            meta=meta,
             condition=condition,
             body=body,
             elif_clauses=elif_clauses,
             else_clause=else_clause,
         )
 
-    def elif_clause(self, _elif, _dollar1, condition, _dollar2, _do, *body):
+    def elif_clause(self, meta, _elif, _dollar1, condition, _dollar2, _do, *body):
 
         body = self._filter_if_body(body)[0]  # Filter body to get only statements
-        return ElifClause(condition=condition, body=body)
+        return ElifClause(condition=condition, body=body, meta=meta)
 
-    def else_clause(self, _else, _do, *body):
+    def else_clause(self, meta, _else, _do, *body):
         body = self._filter_if_body(body)[0]  # Filter body to get only statements
 
-        return ElseClause(body=body)
+        return ElseClause(body=body, meta=meta)
 
     def for_statement(
-        self, _for, _def, variable, var_type, _in, iterable, _do, *body, _end=None
+        self, meta, _for, _def, variable, var_type, _in, iterable, _do, *body, _end=None
     ):
         logging.debug(
             f"for_statement: body={body}, variable={variable}, iterable={iterable}"
         )
         return ForStatement(
+            meta=meta,
             iterator_name=variable,
             iterator_type=var_type,
             collection=iterable,
             body=list(self._filter_body_for_statements(body)),
         )
 
-    def while_statement(self, _while, _dollar1, condition, _dollar2, _do_kw, *body):
+    def while_statement(
+        self, meta, _while, _dollar1, condition, _dollar2, _do_kw, *body
+    ):
 
         body = list(self._filter_body_for_statements(body))
-        return WhileStatement(condition=condition, body=body)
+        return WhileStatement(
+            condition=condition,
+            body=body,
+            meta=meta,
+        )
 
-    def try_statement(self, _try, *body, catch_clauses=None, finally_clause=None):
+    def try_statement(self, meta, _try, *body, catch_clauses=None, finally_clause=None):
         logging.debug(
             f"try_statement: body={body}, catch_clauses={catch_clauses}, finally_clause={finally_clause}"
         )
@@ -303,111 +322,129 @@ class SugarTransformer(Transformer):
         processed_body_statements = list(self._filter_body_for_statements(body))
 
         return TryStatement(
+            meta=meta,
             body=processed_body_statements,
             catch_clauses=catch_clauses,
             finally_clause=finally_clause,
         )
 
-    def throw_statement(self, _throw, exception):
-        return ThrowStatement(exception=exception)
+    def throw_statement(self, meta, _throw, exception):
+        return ThrowStatement(exception=exception, meta=meta)
 
-    def catch_clause(self, _catch, exception_name, exception_type, _do, *body):
+    def catch_clause(self, meta, _catch, exception_name, exception_type, _do, *body):
         return CatchClause(
             exception_name=exception_name,
             exception_type=exception_type,
             body=list(self._filter_body_for_statements(body)),
+            meta=meta,
         )
 
-    def finally_clause(self, _finally, _do, *body):
-        return FinallyClause(list(self._filter_body_for_statements(body)))
+    def finally_clause(self, meta, _finally, _do, *body):
+        return FinallyClause(
+            body=list(self._filter_body_for_statements(body)), meta=meta
+        )
 
-    def type(self, hash_token, type_specifier):
+    def type(self, meta, hash_token, type_specifier):
 
         return type_specifier
 
-    def type_specifier(self, specifier):
+    def type_specifier(self, meta, specifier):
 
         return specifier
 
-    def custom_type(self, identifier):
+    def custom_type(self, meta, identifier):
 
-        return Type(name=identifier.name)
+        return Type(name=identifier.name, meta=meta)
 
     def PRIMITIVE_TYPE(self, token):
 
-        return Type(name=token.value)
+        return Type(name=token.value, meta=None)
 
-    def expression(self, value):
+    def expression(self, meta, value):
 
         return value
 
-    def literal(self, value):
+    def literal(self, meta, value):
 
         return value  # Literals are handled by their respective token types
 
     def BOOLEAN(self, token):
 
-        return Literal(value=True if token.value == ":T:" else False)
+        return Literal(value=True if token.value == ":T:" else False, meta=None)
 
     def IDENTIFIER(self, token):
 
         if token.value == "END":
             return End
-        return Identifier(name=token.value)
+        return Identifier(name=token.value, meta=None)
 
     def INTEGER(self, token):
 
-        return Literal(value=int(token.value))
+        return Literal(value=int(token.value), meta=None)
 
     def FLOAT(self, token):
 
-        return Literal(value=float(token.value))
+        return Literal(value=float(token.value), meta=None)
 
     def STRING(self, token):
 
-        return Literal(value=token.value[1:-1])  # Remove quotes
+        return Literal(value=token.value[1:-1], meta=None)  # Remove quotes
 
     def CHAR(self, token):
 
-        return Literal(value=token.value[1:-1])  # Remove quotes
+        return Literal(value=token.value[1:-1], meta=None)  # Remove quotes
 
     def argument_list(self, *expressions):
         return list(expressions)
 
-    def or_expression(self, left, op_token, right):
-        return OrExpression(left, op_token.value, right)
+    def or_expression(self, meta, left, op_token, right):
+        return OrExpression(left=left, operator=op_token.value, right=right, meta=meta)
 
-    def and_expression(self, left, op_token, right):
-        return AndExpression(left, op_token.value, right)
+    def and_expression(self, meta, left, op_token, right):
+        return AndExpression(left=left, operator=op_token.value, right=right, meta=meta)
 
-    def equality_expression(self, left, op_token, right):
-        return EqualityExpression(left, op_token.value, right)
+    def equality_expression(self, meta, left, op_token, right):
+        return EqualityExpression(
+            left=left, operator=op_token.value, right=right, meta=meta
+        )
 
-    def equality_op(self, op_token):
+    def equality_op(self, meta, op_token):
         return Token(type=op_token.type, value=op_token.value)
 
-    def relational_expression(self, left, op_token, right):
-        return RelationalExpression(left, op_token.value, right)
+    def relational_expression(self, meta, left, op_token, right):
+        return RelationalExpression(
+            left=left, operator=op_token.value, right=right, meta=meta
+        )
 
-    def relational_op(self, op_token):
+    def relational_op(self, meta, op_token):
         return Token(type=op_token.type, value=op_token.value)
 
-    def additive_expression(self, left, op_token, right):
-        return AdditiveExpression(left, op_token.value, right)
+    def additive_expression(self, meta, left, op_token, right):
+        return AdditiveExpression(
+            left=left, operator=op_token.value, right=right, meta=meta
+        )
 
-    def multiplicative_expression(self, left, op_token, right):
-        return MultiplicativeExpression(left, op_token.value, right)
+    def multiplicative_expression(self, meta, left, op_token, right):
+        return MultiplicativeExpression(
+            left=left, operator=op_token.value, right=right, meta=meta
+        )
 
     # Unary Expressions (need to distinguish operator based on token)
-    def unary_expression(self, first_child, second_child=None):
+    def unary_expression(self, meta, first_child, second_child=None):
         if isinstance(first_child, Token):  # It's an operator
             op_str = first_child.value
             if op_str == "!":
-                return NotExpression(op_str, second_child)
+                return NotExpression(
+                    operator=op_str, expression=second_child, meta=meta
+                )
             elif op_str == "-":
-                return UnaryMinusExpression(op_str, second_child)
+                return UnaryMinusExpression(
+                    operator=op_str, expression=second_child, meta=meta
+                )
             elif op_str == "+":
-                return UnaryPlusExpression(op_str, second_child)
+                return UnaryPlusExpression(
+                    operator=op_str, expression=second_child, meta=meta
+                )
             else:
                 raise ValueError(f"Unknown unary operator: {op_str}")
         else:  # It's a postfix_expression (the base case for recursion in the grammar)
@@ -416,6 +453,7 @@ class SugarTransformer(Transformer):
     # Postfix Expressions
     def postfix_expression(
         self,
+        meta,
         base_expr: Expression,
         *modifiers: MethodCall | PropertyAccess | ArrayAccess,
     ):
@@ -441,18 +479,23 @@ class SugarTransformer(Transformer):
                 )
         return current_expr
 
-    def property_access(self, _dot, property_name):
+    def property_access(self, meta, _dot, property_name):
 
-        base = Identifier("THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION")
-        return PropertyAccess(base=base, property_name=property_name)
+        base = Identifier(
+            name="THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION", meta=meta
+        )
+        return PropertyAccess(base=base, property_name=property_name, meta=meta)
 
-    def array_access(self, _lbracket, expression, _rbracket):
+    def array_access(self, meta, _lbracket, expression, _rbracket):
 
-        base = Identifier("THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION")
-        return ArrayAccess(base=base, index=expression)
+        base = Identifier(
+            name="THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION", meta=meta
+        )
+        return ArrayAccess(base=base, index=expression, meta=meta)
 
     def match_statement(
         self,
+        meta,
         _match,
         expr,
         *body,
@@ -461,15 +504,18 @@ class SugarTransformer(Transformer):
         default_clause = list(filter(lambda x: isinstance(x, DefaultClause), body))[0]
         case_clauses = list(filter(lambda x: isinstance(x, CaseClause), body))
         return MatchStatement(
-            expression=expr, default_clause=default_clause, case_clauses=case_clauses
+            meta=meta,
+            expression=expr,
+            default_clause=default_clause,
+            case_clauses=case_clauses,
         )
 
-    def default_clause(self, _default, _do, *body):
+    def default_clause(self, meta, _default, _do, *body):
 
         body = list(self._filter_body_for_statements(body))
-        return DefaultClause(body=body)
+        return DefaultClause(meta=meta, body=body)
 
-    def case_clause(self, _case, pattern, *body):
+    def case_clause(self, meta, _case, pattern, *body):
 
         guard_p = list(filter(lambda x: isinstance(x, Expression), body))
         guard = guard_p[0] if guard_p else None
@@ -479,23 +525,24 @@ class SugarTransformer(Transformer):
                 self._filter_body_for_statements(body),
             ),
             guard=guard,
+            meta=meta,
         )
 
-    def guard(self, _if, _dollar1, condition, _dollar2):
+    def guard(self, meta, _if, _dollar1, condition, _dollar2):
 
-        return self.expression(condition)
+        return self.expression(value=condition, meta=meta)
 
-    def spawn_statement(self, _spawn, expression):
+    def spawn_statement(self, meta, _spawn, expression):
 
         return SpawnStatement(
-            expression=expression
+            expression=expression, meta=meta
         )  # Assuming expression is a valid statement
 
-    def import_statement(self, _import, dotted_name):
+    def import_statement(self, meta, _import, dotted_name):
 
-        return ImportStatement(dotted_name=dotted_name.split("."))
+        return ImportStatement(dotted_name=dotted_name.split("."), meta=meta)
 
-    def type_declaration(self, *args):
+    def type_declaration(self, meta, *args):
 
         _type, name, *rest = args
 
@@ -511,26 +558,29 @@ class SugarTransformer(Transformer):
                 type_body.extend(item)
 
         return TypeDeclaration(
-            name=name, type_body=type_body, extends_clause=extends_clause
+            name=name,
+            type_body=type_body,
+            extends_clause=extends_clause,
+            meta=meta,
         )
 
-    def type_body(self, *fields):
+    def type_body(self, meta, *fields):
 
         return list(fields)
 
-    def type_field(self, name, field_type):
+    def type_field(self, meta, name, field_type):
 
-        return TypeField(name=name, field_type=field_type)
+        return TypeField(name=name, field_type=field_type, meta=meta)
 
-    def extends_clause(self, _extends, *identifiers):
+    def extends_clause(self, meta, _extends, *identifiers):
 
         return [_extends] + list(identifiers)
 
-    def implements_clause(self, _implements, *identifiers):
+    def implements_clause(self, meta, _implements, *identifiers):
 
         return [_implements] + list(identifiers)
 
-    def class_declaration(self, *args):
+    def class_declaration(self, meta, *args):
 
         _class, name, *rest = args
         extends_clause = []
@@ -546,17 +596,18 @@ class SugarTransformer(Transformer):
                     class_body = item
 
         return ClassDeclaration(
+            meta=meta,
             name=name,
             extends_clause=extends_clause,
             implements_clause=implements_clause,
             body=class_body,
         )
 
-    def class_body(self, *members):
+    def class_body(self, meta, *members):
 
         return list(members)
 
-    def class_member(self, *parts):
+    def class_member(self, meta, *parts):
 
         access_modifier = None
         is_static = False
@@ -580,17 +631,18 @@ class SugarTransformer(Transformer):
 
         return declaration
 
-    def access_modifier(self, modifier):
+    def access_modifier(self, meta, modifier):
 
-        return AccessModifier(modifier=modifier.value)
+        return AccessModifier(modifier=modifier.value, meta=meta)
 
-    def property_declaration(self, name, prop_type, *rest):
+    def property_declaration(self, meta, name, prop_type, *rest):
         logging.debug(
             f"property_declaration: name={name}, prop_type={prop_type}, rest={rest}"
         )
         value = rest[1] if len(rest) > 1 else None
         return PropertyDeclaration(
             name=name,
+            meta=meta,
             property_type=prop_type,
             value=value,
             access_modifier=None,
@@ -598,12 +650,13 @@ class SugarTransformer(Transformer):
             is_override=False,
         )
 
-    def method_declaration(self, _func, name, _lpar, *rest):
+    def method_declaration(self, meta, _func, name, _lpar, *rest):
 
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
         return_type = list(filter(lambda x: isinstance(x, Type), rest))[0]
         body = rest[-2] if len(rest) > 2 else []
         return MethodDeclaration(
+            meta=meta,
             name=name,
             parameters=parameters,
             return_type=return_type,
@@ -613,11 +666,12 @@ class SugarTransformer(Transformer):
             is_override=False,
         )
 
-    def constructor_declaration(self, _constructor, _lpar, *rest):
+    def constructor_declaration(self, meta, _constructor, _lpar, *rest):
 
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
         body = rest[-2] if len(rest) > 2 else []
         return ConstructorDeclaration(
+            meta=meta,
             parameters=parameters,
             body=list(self._filter_body_for_statements(body)),
             access_modifier=None,
@@ -625,90 +679,94 @@ class SugarTransformer(Transformer):
             is_override=False,
         )
 
-    def interface_declaration(self, _interface, name, body, _end):
+    def interface_declaration(self, meta, _interface, name, body, _end):
 
-        return InterfaceDeclaration(name=name, body=body)
+        return InterfaceDeclaration(name=name, body=body, meta=meta)
 
-    def interface_body(self, *members):
+    def interface_body(self, meta, *members):
 
         return list(members)
 
-    def interface_member(self, _func, name, _lpar, *rest):
+    def interface_member(self, meta, _func, name, _lpar, *rest):
 
         parameters = rest[0] if rest and isinstance(rest[0], list) else []
         return_type_list = list(filter(lambda x: isinstance(x, Type), rest))
-        return_type = return_type_list[0] if return_type_list else Type(name="void")
+        return_type = (
+            return_type_list[0] if return_type_list else Type(name="void", meta=meta)
+        )
         return InterfaceMethodDeclaration(
-            name=name, parameters=parameters, return_type=return_type
+            meta=meta, name=name, parameters=parameters, return_type=return_type
         )
 
-    def expression_statement(self, expression):
+    def expression_statement(self, meta, expression):
 
-        return ExpressionStatement(expression=expression)
+        return ExpressionStatement(expression=expression, meta=meta)
 
-    def array_literal(self, _lbracket, elements, _rbracket):
+    def array_literal(self, meta, _lbracket, elements, _rbracket):
         elements = list(self._filter_tokens_out(elements))
 
-        return ArrayLiteral(elements=elements or [])
+        return ArrayLiteral(elements=elements or [], meta=meta)
 
-    def map_literal(self, _lbrace, entries, _rbrace):
+    def map_literal(self, meta, _lbrace, entries, _rbrace):
 
-        return MapLiteral(entries=entries or [])
+        return MapLiteral(entries=entries or [], meta=meta)
 
-    def map_entries(self, *entries):
+    def map_entries(self, meta, *entries):
 
         entries = list(self._filter_tokens_out(entries))
         return list(entries)
 
-    def map_entry(self, key, _arrow, value):
+    def map_entry(self, meta, key, _arrow, value):
 
-        return MapEntry(key=key, value=value)
+        return MapEntry(key=key, value=value, meta=meta)
 
-    def object_literal(self, _lbrace, entries, _rbrace):
+    def object_literal(self, meta, _lbrace, entries, _rbrace):
 
-        return ObjectLiteral(entries=entries or [])
+        return ObjectLiteral(entries=entries or [], meta=meta)
 
-    def dict_entries(self, *entries):
+    def dict_entries(self, meta, *entries):
 
         entries = list(self._filter_tokens_out(entries))
         return list(entries)
 
-    def dict_entry(self, key, _colon, value):
+    def dict_entry(self, meta, key, _colon, value):
 
-        return DictEntry(key=key, value=value)
+        return DictEntry(key=key, value=value, meta=meta)
 
-    def empty_object_literal(self, *args):
+    def empty_object_literal(self, meta, *args):
 
-        return ObjectLiteral(entries=[])
+        return ObjectLiteral(entries=[], meta=meta)
 
-    def empty_list_literal(self, *args):
-        return ArrayLiteral(elements=[])
+    def empty_list_literal(self, meta, *args):
+        return ArrayLiteral(elements=[], meta=meta)
 
-    def empty_map_literal(self, *args):
-        return MapLiteral(entries=[])
+    def empty_map_literal(self, meta, *args):
+        return MapLiteral(entries=[], meta=meta)
 
-    def empty_tuple_literal(self, *args):
-        return TupleLiteral(elements=[])
+    def empty_tuple_literal(self, meta, *args):
+        return TupleLiteral(elements=[], meta=meta)
 
-    def tuple_literal(self, _lparen, *elements):
+    def tuple_literal(self, meta, _lparen, *elements):
 
         elements = list(self._filter_tokens_out(elements))
-        return TupleLiteral(elements=list(elements) or [])
+        return TupleLiteral(elements=list(elements) or [], meta=meta)
 
-    def lambda_expression(self, _func, _lpar, *rest):
+    def lambda_expression(self, meta, _func, _lpar, *rest):
         parameters = list(filter(lambda x: isinstance(x, Parameter), rest[0]))
         body = rest[-1]
 
-        return LambdaExpression(parameters=parameters or [], body=body)
+        return LambdaExpression(parameters=parameters or [], body=body, meta=meta)
 
-    def anonymous_function(self, _func, _lpar, *everythingelse):
+    def anonymous_function(self, meta, _func, _lpar, *everythingelse):
 
         parameters = list(filter(lambda x: isinstance(x, Parameter), everythingelse[0]))
         return_type = list(filter(lambda x: isinstance(x, Type), everythingelse))[0]
         body = list(self._filter_body_for_statements(everythingelse[-2]))
-        return AnonymousFunction(parameters=parameters, body=body, type=return_type)
+        return AnonymousFunction(
+            parameters=parameters, body=body, type=return_type, meta=meta
+        )
 
-    def method_call(self, _colon1, method, _colon2, _lparen, *other):
+    def method_call(self, meta, _colon1, method, _colon2, _lparen, *other):
         logging.debug(
             f"method_call: method={method}, other={other}, _lparen={_lparen}, _colon2={_colon2}, _colon_1= {_colon1}"
         )
@@ -717,44 +775,53 @@ class SugarTransformer(Transformer):
             # No arguments
             arguments = []
 
-        base = Identifier("THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION")
+        base = Identifier(
+            name="THIS SHOULD NOT SHOW UP, WE FIX IT IN POSTFIX EXPRESSION", meta=meta
+        )
 
-        return MethodCall(base=base, function_name=method, arguments=arguments)
+        return MethodCall(
+            base=base, function_name=method, arguments=arguments, meta=meta
+        )
 
-    def method_name(self, what):
+    def method_name(self, meta, what):
 
-        return self.expression(what)
+        return self.expression(meta, what)
 
-    def array_type(self, _lbracket, base_type, _rbracket):
+    def array_type(self, meta, _lbracket, base_type, _rbracket):
 
-        return ArrayType(name=f"[{base_type.name}]", base_type=base_type)
+        return ArrayType(name=f"[{base_type.name}]", base_type=base_type, meta=meta)
 
-    def map_type(self, _lbrace, key_type, _comma, value_type, _rbrace):
+    def map_type(self, meta, _lbrace, key_type, _comma, value_type, _rbrace):
 
         return MapType(
             name=f"{{{key_type.name},{value_type.name}}}",
             key_type=key_type,
             value_type=value_type,
+            meta=meta,
         )
 
-    def tuple_type(self, _lparen, *types):
+    def tuple_type(self, meta, _lparen, *types):
 
         type_list = list(self._filter_tokens_out(types))
         return TupleType(
-            name=f"({','.join([t.name for t in type_list])})", types=type_list
+            name=f"({','.join([t.name for t in type_list])})",
+            types=type_list,
+            meta=meta,
         )
 
-    def qualified_identifier(self, *parts):
+    def qualified_identifier(self, meta, *parts):
 
-        return QualifiedIdentifier(parts=list(self._filter_tokens_out(parts)))
+        return QualifiedIdentifier(
+            parts=list(self._filter_tokens_out(parts)), meta=meta
+        )
 
-    def pattern(self, *parts):
+    def pattern(self, meta, *parts):
 
         if len(parts) == 1:
             if isinstance(parts[0], Literal):
-                return LiteralPattern(literal=parts[0])
+                return LiteralPattern(literal=parts[0], meta=meta)
             elif isinstance(parts[0], Identifier):
-                return IdentifierPattern(name=parts[0])
+                return IdentifierPattern(name=parts[0], meta=meta)
             elif isinstance(parts[0], ArrayPattern):
                 return parts[0]
             elif isinstance(parts[0], ObjectPattern):
@@ -770,11 +837,11 @@ class SugarTransformer(Transformer):
             and isinstance(parts[0], Type)
             and isinstance(parts[1], Identifier)
         ):
-            return TypedIdentifierPattern(var_type=parts[0], name=parts[1])
+            return TypedIdentifierPattern(var_type=parts[0], name=parts[1], meta=meta)
         else:
             raise ValueError(f"Unsupported pattern structure: {parts}")
 
-    def dotted_name(self, *identifiers):
+    def dotted_name(self, meta, *identifiers):
 
         filttered = list(filter(lambda x: isinstance(x, Identifier), identifiers))
         return ".".join([identifier.name for identifier in filttered])
@@ -804,88 +871,103 @@ class SugarTransformer(Transformer):
 
         return main_body, elif_clauses, else_clase
 
-    def tuple_pattern(self, _lparen, patterns, _rparen):
+    def tuple_pattern(self, meta, _lparen, patterns, _rparen):
 
-        return TuplePattern(patterns=list(self._filter_tokens_out(patterns)) or [])
+        return TuplePattern(
+            patterns=list(self._filter_tokens_out(patterns)) or [], meta=meta
+        )
 
-    def object_pattern(self, _lbrace, entries, _rbrace):
+    def object_pattern(self, meta, _lbrace, entries, _rbrace):
 
-        return ObjectPattern(entries=entries or [])
+        return ObjectPattern(entries=entries or [], meta=meta)
 
-    def dict_pattern_entries(self, *entries):
-
-        return list(self._filter_tokens_out(entries))
-
-    def dict_pattern_entry(self, key, _colon, value):
-
-        return DictEntryPattern(key=key, value=value)
-
-    def map_pattern(self, _lbrace, entries, _rbrace):
-
-        return MapPattern(entries=entries or [])
-
-    def map_pattern_entries(self, *entries):
+    def dict_pattern_entries(self, meta, *entries):
 
         return list(self._filter_tokens_out(entries))
 
-    def map_pattern_entry(self, key, _arrow, value):
+    def dict_pattern_entry(self, meta, key, _colon, value):
 
-        return MapEntryPattern(key=key, value=value)
+        return DictEntryPattern(key=key, value=value, meta=meta)
 
-    def empty_object_pattern(self, *args):
+    def map_pattern(self, meta, _lbrace, entries, _rbrace):
 
-        return ObjectPattern(entries=[])
+        return MapPattern(entries=entries or [], meta=meta)
 
-    def empty_map_pattern(self, *args):
+    def map_pattern_entries(self, meta, *entries):
 
-        return MapPattern(entries=[])
+        return list(self._filter_tokens_out(entries))
 
-    def array_pattern(self, _lbracket, patterns, _rbracket):
+    def map_pattern_entry(self, meta, key, _arrow, value):
 
-        return ArrayPattern(patterns=patterns or [])
+        return MapEntryPattern(key=key, value=value, meta=meta)
 
-    def pattern_list(self, *patterns):
+    def empty_object_pattern(self, meta, *args):
+
+        return ObjectPattern(entries=[], meta=meta)
+
+    def empty_map_pattern(self, meta, *args):
+
+        return MapPattern(entries=[], meta=meta)
+
+    def array_pattern(self, meta, _lbracket, patterns, _rbracket):
+
+        return ArrayPattern(patterns=patterns or [], meta=meta)
+
+    def pattern_list(self, meta, *patterns):
 
         return list(self._filter_tokens_out(patterns))
 
-    def assignable_target(self, token, property_access=None):
+    def assignable_target(self, meta, token, property_access=None):
 
         if not property_access:
             if isinstance(token, Identifier):
                 return token
             else:
-                return Identifier(name=token.value)
+                return Identifier(name=token.value, meta=meta)
         return PropertyAccess(
-            base=Identifier(name=token.value),
-            property_name=Identifier(name=property_access.property_name.name),
+            base=Identifier(name=token.value, meta=meta),
+            property_name=Identifier(
+                name=property_access.property_name.name, meta=meta
+            ),
+            meta=meta,
         )
 
-    def target_expression(self, token, property_access=None):
+    def target_expression(self, meta, token, property_access=None):
 
-        base = token if isinstance(token, Identifier) else Identifier(name=token.value)
+        base = (
+            token
+            if isinstance(token, Identifier)
+            else Identifier(name=token.value, meta=meta)
+        )
         if not property_access:
             return base
         return PropertyAccess(
             base=base,
-            property_name=Identifier(name=property_access.property_name.name),
+            property_name=Identifier(
+                name=property_access.property_name.name, meta=meta
+            ),
+            meta=meta,
         )
 
-    def super_method_call(self, _super, _colon, name, _colon2, _lparen, *arguments):
+    def super_method_call(
+        self, meta, _super, _colon, name, _colon2, _lparen, *arguments
+    ):
 
         return MethodCall(
-            base=SuperCall(),
+            meta=meta,
+            base=SuperCall(meta=meta),
             function_name=name,
             arguments=list(self._filter_tokens_out(arguments)),
         )
 
-    def super_constructor_call(self, _super, _colon1, _lparen, *arguments):
+    def super_constructor_call(self, meta, _super, _colon1, _lparen, *arguments):
         arguments = []
         if len(arguments) == 2:
             args = list(self._filter_tokens_out(arguments[0]))
             if all(map(lambda x: isinstance(x, Expression), args)):
                 arguments = list(self._filter_tokens_out(args))
 
-        return SuperCall(arguments=arguments if arguments else None)
+        return SuperCall(arguments=arguments if arguments else None, meta=meta)
 
     def _filter_body_for_statements(self, body):
         for piece in body:
@@ -897,14 +979,6 @@ class SugarTransformer(Transformer):
 
     def _filter_tokens_out(self, lst):
         for piece in lst:
-            if isinstance(piece, Token):
+            if isinstance(piece, Token) or isinstance(piece, tree.Meta):
                 continue
             yield piece
-
-    def _transform_dict_entry_to_pattern(self, entry: DictEntry) -> DictEntryPattern:
-        return DictEntryPattern(key=entry.key, value=self.pattern(entry.value))
-
-    def _transform_map_entry_to_pattern(self, entry: MapEntry) -> MapEntryPattern:
-        return MapEntryPattern(
-            key=self.pattern(entry.key), value=self.pattern(entry.value)
-        )

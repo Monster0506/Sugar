@@ -11,6 +11,9 @@ import threading
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable
 
+from lark import tree
+
+
 if TYPE_CHECKING:
     from src.interpreter import Environment  # Only imports for type checking
 
@@ -18,7 +21,7 @@ if TYPE_CHECKING:
 # Base class for all AST nodes
 @dataclass
 class Node:
-    pass
+    meta: tree.Meta | None
 
 
 @dataclass
@@ -500,7 +503,7 @@ class End(Node):
 
 @dataclass
 class CustomType(Node):
-    declaration: TypeDeclaration
+    declaration: TypeDeclaration | None
 
 
 @dataclass

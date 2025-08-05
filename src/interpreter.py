@@ -111,9 +111,11 @@ class Interpreter:
     def __init__(self, run_path=None):
         self.environment = Environment()
         for error in base_errors:
-            self.environment.define(error, CustomType(declaration=None), SugarError)
-        self.environment.define("Task", CustomType(None), None)
-        self.environment.define("Token", CustomType(None), None)
+            self.environment.define(
+                error, CustomType(declaration=None, meta=None), SugarError
+            )
+        self.environment.define("Task", CustomType(declaration=None, meta=None), None)
+        self.environment.define("Token", CustomType(declaration=None, meta=None), None)
         self.return_value = None
         self.current_class = None
         self.run_path = run_path
@@ -321,14 +323,18 @@ class Interpreter:
 
         if isinstance(functions, SugarClass):
             instance = SugarInstance(
-                sugar_class=functions, environment=Environment(self.environment)
+                sugar_class=functions,
+                environment=Environment(self.environment),
+                meta=None,
             )
             if functions.constructor:
                 self._execute_function(functions.constructor, evaluated_args, instance)
             return instance
         elif isinstance(functions, CustomType):
             instance = SugarInstance(
-                sugar_class=functions, environment=Environment(self.environment)
+                sugar_class=functions,
+                environment=Environment(self.environment),
+                meta=None,
             )
             for field, arg in zip(functions.declaration.type_body, evaluated_args):
                 instance.environment.define(field.name.name, arg, field.field_type)
@@ -475,13 +481,15 @@ class Interpreter:
         can_use_array = isinstance(
             assumed_type, ArrayType
         ) or self.environment.type_checker.is_assignable(
-            base, ArrayType(name="[dynamic]", base_type=None)
+            base, ArrayType(name="[dynamic]", base_type=None, meta=None)
         )
 
         can_use_str = (
             (isinstance(assumed_type, Type) and assumed_type.name == "char")
             or (isinstance(assumed_type, Type) and assumed_type.name == "str")
-        ) or self.environment.type_checker.is_assignable(base, Type("str"))
+        ) or self.environment.type_checker.is_assignable(
+            base, Type(name="str", meta=None)
+        )
 
         can_use_map = isinstance(
             assumed_type, MapType
@@ -489,8 +497,9 @@ class Interpreter:
             base,
             MapType(
                 name="{dynamic, dynamic}",
-                key_type=Type("dynamic"),
-                value_type=Type("dynamic"),
+                key_type=Type(name="dynamic", meta=None),
+                value_type=Type(name="dynamic", meta=None),
+                meta=None,
             ),
         )
 
@@ -741,7 +750,7 @@ class Interpreter:
         return obj
 
     def visit_TypeDeclaration(self, node: TypeDeclaration):
-        custom_type = CustomType(declaration=node)
+        custom_type = CustomType(declaration=node, meta=None)
         self.environment.define(node.name.name, custom_type, None)
 
     def visit_ClassDeclaration(self, node: ClassDeclaration):
@@ -772,7 +781,12 @@ class Interpreter:
                 properties[member.name.name] = member
 
         sugar_class = SugarClass(
-            node.name.name, methods, properties, constructor, superclass
+            meta=None,
+            name=node.name.name,
+            methods=methods,
+            properties=properties,
+            constructor=constructor,
+            superclass=superclass,
         )
 
         if node.implements_clause:
@@ -855,7 +869,8 @@ class Interpreter:
             )
 
             constructor_args = [
-                Literal(var.value) for var in error_instance_values.values()
+                Literal(value=var.value, meta=None)
+                for var in error_instance_values.values()
             ]
             final_sugar_error = self._construct_sugarError(
                 python_base_exception_class, constructor_args
@@ -941,6 +956,7 @@ class Interpreter:
                             error_instance = SugarInstance(
                                 sugar_class=custom_error_type,
                                 environment=Environment(self.environment),
+                                meta=None,
                             )
                             message = caught.args[0] if caught.args else ""
 
@@ -954,7 +970,9 @@ class Interpreter:
                             )
                             if message_field_name:
                                 error_instance.environment.define(
-                                    message_field_name, message, Type(name="str")
+                                    message_field_name,
+                                    message,
+                                    Type(name="str", meta=None),
                                 )
 
                             self.environment.define(
