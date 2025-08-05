@@ -7,9 +7,11 @@ from src.ast_nodes import Program, PropertyDeclaration, SugarClass, SugarInstanc
 from src.interpreter import Function, Interpreter, Variable
 from src.parser import Parser
 
+
 example_path = Path("examples").resolve()
 interpreting_tests_path = (example_path / "interpreting_tests").resolve()
-type_errors_path = (example_path / "type_errors").resolve()
+errors_path = (example_path / "errors").resolve()
+type_errors_path = (errors_path / "type_errors").resolve()
 
 
 def check_variable_helper(interpreter: Interpreter, expected: dict[str, Any]) -> bool:
