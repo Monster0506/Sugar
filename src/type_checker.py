@@ -20,26 +20,25 @@ class TypeChecker:
         self.environment = environment
 
     def assert_type(self, value, expected_type):
+        if isinstance(expected_type, Type) and expected_type.name in ["any", "dynamic"]:
+            return True
 
         if isinstance(expected_type, ArrayType):
             return self._assert_array(value, expected_type)
-        elif isinstance(expected_type, MapType):
+        if isinstance(expected_type, MapType):
             return self._assert_map(value, expected_type)
-        elif isinstance(expected_type, TupleType):
+        if isinstance(expected_type, TupleType):
             return self._assert_tuple(value, expected_type)
-        elif isinstance(expected_type, Type):
+
+        if isinstance(expected_type, Type):
             # Check if it's a SugarClass type
-            if (
-                self.environment
-                and expected_type.name in self.environment.values
-                and isinstance(self.environment.values[expected_type.name], SugarClass)
-            ):
-                return self._assert_sugar_class(
-                    value, self.environment.values[expected_type.name]
-                )
+            if self.environment and expected_type.name in self.environment.values:
+                env_value = self.environment.values.get(expected_type.name)
+                if isinstance(env_value, SugarClass):
+                    return self._assert_sugar_class_instance(value, env_value)
             return self._assert_simple(value, expected_type)
-        else:
-            raise TypeError(f"Unknown type annotation: {expected_type}")
+
+        raise TypeError(f"Unknown type annotation: {expected_type}")
 
     def _assert_simple(self, value, expected_type: Type):
         if expected_type.name == "Task":
@@ -50,9 +49,6 @@ class TypeChecker:
             if not isinstance(value, CancellationToken):
                 raise TypeError(f"Expected Token, got {type(value).__name__}")
             return True
-        if expected_type.name in ["any", "dynamic"]:
-            # Accept any value for any/dynamic types
-            return True
 
         type_map = {
             "int": int,
@@ -62,19 +58,9 @@ class TypeChecker:
             "char": str,
         }
         if expected_type.name not in type_map:
-            # Check if it's a SugarClass type
-            if (
-                self.environment
-                and expected_type.name in self.environment.values
-                and isinstance(self.environment.values[expected_type.name], SugarClass)
-            ):
-                return self._assert_sugar_class(
-                    value, self.environment.values[expected_type.name]
-                )
             return self._assert_custom_type(value, expected_type)
 
         if not isinstance(value, type_map[expected_type.name]):
-
             raise TypeError(
                 f"Type mismatch: expected {expected_type.name}, got {type(value).__name__}"
             )
@@ -85,7 +71,7 @@ class TypeChecker:
         return True
 
     def _assert_array(self, value, expected_type: ArrayType):
-        if not (isinstance(value, list)):
+        if not isinstance(value, list):
             raise TypeError(f"Expected an array, but got {type(value).__name__}")
 
         if expected_type.base_type is None:
@@ -120,7 +106,7 @@ class TypeChecker:
 
         return True
 
-    def _assert_sugar_class(self, value, expected_class: SugarClass):
+    def _assert_sugar_class_instance(self, value, expected_class: SugarClass):
         if not isinstance(value, SugarInstance):
             raise TypeError(
                 f"Expected an instance of {expected_class.name}, but got {type(value).__name__}"
@@ -138,7 +124,7 @@ class TypeChecker:
                 self.assert_type(prop_value, prop_decl.property_type)
             except NameError:
                 raise TypeError(
-                    f"Missing property '{prop_name}' in instance of {expected_class.name}"
+                    f"Missing property ''{prop_name}'' in instance of {expected_class.name}"
                 )
 
         return True
@@ -154,7 +140,7 @@ class TypeChecker:
             type_def = base_errors[expected_type.name]
 
         if isinstance(type_def, SugarClass):
-            return self._assert_sugar_class(value, type_def)
+            return self._assert_sugar_class_instance(value, type_def)
         if isinstance(type_def, SugarError):
             if isinstance(value, Exception) or hasattr(value, "base_class"):
                 return True
@@ -200,7 +186,7 @@ class TypeChecker:
             field_name = field_def.name.name
             if field_name not in value_dict:
                 raise TypeError(
-                    f"Missing field '{field_name}' in object of type {expected_type.name}"
+                    f"Missing field ''{field_name}'' in object of type {expected_type.name}"
                 )
             self.assert_type(value_dict[field_name], field_def.field_type)
 
@@ -253,11 +239,9 @@ class TypeChecker:
 
             # Try to find a common base type for all elements
             first_element_type = self.get_runtime_type(value[0])
-            all_same_type = True
-            for item in value:
-                if not self.is_assignable(item, first_element_type):
-                    all_same_type = False
-                    break
+            all_same_type = all(
+                self.is_assignable(item, first_element_type) for item in value
+            )
 
             if all_same_type:
                 return ArrayType(
