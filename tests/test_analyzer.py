@@ -9,7 +9,6 @@ from src.static_analysis import (
     UndefinedSymbolError,
 )
 
-
 example_path = Path("examples").resolve()
 errors_path = (example_path / "errors").resolve()
 static_errors_path = (errors_path / "static_errors").resolve()
@@ -24,7 +23,7 @@ def test_variable_declaration():
 
 
 def test_mismatch_type_variable_declaration():
-    with open(f"{static_errors_path}/02_bad_variable_declaration.sugar", "r") as f:
+    with open(f"{static_errors_path}/02_BAD_variable_declaration.sugar", "r") as f:
         code = f.read()
     ast = parse_to_ast(code)
     analyzer = StaticAnalyzer()
@@ -41,7 +40,7 @@ def test_variable_assignment():
 
 
 def test_mismatch_type_variable_assignment():
-    with open(f"{static_errors_path}/04_bad_variable_assignment.sugar", "r") as f:
+    with open(f"{static_errors_path}/04_BAD_variable_assignment.sugar", "r") as f:
         code = f.read()
     ast = parse_to_ast(code)
     analyzer = StaticAnalyzer()
@@ -51,7 +50,7 @@ def test_mismatch_type_variable_assignment():
 
 def test_redeclare_existing_variable():
     with open(
-        f"{static_errors_path}/05_bad_redeclare_existing_variable.sugar", "r"
+        f"{static_errors_path}/05_BAD_redeclare_existing_variable.sugar", "r"
     ) as f:
         code = f.read()
     ast = parse_to_ast(code)
@@ -61,9 +60,17 @@ def test_redeclare_existing_variable():
 
 
 def test_assign_to_undefined_variable():
-    with open(f"{static_errors_path}/06_bad_assign_undefined_variable.sugar", "r") as f:
+    with open(f"{static_errors_path}/06_BAD_assign_undefined_variable.sugar", "r") as f:
         code = f.read()
     ast = parse_to_ast(code)
     analyzer = StaticAnalyzer()
     with raises(UndefinedSymbolError):
+        analyzer.analyze(ast)
+
+
+def test_function_declaration():
+    with open(f"{static_errors_path}/07_function_declaration.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
         analyzer.analyze(ast)
