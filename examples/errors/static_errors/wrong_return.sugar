@@ -1,0 +1,6 @@
+FUNC my_func() #str
+    RETURN 123
+end
+
+DEF my_var #int = "hello"
+

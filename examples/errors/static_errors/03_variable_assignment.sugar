@@ -1,0 +1,2 @@
+DEF my_var #int = 10
+my_var := 5
