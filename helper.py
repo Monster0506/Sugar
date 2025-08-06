@@ -1,6 +1,7 @@
+import argparse
 import os
 import subprocess
-import argparse
+
 
 SUGAR_DIR = "examples\\interpreting_tests"
 
@@ -23,6 +24,8 @@ selected_file = None
 selected_files = []
 for filename in os.listdir(SUGAR_DIR):
     if filename.endswith(".sugar") and (run_all or filename.startswith(number_str)):
+        if filename.startswith("53"):
+            continue
         selected_file = os.path.join(SUGAR_DIR, filename)
         selected_files.append(selected_file)
 

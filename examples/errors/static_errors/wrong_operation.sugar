@@ -1,1 +1,2 @@
+DEF other_var #bool = :T:
 DEF another_var #bool = other_var + 1
