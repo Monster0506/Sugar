@@ -1,0 +1,7 @@
+FUNC a() #int
+    RETURN 1
+end
+
+FUNC a(b #int) #int
+    RETURN 1
+end
