@@ -1,0 +1,60 @@
+from pathlib import Path
+
+from pytest import raises
+
+from src.parser import parse_to_ast
+from src.static_analysis import (
+    AlreadyDefinedSymbolError,
+    StaticAnalyzer,
+    UndefinedSymbolError,
+)
+
+
+example_path = Path("examples").resolve()
+errors_path = (example_path / "errors").resolve()
+static_errors_path = (errors_path / "static_errors").resolve()
+
+
+def test_variable_declaration():
+    with open(f"{static_errors_path}/01_variable_declaration.sugar", "r") as f:
+        code = f.read()
+    ast = parse_to_ast(code)
+    analyzer = StaticAnalyzer()
+    analyzer.analyze(ast)
+
+
+def test_mismatch_type_variable_declaration():
+    with open(f"{static_errors_path}/02_bad_variable_declaration.sugar", "r") as f:
+        code = f.read()
+    ast = parse_to_ast(code)
+    analyzer = StaticAnalyzer()
+    with raises(TypeError):
+        analyzer.analyze(ast)
+
+
+def test_variable_assignment():
+    with open(f"{static_errors_path}/03_variable_assignment.sugar", "r") as f:
+        code = f.read()
+    ast = parse_to_ast(code)
+    analyzer = StaticAnalyzer()
+    analyzer.analyze(ast)
+
+
+def test_mismatch_type_variable_assignment():
+    with open(f"{static_errors_path}/04_bad_variable_assignment.sugar", "r") as f:
+        code = f.read()
+    ast = parse_to_ast(code)
+    analyzer = StaticAnalyzer()
+    with raises(TypeError):
+        analyzer.analyze(ast)
+
+
+def test_redeclare_existing_variable():
+    with open(
+        f"{static_errors_path}/05_bad_redeclare_existing_variable.sugar", "r"
+    ) as f:
+        code = f.read()
+    ast = parse_to_ast(code)
+    analyzer = StaticAnalyzer()
+    with raises(AlreadyDefinedSymbolError):
+        analyzer.analyze(ast)
