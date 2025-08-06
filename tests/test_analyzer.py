@@ -58,3 +58,12 @@ def test_redeclare_existing_variable():
     analyzer = StaticAnalyzer()
     with raises(AlreadyDefinedSymbolError):
         analyzer.analyze(ast)
+
+
+def test_assign_to_undefined_variable():
+    with open(f"{static_errors_path}/06_bad_assign_undefined_variable.sugar", "r") as f:
+        code = f.read()
+    ast = parse_to_ast(code)
+    analyzer = StaticAnalyzer()
+    with raises(UndefinedSymbolError):
+        analyzer.analyze(ast)
