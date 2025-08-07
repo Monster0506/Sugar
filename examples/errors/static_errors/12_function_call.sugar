@@ -1,0 +1,7 @@
+FUNC main() #int
+    RETURN 123
+end
+
+main()
+
+

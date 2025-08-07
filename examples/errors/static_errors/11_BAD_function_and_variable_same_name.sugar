@@ -1,0 +1,4 @@
+DEF my_thingy #int = 10
+FUNC my_thingy() #int 
+    RETURN 1
+end

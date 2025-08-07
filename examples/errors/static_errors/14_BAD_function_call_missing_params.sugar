@@ -1,0 +1,5 @@
+FUNC main(x #int) #int
+    RETURN 123
+end
+
+main()
