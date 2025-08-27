@@ -1,0 +1,4 @@
+// Invalid map type declarations - should fail
+DEF int_map #{#str, #int} = {"a" -> "one", "b" -> "two"}  // Error: string value in int map
+DEF str_map #{#int, #str} = {"one" -> 1, "two" -> 2}      // Error: string key in int key map
+DEF bool_map #{#str, #bool} = {"active" -> 1, "enabled" -> 0}  // Error: int value in bool map

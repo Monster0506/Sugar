@@ -1,0 +1,5 @@
+// Valid map type declarations
+DEF int_map #{#str, #int} = {"a" -> 1, "b" -> 2, "c" -> 3}
+DEF str_map #{#int, #str} = {1 -> "one", 2 -> "two", 3 -> "three"}
+DEF bool_map #{#str, #bool} = {"active" -> :T:, "enabled" -> :F:}
+DEF any_map #{#any, #any} = {"key" -> "value", 42 -> :T:}

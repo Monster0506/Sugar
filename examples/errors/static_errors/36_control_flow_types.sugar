@@ -1,0 +1,17 @@
+// Valid control flow with proper types
+DEF condition #bool = :T:
+DEF counter #int = 0
+DEF message #str = "hello"
+
+if $ condition $ do
+    counter := counter + 1
+    message := message + " world"
+end
+
+while $ counter < 5 $ do
+    counter := counter + 1
+end
+
+for $ i #int in [1, 2, 3, 4, 5] $ do
+    counter := counter + i
+end

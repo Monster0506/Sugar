@@ -1,0 +1,5 @@
+// Valid tuple type declarations
+DEF int_tuple #(#int, #int) = (1, 2)
+DEF mixed_tuple #(#str, #int, #bool) = ("hello", 42, :T:)
+DEF nested_tuple #(#(#int, #int), #str) = ((1, 2), "nested")
+DEF any_tuple #(#any, #any) = (1, "hello")

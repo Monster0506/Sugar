@@ -1,0 +1,11 @@
+// Invalid control flow with type mismatches - should fail
+DEF condition #int = 42  // Error: int used as boolean condition
+DEF counter #str = "hello"  // Error: string used in arithmetic
+
+if $ condition $ do  // Error: int condition in if statement
+    counter := counter + 1
+end
+
+while $ counter < 5 $ do  // Error: string comparison in while
+    counter := counter + 1
+end

@@ -1,0 +1,15 @@
+// Invalid expression types - should fail
+DEF a #int = 5
+DEF b #str = "hello"
+
+// Error: string + int
+DEF c #str = b + a
+
+// Error: int + string  
+DEF d #int = a + b
+
+// Error: string comparison with int
+DEF e #bool = b > a
+
+// Error: boolean arithmetic
+DEF f #int = :T: + :F:

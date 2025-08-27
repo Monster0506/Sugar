@@ -1,0 +1,5 @@
+// Valid array type declarations
+DEF int_array #[#int] = [1, 2, 3, 4, 5]
+DEF str_array #[#str] = ["hello", "world"]
+DEF bool_array #[#bool] = [:T:, :F:, :T:]
+DEF mixed_array #[#any] = [1, "hello", :T:, 3.14]

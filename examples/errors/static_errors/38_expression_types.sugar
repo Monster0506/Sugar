@@ -1,0 +1,10 @@
+// Valid expression types
+DEF a #int = 5
+DEF b #int = 3
+DEF c #int = a + b
+DEF d #int = a * b
+DEF e #bool = a > b
+DEF f #bool = a == b
+DEF g #str = "hello" + " world"
+DEF h #bool = :T: && :F:
+DEF i #bool = :T: || :F:

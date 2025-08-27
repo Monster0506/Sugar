@@ -1,0 +1,4 @@
+// Invalid tuple type declarations - should fail
+DEF int_tuple #(#int, #int) = ("hello", "world")  // Error: string values in int tuple
+DEF mixed_tuple #(#str, #int, #bool) = (1, 2, 3)  // Error: int values in mixed tuple
+DEF nested_tuple #(#(#int, #int), #str) = ("not_tuple", "string")  // Error: wrong nested structure

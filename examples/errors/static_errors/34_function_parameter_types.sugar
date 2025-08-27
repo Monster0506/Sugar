@@ -1,0 +1,16 @@
+// Valid function parameter type declarations
+FUNC process_int(value #int) #int
+    RETURN value * 2
+end
+
+FUNC process_string(text #str, count #int) #str
+    RETURN text
+end
+
+FUNC process_array(arr #[#int]) #int
+    RETURN 42
+end
+
+FUNC process_map(map #{#str, #int}) #int
+    RETURN 42
+end

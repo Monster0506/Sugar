@@ -198,3 +198,105 @@ def test_bad_null_type_invalid_assignment():
         analyzer = StaticAnalyzer()
         with raises(TypeCheckingError):
             analyzer.analyze(ast)
+
+
+def test_array_type_declaration():
+    with open(f"{static_errors_path}/28_array_type_declaration.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_array_type_mismatch():
+    with open(f"{static_errors_path}/29_BAD_array_type_mismatch.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)
+
+
+def test_map_type_declaration():
+    with open(f"{static_errors_path}/30_map_type_declaration.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_map_type_mismatch():
+    with open(f"{static_errors_path}/31_BAD_map_type_mismatch.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)
+
+
+def test_tuple_type_declaration():
+    with open(f"{static_errors_path}/32_tuple_type_declaration.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_tuple_type_mismatch():
+    with open(f"{static_errors_path}/33_BAD_tuple_type_mismatch.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)
+
+
+def test_function_parameter_types():
+    with open(f"{static_errors_path}/34_function_parameter_types.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_function_parameter_mismatch():
+    with open(f"{static_errors_path}/35_BAD_function_parameter_mismatch.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)
+
+
+def test_control_flow_types():
+    with open(f"{static_errors_path}/36_control_flow_types.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_control_flow_type_mismatch():
+    with open(f"{static_errors_path}/37_BAD_control_flow_type_mismatch.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)
+
+
+def test_expression_types():
+    with open(f"{static_errors_path}/38_expression_types.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_expression_type_mismatch():
+    with open(f"{static_errors_path}/39_BAD_expression_type_mismatch.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)

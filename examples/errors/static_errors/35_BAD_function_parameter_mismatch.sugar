@@ -1,0 +1,14 @@
+// Invalid function parameter type usage - should fail
+FUNC process_int(value #int) #int
+    RETURN value * 2
+end
+
+// Error: calling function with wrong parameter type
+DEF result #int = process_int("hello")
+
+FUNC process_string(text #str) #str
+    RETURN text
+end
+
+// Error: calling function with wrong parameter type
+DEF result #str = process_string(42)
