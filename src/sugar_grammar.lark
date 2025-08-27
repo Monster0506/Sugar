@@ -221,7 +221,7 @@ type: HASH type_specifier
 
 type_specifier: PRIMITIVE_TYPE | array_type | map_type | tuple_type | custom_type
 
-PRIMITIVE_TYPE: "int" | "float" | "bool" | "char" | "str" | "void" | "any"
+PRIMITIVE_TYPE: "int" | "float" | "bool" | "char" | "str" | "void" | "any" | "null"
 array_type: LBRACKET type RBRACKET
 map_type: LBRACE type COMMA type RBRACE
 tuple_type: LPAR type (COMMA type)+ RPAR
@@ -238,6 +238,7 @@ ELSE_IF: "elif"
 END: "end"
 TRUE: ":T:"
 FALSE: ":F:"
+NULL: ":N:"
 PUBLIC: "PUBLIC"
 PRIVATE: "PRIVATE"
 PROTECTED: "PROTECTED"
@@ -312,8 +313,8 @@ CHAR: /'(\\.|[^'\\])'/
 // 5. Generic Identifier (MUST be last for alphanumeric tokens)
 IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
 
-// 6. Boolean Literals (Using the TRUE/FALSE tokens defined above)
-BOOLEAN: TRUE | FALSE
+// 6. Boolean and Null Literals (Using the TRUE/FALSE/NULL tokens defined above)
+BOOLEAN: TRUE | FALSE | NULL
 
 // 7. Comments and Whitespace (Ignored tokens, can be anywhere but often grouped)
 COMMENT: "//" /.*/

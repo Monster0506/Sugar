@@ -1,0 +1,9 @@
+// These null usages in functions are now valid - null represents optional values
+FUNC strict_int_func(value #int) #int
+    RETURN value + 1
+end
+
+// Function that can return null (representing optional result)
+FUNC get_optional_int() #int
+    RETURN :N:  // Return null to indicate no value available
+end

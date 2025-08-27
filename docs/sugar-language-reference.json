@@ -63,6 +63,12 @@
               "examples": ["DEF true_val #bool = :T:", "DEF false_val #bool = :F:"]
             },
             {
+              "name": "#null",
+              "description": "Null value (absence of value)",
+              "literals": [":N:"],
+              "examples": ["DEF null_val #null = :N:", "DEF optional_str #str = :N:"]
+            },
+            {
               "name": "#char",
               "description": "Single character",
               "examples": ["DEF letter #char = 'A'", "DEF digit #char = '5'"]

@@ -370,7 +370,14 @@ class SugarTransformer(Transformer):
 
     def BOOLEAN(self, token):
 
-        return Literal(value=True if token.value == ":T:" else False, meta=None)
+        if token.value == ":T:":
+            return Literal(value=True, meta=None)
+        elif token.value == ":F:":
+            return Literal(value=False, meta=None)
+        elif token.value == ":N:":
+            return Literal(value=None, meta=None)
+        else:
+            raise ValueError(f"Unknown boolean/null literal: {token.value}")
 
     def IDENTIFIER(self, token):
 

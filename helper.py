@@ -39,7 +39,7 @@ for selected_file in selected_files:
 
     print(f"Processing {selected_file}...")
     result = subprocess.run(
-        f"sugar {selected_file}", shell=True, capture_output=True, text=True
+        f"sugar {selected_file} -s", shell=True, capture_output=True, text=True
     )
     out = result.stdout.strip().lower()
     if (

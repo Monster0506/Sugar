@@ -1,0 +1,5 @@
+// These null assignments are now valid - null can represent "not yet full" for any type
+DEF null_var #null = :N:
+DEF str_var #str = :N:      // String that's not yet full
+DEF int_var #int = :N:      // Integer that's not yet full  
+DEF bool_var #bool = :N:    // Boolean that's not yet full

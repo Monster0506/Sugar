@@ -1,0 +1,11 @@
+FUNC test_null_param(value #null) #str
+    RETURN "processed null"
+end
+
+FUNC get_null() #null
+    RETURN :N:
+end
+
+FUNC handle_optional(value #str) #str
+    RETURN "default value"
+end

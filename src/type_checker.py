@@ -1,15 +1,6 @@
-from src.ast_nodes import (
-    ArrayType,
-    CancellationToken,
-    CustomType,
-    MapType,
-    SugarClass,
-    SugarError,
-    SugarInstance,
-    SugarTask,
-    TupleType,
-    Type,
-)
+from src.ast_nodes import (ArrayType, CancellationToken, CustomType, MapType,
+                           SugarClass, SugarError, SugarInstance, SugarTask,
+                           TupleType, Type)
 from src.builtin_functions import base_errors
 from src.utils import debug_class_wrapper
 
@@ -20,6 +11,10 @@ class TypeChecker:
         self.environment = environment
 
     def assert_type(self, value, expected_type):
+        # Handle null values - they can be assigned to any type
+        if value is None:
+            return True
+
         if isinstance(expected_type, Type) and expected_type.name in ["any", "dynamic"]:
             return True
 
@@ -56,11 +51,17 @@ class TypeChecker:
             "str": str,
             "bool": bool,
             "char": str,
+            "null": type(None),
         }
         if expected_type.name not in type_map:
             return self._assert_custom_type(value, expected_type)
 
-        if not isinstance(value, type_map[expected_type.name]):
+        if expected_type.name == "null":
+            if value is not None:
+                raise TypeError(
+                    f"Type mismatch: expected null, got {type(value).__name__}"
+                )
+        elif not isinstance(value, type_map[expected_type.name]):
             raise TypeError(
                 f"Type mismatch: expected {expected_type.name}, got {type(value).__name__}"
             )
@@ -195,6 +196,10 @@ class TypeChecker:
     def is_assignable(self, value, target_type: Type):
         # Handle any/dynamic types - they accept any value
         if isinstance(target_type, Type) and target_type.name in ["any", "dynamic"]:
+            return True
+
+        # Handle null values - they can be assigned to any type
+        if value is None:
             return True
 
         if isinstance(value, list):

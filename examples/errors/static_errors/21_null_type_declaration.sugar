@@ -1,0 +1,4 @@
+DEF null_val #null = :N:
+DEF optional_str #str = :N:
+DEF optional_int #int = :N:
+DEF optional_bool #bool = :N:

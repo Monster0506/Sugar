@@ -1,0 +1,5 @@
+// This should fail - cannot assign non-null values to null type variables
+DEF null_var #null = :N:
+null_var := "hello"    // Error: cannot assign string to null type
+null_var := 42         // Error: cannot assign int to null type
+null_var := :T:        // Error: cannot assign bool to null type

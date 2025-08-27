@@ -1,0 +1,11 @@
+DEF a #int = 1
+DEF b #float = 2.5
+DEF c #bool = :T:
+DEF d #char = 'A'
+DEF e #str = "hello" 
+
+a := 2
+b := 3.5
+c := :F:
+d := 'B'
+e := "world"

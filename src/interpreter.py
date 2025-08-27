@@ -222,6 +222,11 @@ class Interpreter:
             right = right.args[0]
 
         if node.operator == "+":
+            # Handle null values in string concatenation
+            if left is None:
+                left = "null"
+            if right is None:
+                right = "null"
             return left + right
         elif node.operator == "-":
             return left - right

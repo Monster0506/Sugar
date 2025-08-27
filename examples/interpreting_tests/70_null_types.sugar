@@ -1,0 +1,9 @@
+DEF null_val #null = :N:
+DEF optional_str #str = :N:      // String that's not yet full
+DEF optional_int #int = :N:      // Integer that's not yet full  
+DEF optional_bool #bool = :N:    // Boolean that's not yet full
+
+// Later we can assign actual values
+optional_str := "hello world"
+optional_int := 42
+optional_bool := :T:

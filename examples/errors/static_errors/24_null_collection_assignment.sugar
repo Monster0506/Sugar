@@ -1,0 +1,9 @@
+// These null assignments in collections are now valid - null represents optional values
+DEF str_array #[#str] = ["hello", "world"]
+DEF int_map #{#str, #int} = {"a" -> 1, "b" -> 2}
+DEF int_tuple #(#int, #int) = (1, 2)
+
+// Later assignments with null values (representing optional/not yet full values)
+str_array := [:N:, "test"]      // Array with optional string
+int_map := {"c" -> :N:}        // Map with optional integer
+int_tuple := (3, :N:)          // Tuple with optional integer

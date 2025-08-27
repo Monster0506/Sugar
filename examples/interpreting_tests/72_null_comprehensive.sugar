@@ -1,0 +1,86 @@
+// Comprehensive Null Type Tests
+
+// Basic null literals and assignments
+DEF null_val #null = :N:
+DEF optional_str #str = :N:
+DEF optional_int #int = :N:
+DEF optional_bool #bool = :N:
+
+// Null assignments to different types
+optional_str := "hello"
+optional_str := :N:
+optional_int := 42
+optional_int := :N:
+optional_bool := :T:
+optional_bool := :N:
+
+// Null in arrays
+DEF null_array #[#null] = [:N:, :N:, :N:]
+DEF mixed_array #[#str] = ["hello", :N:, "world"]
+DEF int_array #[#int] = [1, :N:, 3, :N:, 5]
+
+// Null in maps
+DEF null_map #{#str, #null} = {
+    "key1" -> :N:,
+    "key2" -> :N:
+}
+DEF mixed_map #{#str, #int} = {
+    "a" -> 1,
+    "b" -> :N:,
+    "c" -> 3
+}
+
+// Null in tuples
+DEF null_tuple #(#str, #null, #int) = ("hello", :N:, 42)
+DEF mixed_tuple #(#bool, #null, #str) = (:T:, :N:, "test")
+
+// Function with null parameter and return
+FUNC process_null(value #null) #str
+    RETURN "processed null"
+end
+
+FUNC get_null() #null
+    RETURN :N:
+end
+
+FUNC handle_optional(value #str) #str
+    if $ value == :N: $ do
+        RETURN "default value"
+    else do
+        RETURN "custom value: " + value
+    end
+end
+
+// Test function calls
+DEF result1 #str = process_null(:N:)
+DEF result2 #null = get_null()
+DEF result3 #str = handle_optional(:N:)
+DEF result4 #str = handle_optional("hello")
+
+// Null comparisons
+DEF test1 #bool = :N: == :N:
+DEF test2 #bool = :N: != "hello"
+DEF test3 #bool = "hello" != :N:
+DEF test4 #bool = :N: == null_val
+
+// Null in expressions
+DEF str1 #str = "hello" + :N:
+DEF str2 #str = :N: + "world"
+DEF str3 #str = "test" + :N: + "value"
+
+// Boolean operations with null
+DEF bool1 #bool = :T: && :N:
+DEF bool2 #bool = :F: || :N:
+DEF bool3 #bool = !:N:
+
+// Array operations with null
+DEF arr1 #[#str] = ["a", "b", "c"]
+DEF arr2 #[#str] = [:N:, "b", :N:]
+DEF arr3 #[#str] = arr1 + arr2
+
+// Map operations with null
+DEF map1 #{#str, #int} = {"a" -> 1, "b" -> 2}
+DEF map2 #{#str, #int} = {"a" -> :N:, "b" -> :N:}
+
+// Test all functionality
+DEF final_test #str = "All null tests passed!"

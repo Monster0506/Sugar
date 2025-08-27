@@ -3,6 +3,7 @@ from typing import Any
 
 from src.ast_nodes import (
     Expression,
+    ExpressionStatement,
     FunctionDeclaration,
     Identifier,
     Literal,
@@ -132,18 +133,31 @@ class StaticAnalyzer:
             return Type(meta=None, name="bool")
         if isinstance(item, int):
             return Type(meta=None, name="int")
+        if isinstance(item, float):
+            return Type(meta=None, name="float")
         if isinstance(item, str):
             return Type(meta=None, name="str")
-        if isinstance(item, float):
-            return Type(meta=None, name="bool")
+        if item is None:
+            return Type(meta=None, name="null")
         tchecker = TypeChecker()
         return tchecker.get_runtime_type(item)
 
     def _is_assignable(self, item1: Type | Any, item2: Type | Any):
         if isinstance(item1, Type) and isinstance(item2, Type):
+            # Null values can be assigned to any type (represents optional/not yet full)
             if item1.name == "null":
                 return True
+            # But non-null values cannot be assigned to null type
+            if item2.name == "null":
+                return item1.name == "null"
+            if item1.name == "char" and item2.name == "str":
+                return True
+            if item2.name == "char" and item1.name == "str":
+                return True
             return item1.name == item2.name
+        
+        # For now, use the type checker for complex type comparisons
+        # This will handle arrays, maps, tuples, etc.
         tchecker = TypeChecker()
         return tchecker.is_assignable(item1, item2)
 
@@ -155,6 +169,9 @@ class StaticAnalyzer:
     def analyze(self, node: Program):
         for statement in node.statements:
             self.visit(statement)
+
+    def visit_ExpressionStatement(self, node: ExpressionStatement):
+        pass
 
     def generic_visit(self, node: Node):
         raise NotImplementedError(f"Generic visit to node {node}")
@@ -212,8 +229,9 @@ class StaticAnalyzer:
         for statement in node.body:
             if isinstance(statement, ReturnStatement):
                 return_statement = statement
-                continue
-            self.visit(statement)
+            else:
+                # Visit the statement and check if it contains return statements
+                self.visit(statement)
 
         if node.return_type is None:
             return_type = Type(meta=None, name="void")
@@ -288,3 +306,69 @@ class StaticAnalyzer:
                             )
 
         self.symbol_table[identifier] = information
+
+    def visit_IfStatement(self, node):
+        # Visit the condition
+        self.visit(node.condition)
+        # Visit the body statements
+        for statement in node.body:
+            self.visit(statement)
+        # Visit elif clauses
+        for elif_clause in node.elif_clauses:
+            self.visit(elif_clause)
+        # Visit else clause
+        if node.else_clause:
+            self.visit(node.else_clause)
+
+    def visit_ElifClause(self, node):
+        # Visit the condition
+        self.visit(node.condition)
+        # Visit the body statements
+        for statement in node.body:
+            self.visit(statement)
+
+    def visit_ElseClause(self, node):
+        # Visit the body statements
+        for statement in node.body:
+            self.visit(statement)
+
+    def visit_ReturnStatement(self, node):
+        # Visit the return value if it exists
+        if node.value:
+            self.visit(node.value)
+
+    def visit_EqualityExpression(self, node):
+        # Visit left and right operands
+        self.visit(node.left)
+        self.visit(node.right)
+
+    def visit_AdditiveExpression(self, node):
+        # Visit left and right operands
+        self.visit(node.left)
+        self.visit(node.right)
+
+    def visit_Identifier(self, node):
+        # Identifiers don't need special handling for static analysis
+        pass
+
+    def visit_Literal(self, node):
+        # Literals don't need special handling for static analysis
+        pass
+
+    def visit_ArrayLiteral(self, node):
+        # Visit all elements in the array
+        if node.elements:
+            for element in node.elements:
+                self.visit(element)
+
+    def visit_MapLiteral(self, node):
+        # Visit all entries in the map
+        if node.entries:
+            for entry in node.entries:
+                self.visit(entry)
+
+    def visit_TupleLiteral(self, node):
+        # Visit all elements in the tuple
+        if node.elements:
+            for element in node.elements:
+                self.visit(element)

@@ -132,3 +132,69 @@ def test_assignment_from_function_call():
         ast = parse_to_ast(code)
         analyzer = StaticAnalyzer()
         analyzer.analyze(ast)
+
+
+def test_assigning_all_variable_types():
+
+    with open(f"{static_errors_path}/20_all_variable_types.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_null_type_declaration():
+    with open(f"{static_errors_path}/21_null_type_declaration.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_null_type_assignment():
+    with open(f"{static_errors_path}/22_null_type_assignment.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_null_in_collections():
+    with open(f"{static_errors_path}/23_null_in_collections.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_null_collection_assignment():
+    with open(f"{static_errors_path}/24_null_collection_assignment.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_null_function_parameters():
+    with open(f"{static_errors_path}/25_null_function_parameters.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_null_function_usage():
+    with open(f"{static_errors_path}/26_null_function_usage.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        analyzer.analyze(ast)
+
+
+def test_bad_null_type_invalid_assignment():
+    with open(f"{static_errors_path}/27_BAD_null_type_invalid_assignment.sugar", "r") as f:
+        code = f.read()
+        ast = parse_to_ast(code)
+        analyzer = StaticAnalyzer()
+        with raises(TypeCheckingError):
+            analyzer.analyze(ast)

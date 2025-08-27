@@ -1,0 +1,41 @@
+// Null Type Edge Cases and Error Tests
+
+// Null in conditional expressions
+DEF condition #bool = :T:
+if $ condition $ do
+    DEF result #str = "not null"
+else do
+    DEF result #str = :N:
+end
+
+// Null in string concatenation (should work)
+DEF str1 #str = "hello" + :N:
+DEF str2 #str = :N: + "world"
+
+// Null in boolean operations
+DEF bool1 #bool = :T: && :N:
+DEF bool2 #bool = :F: || :N:
+
+// Null in arrays
+DEF arr1 #[#str] = ["a", "b", "c"]
+DEF arr2 #[#str] = [:N:, "b", :N:]
+
+// Null in maps
+DEF map1 #{#str, #int} = {"a" -> 1, "b" -> 2}
+DEF map2 #{#str, #int} = {"a" -> :N:, "b" -> :N:}
+
+// Null in tuples
+DEF tuple1 #(#str, #null, #int) = ("hello", :N:, 42)
+
+// Function with null parameter
+FUNC test_null_param(value #str) #str
+    if $ value == :N: $ do
+        RETURN "is null"
+    else do
+        RETURN "not null"
+    end
+end
+
+// Test function calls with null
+DEF test1 #str = test_null_param(:N:)
+DEF test2 #str = test_null_param("hello")
