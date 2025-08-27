@@ -7,6 +7,7 @@ from src.static_analysis import (
     AlreadyDefinedSymbolError,
     DuplicateFunctionOverloadError,
     StaticAnalyzer,
+    TypeCheckingError,
     UndefinedSymbolError,
 )
 
@@ -29,7 +30,7 @@ def test_mismatch_type_variable_declaration():
         code = f.read()
     ast = parse_to_ast(code)
     analyzer = StaticAnalyzer()
-    with raises(TypeError):
+    with raises(TypeCheckingError):
         analyzer.analyze(ast)
 
 
@@ -46,7 +47,7 @@ def test_mismatch_type_variable_assignment():
         code = f.read()
     ast = parse_to_ast(code)
     analyzer = StaticAnalyzer()
-    with raises(TypeError):
+    with raises(TypeCheckingError):
         analyzer.analyze(ast)
 
 
@@ -91,7 +92,7 @@ def test_function_return_type_mismatch():
         code = f.read()
         ast = parse_to_ast(code)
         analyzer = StaticAnalyzer()
-        with raises(TypeError):
+        with raises(TypeCheckingError):
             analyzer.analyze(ast)
 
 

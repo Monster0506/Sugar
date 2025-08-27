@@ -4,10 +4,12 @@ from pathlib import Path
 from typing import NoReturn
 
 from lark.exceptions import LarkError
+from lark.tree import Meta
 
 from src.error import ErrorReporter
 from src.interpreter import Interpreter
 from src.parser import parse_to_ast
+from src.static_analysis import StaticAnalyzer, StaticError
 
 
 def setup_logging(verbose: bool) -> None:
@@ -16,7 +18,11 @@ def setup_logging(verbose: bool) -> None:
     logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
 
 
-def run_file(file_path: Path, interpreter: Interpreter) -> None:
+def run_file(
+    file_path: Path,
+    interpreter: Interpreter,
+    static_analyzer: StaticAnalyzer | None = None,
+) -> None:
     """Reads, parses, and interprets a single Sugar file."""
     logging.info(f"Executing file: {file_path}")
     try:
@@ -24,12 +30,17 @@ def run_file(file_path: Path, interpreter: Interpreter) -> None:
             code = f.read()
         error_reporter = ErrorReporter(code, str(file_path))
         ast = parse_to_ast(code)
+        if static_analyzer:
+            static_analyzer.analyze(ast)
         interpreter.interpret(ast)
     except FileNotFoundError:
         logging.error(f"Error: File not found at '{file_path}'")
         exit(1)
     except LarkError as e:
         error_reporter.report_syntactic(e)
+        exit(1)
+    except StaticError as e:
+        error_reporter.report_static(e)
         exit(1)
     except Exception as e:
         logging.error(f"\nRuntime Error in '{file_path}':\n{e}")
@@ -46,14 +57,18 @@ def main() -> NoReturn:
     arg_parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose debug logging."
     )
+    arg_parser.add_argument(
+        "-s", "--static", action="store_true", help="Use the BETA static analyzer"
+    )
     args = arg_parser.parse_args()
 
     setup_logging(args.verbose)
 
     file_path = Path(args.file)
     interpreter = Interpreter(file_path)
+    static_analyzer = StaticAnalyzer() if args.static else None
 
-    run_file(file_path, interpreter)
+    run_file(file_path, interpreter, static_analyzer)
 
     exit(0)
 

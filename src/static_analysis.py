@@ -7,6 +7,7 @@ from src.ast_nodes import (
     Identifier,
     Literal,
     Node,
+    Parameter,
     Program,
     ReturnStatement,
     Type,
@@ -26,28 +27,44 @@ class Variable:
 class Function:
     return_type: Type
     name: str
+    parameters: list[Parameter]
 
 
 class Fail:
     pass
 
 
-class UndefinedSymbolError(Exception):
+class StaticError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
 
-class InvalidReturnError(Exception):
+class UndefinedSymbolError(StaticError):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
 
-class AlreadyDefinedSymbolError(Exception):
+class InvalidReturnError(StaticError):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
 
-class AnalyzerError(Exception):
+class DuplicateFunctionOverloadError(StaticError):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class AlreadyDefinedSymbolError(StaticError):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class AnalyzerError(StaticError):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class TypeCheckingError(StaticError):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
@@ -55,16 +72,16 @@ class AnalyzerError(Exception):
 class SymbolTable:
     def __init__(self, enclosing=None) -> None:
         self.enclosing = enclosing
-        self.values: dict[str, Variable | Function] = {}
+        self.values: dict[str, Variable | list[Function]] = {}
 
-    def get(self, key) -> Variable | Function | Fail:
+    def get(self, key) -> Variable | list[Function] | Fail:
         if key in self.values:
             return self.values[key]
         elif self.enclosing and key in self.enclosing:
             return self.enclosing[key]
         return Fail()
 
-    def __getitem__(self, key: str) -> Variable | Function | Fail:
+    def __getitem__(self, key: str) -> Variable | list[Function] | Fail:
         if key in self.values:
             return self.values[key]
         elif self.enclosing and key in self.enclosing:
@@ -73,9 +90,21 @@ class SymbolTable:
 
     def __setitem__(self, index: str, value: Variable | Function):
         if isinstance(value, Variable):
+            if index in self.values and isinstance(self.values[index], list):
+                raise AlreadyDefinedSymbolError(
+                    f"Cannot redefine function '{index}' as a variable"
+                )
             self.values[index] = value
         elif isinstance(value, Function):
-            ...
+            if index in self.values and isinstance(self.values[index], Variable):
+                raise AlreadyDefinedSymbolError(
+                    f"Cannot redefine variable '{index}' as a function"
+                )
+            if index not in self.values or not isinstance(self.values[index], list):
+                self.values[index] = []
+            funcs = self.values[index]
+            assert isinstance(funcs, list)  # type narrowing for mypy/pyright
+            funcs.append(value)
 
     def __contains__(self, item):
         return item in self.values
@@ -112,6 +141,8 @@ class StaticAnalyzer:
 
     def _is_assignable(self, item1: Type | Any, item2: Type | Any):
         if isinstance(item1, Type) and isinstance(item2, Type):
+            if item1.name == "null":
+                return True
             return item1.name == item2.name
         tchecker = TypeChecker()
         return tchecker.is_assignable(item1, item2)
@@ -140,8 +171,9 @@ class StaticAnalyzer:
         expected_type = node.var_type
 
         if not self._is_assignable(type_of_value, expected_type):
-            raise TypeError(
-                f"{type_of_value.name} is not assignable to {expected_type.name}"
+            raise TypeCheckingError(
+                f"{type_of_value.name} is not assignable to {expected_type.name}",
+                node.meta,
             )
         information = Variable(name=identifier, type=type_of_value)
         self.symbol_table[identifier] = information
@@ -163,14 +195,19 @@ class StaticAnalyzer:
         assignee_value = self._get_value(node.value)
         type_of_value = self._get_literal_type(assignee_value)
         if not self._is_assignable(type_of_value, expected_type):
-            raise TypeError(
-                f"{type_of_value.name} is not assignable to {expected_type.name}"
+            raise TypeCheckingError(
+                f"{type_of_value.name} is not assignable to {expected_type.name}",
+                node.meta,
             )
 
     def visit_FunctionDeclaration(self, node: FunctionDeclaration):
         original_table = self.symbol_table
         self.symbol_table = SymbolTable(self.symbol_table)
         identifier = node.name.name
+        if identifier in self.symbol_table:
+            raise AlreadyDefinedSymbolError(
+                f"{identifier} has already been defined", node.meta
+            )
         return_statement = None
         for statement in node.body:
             if isinstance(statement, ReturnStatement):
@@ -212,8 +249,42 @@ class StaticAnalyzer:
 
         self.symbol_table = original_table
         if not self._is_assignable(type_of_value, return_type):
-            raise TypeError(
-                f"{type_of_value.name} is not assignable to {return_type.name}"
+            raise TypeCheckingError(
+                f"{type_of_value.name} is not assignable to {return_type.name}",
+                node.meta,
             )
-        information = Function(return_type=return_type, name=identifier)
+
+        # Parse parameters
+        user_params = []
+        for param in node.parameters if node.parameters else []:
+            user_params.append(
+                Parameter(
+                    meta=node.meta,
+                    name=param.name,
+                    param_type=param.param_type,
+                )
+            )
+
+        information = Function(
+            return_type=return_type,
+            name=identifier,
+            parameters=user_params,
+        )
+
+        # Check for duplicate function overloads
+        existing_functions = self.symbol_table.get(identifier)
+        if isinstance(existing_functions, list):
+            for function in existing_functions:
+                if function.name == identifier:
+                    match = True
+                    if len(user_params) == len(function.parameters):
+                        for a, b in zip(user_params, function.parameters):
+                            if a.param_type.name != b.param_type.name:
+                                match = False
+                        if match:
+                            raise DuplicateFunctionOverloadError(
+                                f"Function overload attempted for {identifier} with duplicate signature",
+                                node.meta,
+                            )
+
         self.symbol_table[identifier] = information
