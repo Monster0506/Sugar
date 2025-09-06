@@ -192,7 +192,9 @@ def test_null_function_usage():
 
 
 def test_bad_null_type_invalid_assignment():
-    with open(f"{static_errors_path}/27_BAD_null_type_invalid_assignment.sugar", "r") as f:
+    with open(
+        f"{static_errors_path}/27_BAD_null_type_invalid_assignment.sugar", "r"
+    ) as f:
         code = f.read()
         ast = parse_to_ast(code)
         analyzer = StaticAnalyzer()
@@ -260,7 +262,9 @@ def test_function_parameter_types():
 
 
 def test_bad_function_parameter_mismatch():
-    with open(f"{static_errors_path}/35_BAD_function_parameter_mismatch.sugar", "r") as f:
+    with open(
+        f"{static_errors_path}/35_BAD_function_parameter_mismatch.sugar", "r"
+    ) as f:
         code = f.read()
         ast = parse_to_ast(code)
         analyzer = StaticAnalyzer()
@@ -277,7 +281,9 @@ def test_control_flow_types():
 
 
 def test_bad_control_flow_type_mismatch():
-    with open(f"{static_errors_path}/37_BAD_control_flow_type_mismatch.sugar", "r") as f:
+    with open(
+        f"{static_errors_path}/37_BAD_control_flow_type_mismatch.sugar", "r"
+    ) as f:
         code = f.read()
         ast = parse_to_ast(code)
         analyzer = StaticAnalyzer()

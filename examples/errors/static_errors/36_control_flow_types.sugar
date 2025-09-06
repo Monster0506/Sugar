@@ -12,6 +12,6 @@ while $ counter < 5 $ do
     counter := counter + 1
 end
 
-for $ i #int in [1, 2, 3, 4, 5] $ do
+for DEF i #int in [1, 2, 3, 4, 5] do
     counter := counter + i
 end

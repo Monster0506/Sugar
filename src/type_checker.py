@@ -220,7 +220,9 @@ class TypeChecker:
         """
         Infers the AST Type object from a Python runtime value.
         """
-        if isinstance(value, int):
+        if isinstance(value, bool):
+            return Type(name="bool", meta=None)
+        elif isinstance(value, int):
             return Type(name="int", meta=None)
         elif isinstance(value, float):
             return Type(name="float", meta=None)
@@ -228,8 +230,6 @@ class TypeChecker:
             if len(value) == 1:
                 return Type(name="char", meta=None)
             return Type(name="str", meta=None)
-        elif isinstance(value, bool):
-            return Type(name="bool", meta=None)
         elif isinstance(value, list):
             # For lists, try to determine the base type if possible
             if not value:  # Empty list

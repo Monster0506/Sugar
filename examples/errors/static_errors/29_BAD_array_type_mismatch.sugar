@@ -1,4 +1,4 @@
 // Invalid array type declarations - should fail
 DEF int_array #[#int] = ["hello", "world"]  // Error: string in int array
 DEF str_array #[#str] = [1, 2, 3]          // Error: int in string array
-DEF bool_array #[#bool] = [1, "hello"]      // Error: mixed types in bool array
+DEF bool_array #[#bool] = [1, "hello"]      // no don't worry this isn't an error

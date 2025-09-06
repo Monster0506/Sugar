@@ -4,11 +4,11 @@ FUNC process_int(value #int) #int
 end
 
 // Error: calling function with wrong parameter type
-DEF result #int = process_int("hello")
+DEF result1 #int = process_int("hello")
 
 FUNC process_string(text #str) #str
     RETURN text
 end
 
 // Error: calling function with wrong parameter type
-DEF result #str = process_string(42)
+DEF result2 #str = process_string(42)

@@ -2,15 +2,19 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.ast_nodes import (
+    ArrayLiteral,
+    ArrayType,
     Expression,
     ExpressionStatement,
     FunctionDeclaration,
     Identifier,
     Literal,
+    MapLiteral,
     Node,
     Parameter,
     Program,
     ReturnStatement,
+    TupleLiteral,
     Type,
     VariableAssignment,
     VariableDeclaration,
@@ -119,6 +123,12 @@ class StaticAnalyzer:
         self.symbol_table = SymbolTable()
 
     def _get_value(self, item: Literal | Identifier | Expression):
+        if isinstance(item, ArrayLiteral):
+            theoretical_elements = []
+            for thingy in item.elements if item.elements else []:
+                theoretical_elements.append(self._get_value(thingy))
+            return theoretical_elements
+
         if isinstance(item, Literal):
             return item.value
         elif isinstance(item, Identifier):
@@ -137,27 +147,64 @@ class StaticAnalyzer:
             return Type(meta=None, name="float")
         if isinstance(item, str):
             return Type(meta=None, name="str")
-        if item is None:
-            return Type(meta=None, name="null")
+        if isinstance(item, list):
+            if not item:
+                # For an empty list, we can say its base type is 'any',
+                # making it assignable to any array type.
+                return ArrayType(
+                    meta=None, name="array", base_type=Type(meta=None, name="any")
+                )
+
+            # Determine the common type of the elements
+            base_type = self._get_literal_type(item[0])
+            for element in item[1:]:
+                element_type = self._get_literal_type(element)
+                if not self._is_assignable(element_type, base_type):
+                    base_type = Type(meta=None, name="any")
+                    break
+            return ArrayType(meta=None, name="array", base_type=base_type)
+
         tchecker = TypeChecker()
         return tchecker.get_runtime_type(item)
 
     def _is_assignable(self, item1: Type | Any, item2: Type | Any):
+        if isinstance(item2, ArrayType):
+            # If we are assigning an empty list to an array type, it's always valid.
+            if item1 == []:
+                return True
+
+            if not isinstance(item1, (ArrayType, list)):
+                return False
+
+            if isinstance(item1, list):
+                item1 = self._get_literal_type(item1)
+
+            if not isinstance(item1, ArrayType):
+                return False
+
+            # If the target base_type is any, we can assign anything
+            if item2.base_type and item2.base_type.name == "any":
+                return True
+
+            # if the source base_type is any, it can be assigned to any target type
+            if item1.base_type and item1.base_type.name == "any":
+                return True
+
+            # Check if the base types are assignable
+            if not item1.base_type or not self._is_assignable(
+                item1.base_type, item2.base_type
+            ):
+                return False
+            return True
+
         if isinstance(item1, Type) and isinstance(item2, Type):
-            # Null values can be assigned to any type (represents optional/not yet full)
             if item1.name == "null":
                 return True
-            # But non-null values cannot be assigned to null type
-            if item2.name == "null":
-                return item1.name == "null"
             if item1.name == "char" and item2.name == "str":
                 return True
             if item2.name == "char" and item1.name == "str":
                 return True
             return item1.name == item2.name
-        
-        # For now, use the type checker for complex type comparisons
-        # This will handle arrays, maps, tuples, etc.
         tchecker = TypeChecker()
         return tchecker.is_assignable(item1, item2)
 
@@ -188,8 +235,16 @@ class StaticAnalyzer:
         expected_type = node.var_type
 
         if not self._is_assignable(type_of_value, expected_type):
+            if isinstance(expected_type, ArrayType) and isinstance(value, list):
+                for element in value:
+                    element_type = self._get_literal_type(element)
+                    if not self._is_assignable(element_type, expected_type.base_type):
+                        raise TypeCheckingError(
+                            f"Cannot assign an array containing an element of type '{element_type.name}' to an array of type '{expected_type.base_type.name}'",
+                            node.meta,
+                        )
             raise TypeCheckingError(
-                f"{type_of_value.name} is not assignable to {expected_type.name}",
+                f"'{type_of_value.name}' is not assignable to '{expected_type.name}'",
                 node.meta,
             )
         information = Variable(name=identifier, type=type_of_value)
@@ -229,9 +284,8 @@ class StaticAnalyzer:
         for statement in node.body:
             if isinstance(statement, ReturnStatement):
                 return_statement = statement
-            else:
-                # Visit the statement and check if it contains return statements
-                self.visit(statement)
+                continue
+            self.visit(statement)
 
         if node.return_type is None:
             return_type = Type(meta=None, name="void")
@@ -307,68 +361,23 @@ class StaticAnalyzer:
 
         self.symbol_table[identifier] = information
 
-    def visit_IfStatement(self, node):
-        # Visit the condition
-        self.visit(node.condition)
-        # Visit the body statements
-        for statement in node.body:
-            self.visit(statement)
-        # Visit elif clauses
-        for elif_clause in node.elif_clauses:
-            self.visit(elif_clause)
-        # Visit else clause
-        if node.else_clause:
-            self.visit(node.else_clause)
-
-    def visit_ElifClause(self, node):
-        # Visit the condition
-        self.visit(node.condition)
-        # Visit the body statements
-        for statement in node.body:
-            self.visit(statement)
-
-    def visit_ElseClause(self, node):
-        # Visit the body statements
-        for statement in node.body:
-            self.visit(statement)
-
-    def visit_ReturnStatement(self, node):
-        # Visit the return value if it exists
-        if node.value:
-            self.visit(node.value)
-
-    def visit_EqualityExpression(self, node):
-        # Visit left and right operands
-        self.visit(node.left)
-        self.visit(node.right)
-
-    def visit_AdditiveExpression(self, node):
-        # Visit left and right operands
-        self.visit(node.left)
-        self.visit(node.right)
-
-    def visit_Identifier(self, node):
-        # Identifiers don't need special handling for static analysis
+    def visit_Literal(self, node: Literal):
+        # Literals don't need further visiting
         pass
 
-    def visit_Literal(self, node):
-        # Literals don't need special handling for static analysis
-        pass
+    def visit_ArrayLiteral(self, node: ArrayLiteral):
 
-    def visit_ArrayLiteral(self, node):
-        # Visit all elements in the array
+        # Visit all elements
         if node.elements:
             for element in node.elements:
                 self.visit(element)
 
-    def visit_MapLiteral(self, node):
-        # Visit all entries in the map
-        if node.entries:
-            for entry in node.entries:
-                self.visit(entry)
+    def visit_MapLiteral(self, node: MapLiteral):
+        # Visit all entries
+        for entry in node.entries:
+            self.visit(entry)
 
-    def visit_TupleLiteral(self, node):
-        # Visit all elements in the tuple
-        if node.elements:
-            for element in node.elements:
-                self.visit(element)
+    def visit_TupleLiteral(self, node: TupleLiteral):
+        # Visit all elements
+        for element in node.elements:
+            self.visit(element)

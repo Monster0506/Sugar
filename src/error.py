@@ -19,6 +19,10 @@ class ErrorReporter:
         self.file_path = file_path
         self.lines = source_code.splitlines()
 
+    def _print_error(self, message: str, line: int, column: int):
+        formatted = self._format_error(message, line, column)
+        print(formatted, file=sys.stderr)
+
     def _format_error(self, message: str, line: int, column: int) -> str:
         """Return a detailed error message with code context."""
         header = f"Error in {self.file_path} at line {line}, column {column}:"
@@ -31,10 +35,6 @@ class ErrorReporter:
         if len(error.args) > 1 and isinstance(error.args[1], Meta):
             return error.args[1].line, error.args[1].column
         return 0, 0
-
-    def _print_error(self, message: str, line: int, column: int):
-        formatted = self._format_error(message, line, column)
-        print(formatted, file=sys.stderr)
 
     def report_syntactic(self, error: LarkError):
         """Report a syntax error raised by Lark."""
