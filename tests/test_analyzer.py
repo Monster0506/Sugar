@@ -11,7 +11,6 @@ from src.static_analysis import (
     UndefinedSymbolError,
 )
 
-
 example_path = Path("examples").resolve()
 errors_path = (example_path / "errors").resolve()
 static_errors_path = (errors_path / "static_errors").resolve()
