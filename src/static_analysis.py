@@ -177,7 +177,7 @@ class StaticAnalyzer:
         return tchecker.get_runtime_type(item)
 
     def _is_assignable(self, item1: Type | Any, item2: Type | Any):
-        if hasattr(item2, 'name') and item2.name == "any":
+        if hasattr(item2, "name") and item2.name == "any":
             return True
         if isinstance(item2, ArrayType):
             # If we are assigning an empty list to an array type, it's always valid.
@@ -207,7 +207,7 @@ class StaticAnalyzer:
             ):
                 return False
             return True
-        
+
         if isinstance(item2, TupleType):
             if not isinstance(item1, (TupleType, tuple)):
                 return False
@@ -269,7 +269,7 @@ class StaticAnalyzer:
                     element_type = self._get_literal_type(element)
                     if not self._is_assignable(element_type, expected_type.base_type):
                         raise TypeCheckingError(
-                            f"Cannot assign an array containing an element of type '{element_type.name}' to an array of type '{expected_type.base_type.name}'",
+                            f"Cannot assign an array containing an element of type '{element_type.name}' to an array of type '{expected_type.base_type.name if expected_type.base_type else expected_type.name}'",
                             node.meta,
                         )
                 return

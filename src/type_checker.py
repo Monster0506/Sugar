@@ -1,6 +1,15 @@
-from src.ast_nodes import (ArrayType, CancellationToken, CustomType, MapType,
-                           SugarClass, SugarError, SugarInstance, SugarTask,
-                           TupleType, Type)
+from src.ast_nodes import (
+    ArrayType,
+    CancellationToken,
+    CustomType,
+    MapType,
+    SugarClass,
+    SugarError,
+    SugarInstance,
+    SugarTask,
+    TupleType,
+    Type,
+)
 from src.builtin_functions import base_errors
 from src.utils import debug_class_wrapper
 
