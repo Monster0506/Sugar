@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import NoReturn
 
 from lark.exceptions import LarkError
-from lark.tree import Meta
 
 from src.error import ErrorReporter
 from src.interpreter import Interpreter
