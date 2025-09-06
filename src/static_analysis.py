@@ -15,6 +15,7 @@ from src.ast_nodes import (
     Program,
     ReturnStatement,
     TupleLiteral,
+    TupleType,
     Type,
     VariableAssignment,
     VariableDeclaration,
@@ -128,6 +129,11 @@ class StaticAnalyzer:
             for thingy in item.elements if item.elements else []:
                 theoretical_elements.append(self._get_value(thingy))
             return theoretical_elements
+        if isinstance(item, TupleLiteral):
+            theoretical_elements = []
+            for thingy in item.elements if item.elements else []:
+                theoretical_elements.append(self._get_value(thingy))
+            return tuple(theoretical_elements)
 
         if isinstance(item, Literal):
             return item.value
@@ -163,11 +169,16 @@ class StaticAnalyzer:
                     base_type = Type(meta=None, name="any")
                     break
             return ArrayType(meta=None, name="array", base_type=base_type)
+        if isinstance(item, tuple):
+            types = [self._get_literal_type(e) for e in item]
+            return TupleType(meta=None, name="tuple", types=types)
 
         tchecker = TypeChecker()
         return tchecker.get_runtime_type(item)
 
     def _is_assignable(self, item1: Type | Any, item2: Type | Any):
+        if hasattr(item2, 'name') and item2.name == "any":
+            return True
         if isinstance(item2, ArrayType):
             # If we are assigning an empty list to an array type, it's always valid.
             if item1 == []:
@@ -195,6 +206,24 @@ class StaticAnalyzer:
                 item1.base_type, item2.base_type
             ):
                 return False
+            return True
+        
+        if isinstance(item2, TupleType):
+            if not isinstance(item1, (TupleType, tuple)):
+                return False
+
+            if isinstance(item1, tuple):
+                item1 = self._get_literal_type(item1)
+
+            if not isinstance(item1, TupleType):
+                return False
+
+            if len(item1.types) != len(item2.types):
+                return False
+
+            for t1, t2 in zip(item1.types, item2.types):
+                if not self._is_assignable(t1, t2):
+                    return False
             return True
 
         if isinstance(item1, Type) and isinstance(item2, Type):
@@ -243,6 +272,24 @@ class StaticAnalyzer:
                             f"Cannot assign an array containing an element of type '{element_type.name}' to an array of type '{expected_type.base_type.name}'",
                             node.meta,
                         )
+                return
+            if isinstance(expected_type, TupleType) and isinstance(value, tuple):
+                if len(value) != len(expected_type.types):
+                    raise TypeCheckingError(
+                        f"Cannot assign a tuple of length {len(value)} to a tuple of length {len(expected_type.types)}",
+                        node.meta,
+                    )
+                for i, (element, expected_element_type) in enumerate(
+                    zip(value, expected_type.types)
+                ):
+                    element_type = self._get_literal_type(element)
+                    if not self._is_assignable(element_type, expected_element_type):
+                        raise TypeCheckingError(
+                            f"Cannot assign a tuple with an element of type '{element_type.name}' at index {i} to a tuple with an element of type '{expected_element_type.name}' at that index",
+                            node.meta,
+                        )
+                return
+
             raise TypeCheckingError(
                 f"'{type_of_value.name}' is not assignable to '{expected_type.name}'",
                 node.meta,
