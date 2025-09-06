@@ -8,7 +8,6 @@ from lark.tree import Meta
 
 from src.static_analysis import StaticError
 
-
 if TYPE_CHECKING:
     from src.ast_nodes import Node
 
