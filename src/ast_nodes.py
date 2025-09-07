@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from lark import tree
 
+
 if TYPE_CHECKING:
     from src.interpreter import Environment  # Only imports for type checking
 
@@ -536,7 +537,7 @@ class StdLibCall:
 
 
 class SugarError(Exception):
-    def __init__(self, base_class, args=None):
+    def __init__(self, base_class, args: Any = None):
         if args is None:
             args = []
         self.base_class = base_class
@@ -596,7 +597,11 @@ class SugarTask:
             if not self._done:
                 raise RuntimeError("Task not finished when join() completed.")
             if not self._success:
-                raise self._error
+                raise (
+                    self._error
+                    if self._error
+                    else SugarError("Unknown error while joining a thread")
+                )
             return self._result
 
     def is_done(self):
