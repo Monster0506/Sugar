@@ -8,6 +8,7 @@ from lark.tree import Meta
 
 from src.static_analysis import StaticError
 
+
 if TYPE_CHECKING:
     from src.ast_nodes import Node
 
@@ -18,8 +19,10 @@ class ErrorReporter:
         self.file_path = file_path
         self.lines = source_code.splitlines()
 
-    def _print_error(self, message: str, line: int, column: int):
-        formatted = self._format_error(message, line, column)
+    def _print_error(self, message: str, line: int | None, column: int | None):
+        formatted = self._format_error(
+            message, line if line else 0, column if column else 0
+        )
         print(formatted, file=sys.stderr)
 
     def _format_error(self, message: str, line: int, column: int) -> str:
@@ -53,7 +56,11 @@ class ErrorReporter:
                 file=sys.stderr,
             )
             return
-        self._print_error(message, node.meta.line, node.meta.column)
+        self._print_error(
+            message,
+            node.meta.line if node.meta else None,
+            node.meta.column if node.meta else None,
+        )
 
     def report_runtime(self, message: str, node: Node | None):
         """Report a runtime error (detected during execution)."""
@@ -63,4 +70,8 @@ class ErrorReporter:
                 file=sys.stderr,
             )
             return
-        self._print_error(message, node.meta.line, node.meta.column)
+        self._print_error(
+            message,
+            node.meta.line if node.meta else None,
+            node.meta.column if node.meta else None,
+        )
