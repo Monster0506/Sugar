@@ -6,6 +6,7 @@ from src.ast_nodes import (
     ArrayType,
     Expression,
     ExpressionStatement,
+    FunctionCall,
     FunctionDeclaration,
     Identifier,
     Literal,
@@ -124,6 +125,8 @@ class StaticAnalyzer:
         self.symbol_table = SymbolTable()
 
     def _get_value(self, item: Literal | Identifier | Expression):
+        if isinstance(item, FunctionCall):
+            self.visit(item)
         if isinstance(item, ArrayLiteral):
             theoretical_elements = []
             for thingy in item.elements if item.elements else []:
@@ -247,6 +250,8 @@ class StaticAnalyzer:
             self.visit(statement)
 
     def visit_ExpressionStatement(self, node: ExpressionStatement):
+        if isinstance(node, FunctionCall):
+            self.visit(node)
         pass
 
     def generic_visit(self, node: Node):
@@ -428,3 +433,46 @@ class StaticAnalyzer:
         # Visit all elements
         for element in node.elements:
             self.visit(element)
+
+    def visit_FunctionCall(self, node: FunctionCall):
+        function_name = node.function_name.name
+        functions = self.symbol_table.get(function_name)
+        if functions is Fail() or not isinstance(functions, list):
+            raise UndefinedSymbolError(
+                f"Function '{function_name}' is not defined.", node.meta
+            )
+
+        for func in functions:
+            if node.arguments and func.parameters:
+                if len(node.arguments) != len(func.parameters):
+                    raise TypeCheckingError(
+                        f"Mismatch between number of expected arguments in function '{function_name} and passed argument count",
+                        node.meta,
+                    )
+
+            if node.arguments and not func.parameters:
+                raise TypeCheckingError(
+                    f"Mismatch between number of expected arguments in function '{function_name} and passed argument count. '{function_name}' expects {len(node.arguments)} and 0 were provided",
+                    node.meta,
+                )
+            if not node.arguments and func.parameters:
+                raise TypeCheckingError(
+                    f"Mismatch between number of expected arguments in function '{function_name} and passed argument count. '{function_name}' expects 0 and {len(func.parameters)} were provided",
+                    node.meta,
+                )
+
+            for _, (arg, param) in enumerate(
+                zip((node.arguments if node.arguments else []), func.parameters)
+            ):
+                arg_type = self._get_literal_type(self._get_value(arg))
+                if not self._is_assignable(arg_type, param.param_type):
+                    raise TypeCheckingError(
+                        f"Incorrect type for parameter '{param.name.name}' in function '{function_name}'. Expected '{param.param_type.name}', but got '{arg_type.name}'",
+                        node.meta,
+                    )
+            return
+
+        raise TypeCheckingError(
+            f"No matching function signature for '{function_name}' with the given arguments.",
+            node.meta,
+        )
